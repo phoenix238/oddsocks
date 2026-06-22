@@ -1,0 +1,3286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Odd Socks</title>
+<link id="manifest-link" rel="manifest">
+<meta name="theme-color" content="#0f380f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Odd Socks">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;image-rendering:pixelated}
+:root{
+  --gb0:#0f380f;--gb1:#306230;--gb2:#8bac0f;--gb3:#9bbc0f;--gb4:#c4d96b;--gb5:#e8f0c8;
+  --red:#d03030;--yellow:#c49000;--px:'Press Start 2P',monospace
+}
+body{background:var(--gb0);font-family:var(--px);color:var(--gb3);font-size:10px;line-height:1.5;overflow-x:hidden}
+.app{max-width:480px;margin:0 auto;min-height:100vh;background:var(--gb0);border-left:4px solid var(--gb1);border-right:4px solid var(--gb1);position:relative}
+.app::after{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.04) 2px,rgba(0,0,0,0.04) 4px);pointer-events:none;z-index:998}
+
+/* ═══ CLEAN MODE ═══ */
+body.clean{
+  --gb0:#f8fafc;--gb1:#ffffff;--gb2:#94a3b8;--gb3:#334155;--gb4:#0f172a;--gb5:#f1f5f9;
+  --red:#dc2626;--yellow:#d97706;--px:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-serif;
+  font-size:14px;background:#f8fafc;
+}
+body.clean *{image-rendering:auto;letter-spacing:0}
+body.clean .app{border:none;background:#f8fafc}
+body.clean .app::after{display:none}
+body.clean .hdr{background:#1e293b;border-bottom:2px solid #334155}
+body.clean .hdr-info h1{text-shadow:none;font-size:13px;letter-spacing:0}
+body.clean .hdr-info p{color:#94a3b8}
+body.clean .hdr-socks{animation:none}
+body.clean .hdr-badge{background:#334155;border-color:#475569;color:#f1f5f9}
+body.clean .tabs{background:#f1f5f9;border-bottom:2px solid #e2e8f0;top:52px}
+body.clean .tab{font-size:9px;color:#64748b;padding:10px 1px}
+body.clean .tab.on{color:#0f172a;background:#e2e8f0}
+body.clean .card,.clean .cc,.clean .inv-item{border-radius:8px;border-width:1px}
+body.clean .btn{border-radius:5px;font-size:11px}
+body.clean .btn.big{border-radius:6px;font-size:12px}
+body.clean .field input,.clean .field textarea,.clean .field select{border-radius:5px;font-size:13px;border-width:1px}
+body.clean .modal{border-radius:12px 12px 0 0;border-width:1px}
+body.clean .m-title{font-size:14px}
+body.clean .c-name{font-size:12px}
+body.clean .c-addr,.clean .c-client,.clean .c-notes,.clean .c-due{font-size:10px}
+body.clean .c-price{font-size:13px}
+body.clean .hdr-info h1::after{content:' 🎮';font-size:10px;opacity:.5}
+body.clean .theme-btn{background:#334155!important;color:#94a3b8!important}
+
+/* HEADER */
+.hdr{background:var(--gb1);border-bottom:4px solid var(--gb2);padding:12px 16px 10px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;isolation:isolate}
+.hdr-socks{font-size:22px;cursor:pointer;animation:wob 3s ease-in-out infinite;user-select:none;-webkit-user-select:none}
+@keyframes wob{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
+.hdr-info h1{font-size:11px;color:var(--gb4);letter-spacing:1px;text-shadow:2px 2px 0 var(--gb0)}
+.hdr-info p{font-size:6px;color:var(--gb2);margin-top:3px}
+.hdr-badge{margin-left:auto;background:var(--gb0);color:var(--gb3);padding:5px 9px;font-size:6px;border:2px solid var(--gb2);white-space:nowrap}
+
+/* TABS */
+.tabs{display:grid;grid-template-columns:repeat(6,1fr);background:var(--gb0);border-bottom:4px solid var(--gb1);position:sticky;top:57px;z-index:99;isolation:isolate}
+.tab{padding:8px 1px;text-align:center;font-size:4.5px;color:var(--gb2);cursor:pointer;border:none;background:none;font-family:var(--px);border-right:2px solid var(--gb1);line-height:1.6}
+.tab:last-child{border-right:none}
+.tab.on{color:var(--gb4);background:var(--gb1)}
+.tab-ic{font-size:13px;display:block;margin-bottom:3px}
+
+/* CONTENT */
+.content{padding:12px;padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))}
+
+/* FAB */
+.fab{position:fixed;bottom:calc(22px + env(safe-area-inset-bottom,0px));right:20px;width:50px;height:50px;background:var(--gb3);border:3px solid var(--gb4);color:var(--gb0);font-size:24px;font-family:var(--px);cursor:pointer;z-index:200;display:flex;align-items:center;justify-content:center;box-shadow:4px 4px 0 var(--gb1)}
+.fab:active{box-shadow:2px 2px 0 var(--gb1);transform:translate(2px,2px)}
+.job-bar{position:fixed;bottom:env(safe-area-inset-bottom,0px);left:50%;transform:translateX(-50%);width:100%;max-width:480px;display:grid;grid-template-columns:1fr 1fr;background:var(--gb0);border-top:4px solid var(--gb2);z-index:201}
+.job-bar-btn{background:var(--gb1);color:var(--gb4);font-family:var(--px);font-size:6px;border:none;border-right:2px solid var(--gb2);padding:12px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px}
+.job-bar-btn:last-child{border-right:none}
+.job-bar-btn:active{background:var(--gb2);color:var(--gb0)}
+.job-bar-ic{font-size:18px}
+
+/* CARDS */
+.card{background:var(--gb1);border:3px solid var(--gb2);margin-bottom:12px;padding:12px;position:relative}
+.card.urg{border-color:var(--red);border-style:solid}
+.card.warn{border-color:var(--yellow);border-style:dashed}
+.card.ok{border-style:dotted}
+.card.loaded{opacity:.6;border-style:dashed}
+.card.done-card{opacity:.5}
+.ci{display:flex;align-items:flex-start;gap:10px;margin-bottom:6px}
+.c-icon{font-size:20px;flex-shrink:0}
+.c-meta{flex:1;min-width:0}
+.c-name{font-size:8px;color:var(--gb4);line-height:1.4;word-break:break-word}
+.c-client{font-size:6px;color:var(--gb2);margin-top:2px}
+.dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.dot.r{background:var(--red);box-shadow:0 0 5px var(--red)}
+.dot.y{background:var(--yellow);box-shadow:0 0 5px var(--yellow)}
+.dot.g{background:var(--gb3)}
+.c-addr{font-size:6px;color:var(--gb2);line-height:2;margin-bottom:5px}
+.c-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
+.c-due{font-size:6px;color:var(--gb4)}
+.c-price{font-size:8px;color:var(--gb3);font-weight:bold}
+.c-notes{font-size:6px;color:var(--gb2);font-style:italic;margin-bottom:7px;line-height:1.8}
+.c-acts{display:flex;gap:5px;flex-wrap:wrap}
+
+/* CLIENT CARDS */
+.cc{background:var(--gb1);border:3px solid var(--gb2);margin-bottom:12px;padding:12px;cursor:pointer}
+.cc:active{background:var(--gb2)}
+.cc-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.cc-icon{font-size:22px}
+.cc-info{flex:1}
+.cc-name{font-size:9px;color:var(--gb4);margin-bottom:3px}
+.cc-sub{font-size:6px;color:var(--gb2);line-height:1.9}
+.cc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.cc-stat{background:var(--gb0);border:2px solid var(--gb1);padding:5px 4px;text-align:center}
+.cc-stat-num{font-size:8px;color:var(--gb4);display:block}
+.cc-stat-lbl{font-size:4px;color:var(--gb2);display:block;margin-top:1px}
+.cc-acts{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+
+/* CLIENT PROFILE */
+.profile-hdr{background:var(--gb1);border:3px solid var(--gb2);padding:12px;margin-bottom:10px}
+.profile-name{font-size:10px;color:var(--gb4);margin-bottom:8px;line-height:1.4}
+.profile-contact{font-size:6px;color:var(--gb2);line-height:2.2;margin-bottom:8px}
+.profile-acts{display:flex;gap:5px;flex-wrap:wrap}
+.section{margin-bottom:14px}
+.section-title{font-size:7px;color:var(--gb4);border-bottom:2px solid var(--gb1);padding-bottom:5px;margin-bottom:8px}
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:10px}
+.stat-box{background:var(--gb1);border:3px solid var(--gb2);padding:10px;text-align:center}
+.stat-num{font-size:11px;color:var(--gb4);display:block;margin-bottom:4px}
+.stat-lbl{font-size:5px;color:var(--gb2)}
+.stat-box.highlight{border-color:var(--gb3)}
+.stat-box.danger{border-color:var(--red)}
+
+/* MONEY TAB */
+.pl-box{background:var(--gb1);border:3px solid var(--gb2);padding:12px;margin-bottom:10px}
+.pl-toggle{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-bottom:10px;border:2px solid var(--gb2)}
+.pl-btn{background:var(--gb0);color:var(--gb2);font-family:var(--px);font-size:6px;padding:7px;border:none;cursor:pointer;text-align:center}
+.pl-btn.on{background:var(--gb2);color:var(--gb0)}
+.pl-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--gb1);font-size:6px}
+.pl-row:last-child{border-bottom:none}
+.pl-row.total{font-size:8px;color:var(--gb4);padding-top:8px;border-bottom:none}
+.pl-row.total.pos{color:var(--gb3)}
+.pl-row.total.neg{color:var(--red)}
+.pl-label{color:var(--gb2)}
+.pl-val{color:var(--gb4)}
+.pl-val.pos{color:var(--gb3)}
+.pl-val.neg{color:var(--red)}
+
+/* EXPENSE CATS */
+.exp-cats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px}
+.exp-cat{background:var(--gb1);border:2px solid var(--gb2);color:var(--gb3);font-family:var(--px);font-size:5px;padding:10px 4px;cursor:pointer;text-align:center;line-height:2}
+.exp-cat .ec-ic{font-size:16px;display:block;margin-bottom:3px}
+.exp-cat:active{background:var(--gb2);color:var(--gb0)}
+.exp-cat.on{background:var(--gb2);color:var(--gb0);border-color:var(--gb4)}
+
+/* EXPENSE ITEMS */
+.exp-item{background:var(--gb1);border:2px solid var(--gb2);padding:9px;margin-bottom:7px;display:flex;align-items:center;gap:9px}
+.exp-badge{background:var(--gb0);border:2px solid var(--gb2);font-size:5px;color:var(--gb2);padding:3px 5px;white-space:nowrap}
+.exp-desc{flex:1;font-size:6px;color:var(--gb3);line-height:1.8}
+.exp-amt{font-size:8px;color:var(--gb4);white-space:nowrap}
+.exp-date{font-size:5px;color:var(--gb2)}
+
+/* INVOICE ITEMS */
+.inv-item{background:var(--gb1);border:3px solid var(--gb2);padding:10px;margin-bottom:8px}
+.inv-item.paid{border-color:var(--gb3);opacity:.7}
+.inv-item.overdue{border-color:var(--red)}
+.inv-top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.inv-num{font-size:8px;color:var(--gb4);flex-shrink:0}
+.inv-client{font-size:6px;color:var(--gb3);flex:1}
+.inv-total{font-size:9px;color:var(--gb4)}
+.inv-meta{font-size:5px;color:var(--gb2);line-height:2;margin-bottom:6px}
+.status-badge{display:inline-block;font-size:5px;padding:2px 6px;border:2px solid;margin-bottom:6px}
+.status-draft{color:var(--gb2);border-color:var(--gb2)}
+.status-sent{color:var(--yellow);border-color:var(--yellow)}
+.status-paid{color:var(--gb3);border-color:var(--gb3)}
+.status-overdue{color:var(--red);border-color:var(--red)}
+.inv-acts{display:flex;gap:5px;flex-wrap:wrap}
+
+/* BUTTONS */
+.btn{background:var(--gb0);color:var(--gb3);border:2px solid var(--gb2);padding:7px 9px;font-size:6px;font-family:var(--px);cursor:pointer;white-space:nowrap}
+.btn:active{background:var(--gb2);color:var(--gb0)}
+.btn.ld{background:var(--gb2);color:var(--gb0)}
+.btn.dn{background:var(--gb3);color:var(--gb0);border-color:var(--gb3)}
+.btn.dl{border-color:var(--red);color:var(--red)}
+.btn.big{background:var(--gb2);color:var(--gb0);padding:11px 10px;font-size:7px;width:100%;margin-top:6px;border:2px solid var(--gb4);display:block;text-align:center;cursor:pointer;font-family:var(--px)}
+.btn.big:active{background:var(--gb4)}
+.btn.big.sec{background:var(--gb1);color:var(--gb4);border-color:var(--gb2)}
+.btn.big.dl{background:var(--gb0);color:var(--red);border-color:var(--red)}
+.btn.sm{padding:4px 6px;font-size:5px}
+.back-btn{background:var(--gb0);color:var(--gb2);border:2px solid var(--gb1);padding:7px 10px;font-size:6px;font-family:var(--px);cursor:pointer;margin-bottom:10px}
+
+/* MODAL */
+.ov{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.88);z-index:500;display:flex;align-items:flex-end;justify-content:center}
+.modal{background:var(--gb0);border:4px solid var(--gb2);border-bottom:none;width:100%;max-width:480px;max-height:93vh;overflow-y:auto;padding:16px}
+.m-title{font-size:9px;color:var(--gb4);margin-bottom:14px}
+.m-sub{font-size:6px;color:var(--gb2);margin-bottom:12px;line-height:1.9}
+
+/* FORMS */
+.field{margin-bottom:10px}
+.field label{display:block;font-size:6px;color:var(--gb2);margin-bottom:4px}
+.field input,.field textarea,.field select{width:100%;background:var(--gb1);border:2px solid var(--gb2);color:var(--gb4);font-family:var(--px);font-size:8px;padding:8px;outline:none}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--gb4)}
+.field textarea{min-height:60px;resize:vertical;line-height:1.7}
+.field input[type=date]{color-scheme:dark}
+.field input[type=number]{-moz-appearance:textfield}
+.frow{display:flex;gap:8px}
+.frow .field{flex:1}
+.icon-grid{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}
+.ic-opt{font-size:18px;cursor:pointer;padding:4px;border:2px solid transparent}
+.ic-opt.sel{border-color:var(--gb4);background:var(--gb1)}
+.modes{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px}
+.mode{background:var(--gb1);border:2px solid var(--gb2);color:var(--gb3);font-family:var(--px);font-size:5px;padding:10px 4px;cursor:pointer;text-align:center;line-height:2}
+.mode .mi{font-size:16px;display:block;margin-bottom:3px}
+.mode:active,.mode.on{background:var(--gb2);color:var(--gb0);border-color:var(--gb4)}
+.ab{background:var(--gb0);border:2px solid var(--gb1);padding:10px;margin-bottom:10px}
+.ab-lbl{font-size:6px;color:var(--gb4);margin-bottom:7px}
+.see-more{background:none;border:none;color:var(--gb2);font-family:var(--px);font-size:5px;cursor:pointer;margin-bottom:5px;padding:0}
+
+/* LOADING / MESSAGES */
+.loading{text-align:center;padding:28px 10px}
+.loading p{font-size:7px;color:var(--gb3);animation:bl 1s step-end infinite;line-height:2}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:0}}
+.ok-msg{font-size:6px;color:var(--gb3);margin-bottom:8px;padding:7px 10px;border-left:3px solid var(--gb3);line-height:1.9}
+.err-msg{font-size:6px;color:var(--red);margin-bottom:8px;padding:7px 10px;border-left:3px solid var(--red);line-height:1.9}
+.warn-bar{background:var(--gb1);border:2px solid var(--yellow);padding:8px 10px;margin-bottom:10px;font-size:6px;color:var(--yellow);line-height:2}
+.empty{text-align:center;padding:40px 16px;color:var(--gb2);font-size:7px;line-height:2.4}
+.empty-ic{font-size:32px;display:block;margin-bottom:12px}
+
+/* POD THUMB */
+.pod-thumb{width:100%;max-height:140px;object-fit:cover;border:3px solid var(--gb2);display:block;margin:8px 0}
+
+/* LINE ITEM EDITOR */
+.li-row{display:flex;gap:5px;align-items:center;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--gb1)}
+.li-desc{flex:1;background:var(--gb1);border:2px solid var(--gb2);color:var(--gb4);font-family:var(--px);font-size:7px;padding:6px 7px}
+.li-amt{width:75px;background:var(--gb1);border:2px solid var(--gb2);color:var(--gb4);font-family:var(--px);font-size:7px;padding:6px 7px}
+.li-total{font-size:7px;color:var(--gb4);width:50px;text-align:right}
+
+/* ROUTE */
+.rc{background:var(--gb1);border:3px solid var(--gb2);padding:10px;margin-bottom:8px}
+.rc-num{font-size:10px;color:var(--gb4);margin-bottom:3px}
+.rc-name{font-size:7px;color:var(--gb3);margin-bottom:4px}
+.rc-addr{font-size:6px;color:var(--gb2);line-height:2}
+
+/* SETTINGS */
+.set-s{margin-bottom:16px}
+.set-t{font-size:7px;color:var(--gb4);margin-bottom:10px;border-bottom:2px solid var(--gb1);padding-bottom:6px}
+.set-note{font-size:6px;color:var(--gb2);line-height:2;margin-bottom:8px}
+
+/* WORLD OVERLAY (easter egg) */
+.world-ov{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--gb0);z-index:600;display:none;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:10px}
+.world-close{background:var(--gb1);border:2px solid var(--gb2);color:var(--gb2);font-family:var(--px);font-size:6px;padding:6px 12px;cursor:pointer;margin-bottom:8px}
+.ww{display:flex;flex-direction:column;align-items:center}
+.wcanvas{border:4px solid var(--gb2);display:block;image-rendering:pixelated}
+.wcontrols{display:flex;align-items:center;gap:20px;margin-top:10px}
+.dpad{display:grid;grid-template-columns:repeat(3,44px);grid-template-rows:repeat(3,44px);gap:2px}
+.dpbtn{background:var(--gb1);border:3px solid var(--gb2);color:var(--gb4);font-family:var(--px);font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;touch-action:none;user-select:none;-webkit-user-select:none}
+.dpbtn:active{background:var(--gb2);color:var(--gb0)}
+.dpad-center{background:var(--gb1);border:2px solid var(--gb2);display:flex;align-items:center;justify-content:center;font-size:8px;color:var(--gb3)}
+.abtn{background:var(--gb3);border:3px solid var(--gb4);color:var(--gb0);font-family:var(--px);font-size:10px;width:52px;height:52px;cursor:pointer;border-radius:50%;display:flex;align-items:center;justify-content:center;touch-action:none;user-select:none;-webkit-user-select:none}
+.abtn:active{background:var(--gb4)}
+
+
+
+/* TODAY TAB */
+.tc{background:var(--gb1);border:3px solid var(--gb2);margin-bottom:12px;padding:12px}
+.tc.tc-confirmed{border-color:var(--gb3)}
+.tc.tc-rescheduled{border-color:var(--yellow);border-style:dashed}
+.tc.tc-eta_sent{border-color:var(--gb4)}
+.tc-hdr{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
+.tc-icon{font-size:20px;flex-shrink:0}
+.tc-info{flex:1;min-width:0}
+.tc-name{font-size:8px;color:var(--gb4);line-height:1.4;word-break:break-word}
+.tc-client{font-size:6px;color:var(--gb2);margin-top:2px}
+.tc-badge{font-size:5px;padding:3px 6px;border:2px solid;white-space:nowrap;flex-shrink:0;margin-top:2px}
+.tc-badge.unconfirmed{color:var(--yellow);border-color:var(--yellow)}
+.tc-badge.confirmed{color:var(--gb3);border-color:var(--gb3)}
+.tc-badge.rescheduled{color:var(--yellow);border-color:var(--yellow)}
+.tc-badge.eta_sent{color:var(--gb4);border-color:var(--gb4)}
+.tc-time-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.tc-time{background:var(--gb0);border:2px solid var(--gb2);color:var(--gb4);font-family:var(--px);font-size:8px;padding:5px 7px;width:90px}
+.tc-addr{font-size:6px;color:var(--gb2);flex:1}
+.tc-acts{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+.tc-log{border-top:1px solid var(--gb0);padding-top:7px;margin-top:4px}
+.tc-log-entry{display:flex;gap:8px;font-size:5px;color:var(--gb2);margin-bottom:4px;line-height:1.8}
+.tc-log-ts{color:var(--gb1);flex-shrink:0;min-width:35px;font-size:4.5px}
+.tc-log-txt{flex:1;color:var(--gb3)}
+.tc-section{font-size:7px;color:var(--gb4);margin-bottom:8px;margin-top:4px;padding-bottom:4px;border-bottom:2px solid var(--gb1)}
+
+/* ROUTE — DAY SECTIONS */
+.rday{margin-bottom:18px}
+.rday-hdr{background:var(--gb1);border:3px solid var(--gb2);padding:10px 12px;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+.rday-date{font-size:7px;color:var(--gb4);flex:1}
+.rday-count{font-size:5px;color:var(--gb2)}
+.rc{background:var(--gb1);border:3px solid var(--gb2);padding:10px;margin-bottom:6px}
+.rc-top{display:flex;align-items:flex-start;gap:8px}
+.rc-order{display:flex;flex-direction:column;gap:3px;flex-shrink:0}
+.rc-ord-btn{background:var(--gb0);border:2px solid var(--gb2);color:var(--gb3);font-family:var(--px);font-size:8px;width:24px;height:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.rc-ord-btn:active{background:var(--gb2);color:var(--gb0)}
+.rc-ord-btn:disabled{opacity:.25;cursor:default}
+.rc-body{flex:1;min-width:0}
+.rc-num{font-size:10px;color:var(--gb4);margin-bottom:3px}
+.rc-name{font-size:7px;color:var(--gb3);margin-bottom:4px}
+.rc-addr{font-size:6px;color:var(--gb2);line-height:2}
+.rc-acts{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
+.eta-sent-badge{font-size:5px;color:var(--gb3);padding:2px 6px;border:1px solid var(--gb3)}
+/* MONEY GAMIFICATION */
+.hero-box{background:var(--gb1);border:3px solid var(--gb2);padding:14px 12px;margin-bottom:10px}
+.hero-net{text-align:center;padding:10px 0 14px;border-bottom:2px solid var(--gb2);margin-bottom:12px}
+.hero-net-label{font-size:6px;color:var(--gb2);letter-spacing:1px;margin-bottom:6px}
+.hero-net-val{font-size:22px;letter-spacing:2px;display:block;text-shadow:3px 3px 0 var(--gb0)}
+.hero-net-val.pos{color:var(--gb4)}
+.hero-net-val.neg{color:var(--red)}
+.hero-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.hero-cell{background:var(--gb0);border:2px solid var(--gb1);padding:7px 4px;text-align:center}
+.hero-cell-val{font-size:9px;color:var(--gb4);display:block;margin-bottom:3px}
+.hero-cell-lbl{font-size:4px;color:var(--gb2);letter-spacing:.5px}
+.prog-section{background:var(--gb1);border:3px solid var(--gb2);padding:10px 12px;margin-bottom:10px}
+.prog-row{margin-bottom:9px}
+.prog-row:last-child{margin-bottom:0}
+.prog-meta{display:flex;justify-content:space-between;font-size:6px;color:var(--gb2);margin-bottom:4px}
+.prog-meta span:last-child{color:var(--gb4)}
+.prog-track{background:var(--gb0);border:2px solid var(--gb2);height:10px;position:relative;overflow:hidden}
+.prog-fill{height:100%;transition:width .3s;position:relative}
+.prog-fill::after{content:'';position:absolute;top:0;right:0;bottom:0;width:3px;background:rgba(255,255,255,0.3)}
+.prog-fill.green{background:var(--gb3)}
+.prog-fill.yellow{background:var(--yellow)}
+.prog-fill.red{background:var(--red)}
+.stats-row{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:10px}
+.stat-tile{background:var(--gb1);border:3px solid var(--gb2);padding:10px 8px;text-align:center}
+.stat-tile-val{font-size:13px;color:var(--gb4);display:block;margin-bottom:4px}
+.stat-tile-lbl{font-size:4px;color:var(--gb2);letter-spacing:.5px}
+.ach-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:10px;scrollbar-width:none}
+.ach-row::-webkit-scrollbar{display:none}
+.ach{background:var(--gb1);border:3px solid var(--gb2);padding:8px 6px;text-align:center;min-width:58px;flex-shrink:0}
+.ach.unlocked{border-color:var(--gb4);background:var(--gb0)}
+.ach-ic{font-size:16px;display:block;margin-bottom:3px}
+.ach-name{font-size:4px;color:var(--gb4);line-height:1.6}
+.ach.locked .ach-ic{filter:grayscale(1);opacity:.35}
+.ach.locked .ach-name{color:var(--gb2)}
+.pl-collapse-btn{background:none;border:none;color:var(--gb2);font-family:var(--px);font-size:6px;cursor:pointer;width:100%;text-align:left;padding:6px 0;margin-bottom:4px}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--gb0)}
+::-webkit-scrollbar-thumb{background:var(--gb2)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="hdr" id="hdr">
+    <div class="hdr-socks" id="hdr-sock" onclick="tapSock()">🧦🩴</div>
+    <div class="hdr-info"><h1>ODD SOCKS</h1><p id="hdr-sub">DELIVERY MANIFEST v3.0</p></div>
+    <button class="hdr-badge theme-btn" id="hdr-badge" onclick="toggleTheme()" title="Toggle clean/pixel mode" style="cursor:pointer">0 JOBS</button>
+  </div>
+  <div class="tabs" id="tabs"></div>
+  <div class="content" id="content"></div>
+  <button class="fab" id="fab">+</button>
+</div>
+
+<!-- WORLD EASTER EGG OVERLAY -->
+<div class="world-ov" id="world-ov">
+  <button class="world-close" onclick="closeWorld()">✕ EXIT GAME</button>
+  <div class="ww">
+    <canvas id="wc" class="wcanvas"></canvas>
+    <div class="wcontrols">
+      <div>
+        <div class="dpad" id="wdpad">
+          <div></div>
+          <button class="dpbtn" onpointerdown="wBtn('up',true)" onpointerup="wBtn('up',false)" onpointerleave="wBtn('up',false)">▲</button>
+          <div></div>
+          <button class="dpbtn" onpointerdown="wBtn('lt',true)" onpointerup="wBtn('lt',false)" onpointerleave="wBtn('lt',false)">◀</button>
+          <div class="dpad-center">+</div>
+          <button class="dpbtn" onpointerdown="wBtn('rt',true)" onpointerup="wBtn('rt',false)" onpointerleave="wBtn('rt',false)">▶</button>
+          <div></div>
+          <button class="dpbtn" onpointerdown="wBtn('dn',true)" onpointerup="wBtn('dn',false)" onpointerleave="wBtn('dn',false)">▼</button>
+          <div></div>
+        </div>
+        <div style="font-size:5px;color:var(--gb2);text-align:center;margin-top:4px">MOVE</div>
+        <div id="wbtns" style="display:none;grid-template-columns:1fr 1fr;gap:4px;width:134px">
+          <button class="dpbtn" style="height:36px;font-size:5px" onclick="bMove(0)">HAGGLE</button>
+          <button class="dpbtn" style="height:36px;font-size:5px" onclick="bMove(1)">APPRAISE</button>
+          <button class="dpbtn" style="height:36px;font-size:5px" onclick="bMove(2)">POLISH</button>
+          <button class="dpbtn" style="height:36px;font-size:5px" onclick="bMove(3)">BLUFF</button>
+        </div>
+      </div>
+      <div style="text-align:center">
+        <button class="abtn" onpointerdown="wBtn('a',true)" onpointerup="wBtn('a',false)" onpointerleave="wBtn('a',false)">A</button>
+        <div style="font-size:5px;color:var(--gb2);margin-top:4px">TALK</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL OVERLAY -->
+<div class="ov" id="ov" style="display:none">
+  <div class="modal" id="modal"></div>
+</div>
+
+<!-- HIDDEN FILE INPUTS -->
+<input type="file" id="cam" accept="image/*" capture="environment" style="display:none">
+<input type="file" id="pod-input" accept="image/*" capture="environment" style="display:none">
+<input type="file" id="rcpt-input" accept="image/*" capture="environment" style="display:none">
+<input type="file" id="rcpt-gallery" accept="image/*" style="display:none">
+<input type="file" id="quick-pod-input" accept="image/*" capture="environment" style="display:none">
+<input type="file" id="expense-scan-input" accept="image/*" capture="environment" style="display:none">
+
+<script>
+// ═══════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════
+const ICONS = ['🛋️','🪑','🪞','🖼️','🏺','🕰️','📦','🪔','🗝️','🧸','🐶','🪆','🏮','🧲','🪟','🚪','🪴','🛁'];
+const TABS = [
+  {id:'jobs',lb:'JOBS',ic:'📋'},
+  {id:'today',lb:'TODAY',ic:'📅'},
+  {id:'clients',lb:'CLIENTS',ic:'👥'},
+  {id:'money',lb:'MONEY',ic:'💷'},
+  {id:'route',lb:'ROUTE',ic:'🗺️'},
+  {id:'set',lb:'SET',ic:'⚙️'}
+];
+const EXP_CATS = [
+  {id:'FUEL',ic:'⛽',lb:'FUEL'},
+  {id:'PARKING',ic:'🅿️',lb:'PARKING'},
+  {id:'PACKING',ic:'📦',lb:'PACKING'},
+  {id:'VAN',ic:'🔧',lb:'VAN'},
+  {id:'OTHER',ic:'📝',lb:'OTHER'}
+];
+const SOCK_PAIRS = ['🧦🩴','🧦🧤','🧦🩳','🧦🎩','🧦👟','🧦🧣','🧦🪖','🧦👒'];
+const PAY_TERMS_OPTS = [7,14,21,30];
+
+// ═══════════════════════════════════
+// STATE
+// ═══════════════════════════════════
+let S = {
+  clients:[], jobs:[], invoices:[], expenses:[], clientLocations:[],
+  settings:{
+    apiKey:'',gasUrl:'',
+    bizName:'',bizAddr:'',bizPhone:'',bizEmail:'',bizBank:'',
+    defaultRate:'',paymentTerms:14,mileageRate:0.45,invNum:1,taxYear:2025,
+    syncStatus:'idle',lastSync:null
+  },
+  tab:'jobs', viewClient:null, moneyPeriod:'month'
+};
+
+// Done-flow state
+let DF = {jobId:null, step:0, pod:null, miles:''};
+// Custom invoice state
+let CI = [];
+let CI_CLIENT = {id:'',name:'',email:'',addr:''};
+// Form data buffer
+let FD = {};
+// Active expense category for quick-add
+let EXP_CAT = '';
+// Sock tap counter
+let sockN = 0, sockT = null;
+
+// ═══════════════════════════════════
+// STORAGE
+// ═══════════════════════════════════
+let _syncing=false,_syncTimer=null;
+function save(){
+  try{
+    localStorage.setItem('os3_clients',JSON.stringify(S.clients));
+    localStorage.setItem('os3_jobs',JSON.stringify(S.jobs));
+    localStorage.setItem('os3_invoices',JSON.stringify(S.invoices));
+    localStorage.setItem('os3_expenses',JSON.stringify(S.expenses));
+    localStorage.setItem('os3_set',JSON.stringify(S.settings));
+  }catch(e){alert('Storage full — delete some old data.');}
+  if(S.settings.gasUrl&&!_syncing){clearTimeout(_syncTimer);_syncTimer=setTimeout(syncToSheets,3000);}
+}
+function saveOnly(){
+  // Save to localStorage without triggering sheet sync (used internally by sync functions)
+  try{
+    localStorage.setItem('os3_clients',JSON.stringify(S.clients));
+    localStorage.setItem('os3_jobs',JSON.stringify(S.jobs));
+    localStorage.setItem('os3_invoices',JSON.stringify(S.invoices));
+    localStorage.setItem('os3_expenses',JSON.stringify(S.expenses));
+    localStorage.setItem('os3_set',JSON.stringify(S.settings));
+  }catch(e){}
+}
+function load(){
+  try{S.clients=JSON.parse(localStorage.getItem('os3_clients')||'[]')}catch(e){S.clients=[]}
+  try{S.jobs=JSON.parse(localStorage.getItem('os3_jobs')||'[]')}catch(e){S.jobs=[]}
+  try{S.invoices=JSON.parse(localStorage.getItem('os3_invoices')||'[]')}catch(e){S.invoices=[]}
+  try{S.expenses=JSON.parse(localStorage.getItem('os3_expenses')||'[]')}catch(e){S.expenses=[]}
+  try{S.settings={invNum:1,paymentTerms:14,mileageRate:0.45,taxYear:2025,...JSON.parse(localStorage.getItem('os3_set')||'{}')}}catch(e){}
+}
+
+// ═══════════════════════════════════
+// UTILS
+// ═══════════════════════════════════
+const today=()=>new Date().toISOString().split('T')[0];
+function addDays(d,n){const dt=new Date(d+'T00:00:00');dt.setDate(dt.getDate()+n);return dt.toISOString().split('T')[0]}
+function daysUntil(d){if(!d)return 999;return Math.ceil((new Date(d+' 00:00:00')-new Date(today()+' 00:00:00'))/(864e5))}
+function urgency(item){const d=daysUntil(item.dueDate);return d<0?'r':d<=2?'y':'g'}
+function fmtD(s){if(!s)return'';try{return new Date(s+'T00:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}catch(e){return s}}
+function fmtDShort(s){if(!s)return'';try{return new Date(s+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'2-digit'})}catch(e){return s}}
+function fmtCur(n){return'£'+(parseFloat(n)||0).toFixed(2)}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function jobAddr(item,type){return[item[type+'Num'],item[type+'Street'],item[type+'Post']].filter(Boolean).join(' ')}
+function getClient(id){return S.clients.find(c=>c.id===id)}
+function extractPost(addr){if(!addr)return'';const m=(addr||'').match(/[A-Z]{1,2}[0-9][0-9A-Z]?\s*[0-9][A-Z]{2}/i);return m?m[0].toUpperCase().trim():'';}
+function clientPost(c){return c.postcode||extractPost(c.addr)||''}
+function clientLocations(id){return(getClient(id)||{}).locations||[]}
+function extractPost(addr){if(!addr)return'';const m=(addr||'').match(/[A-Z]{1,2}[0-9][0-9A-Z]?\s*[0-9][A-Z]{2}/i);return m?m[0].toUpperCase().trim():'';}
+function clientPost(c){return c.postcode||extractPost(c.addr)||''}
+function clientLocations(id){return(getClient(id)||{}).locations||[]}
+function clientName(id){return id?((getClient(id)||{}).name||'Unknown Client'):'One-off'}
+function nextInvNum(){const n=S.settings.invNum||1;S.settings.invNum=n+1;save();return'INV-'+String(n).padStart(3,'0')}
+
+function taxYearRange(){
+  const y=S.settings.taxYear||2025;
+  return{start:`${y}-04-06`,end:`${y+1}-04-05`,label:`${y}–${y+1}`};
+}
+function getPL(period){
+  let start;
+  if(period==='month'){
+    const n=new Date();
+    start=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-01`;
+  }else{
+    start=taxYearRange().start;
+  }
+  const paidInvs=S.invoices.filter(i=>i.status==='paid'&&i.paidDate&&i.paidDate>=start);
+  const sentInvs=S.invoices.filter(i=>i.status==='sent'&&i.issueDate&&i.issueDate>=start);
+  const overdue=S.invoices.filter(i=>i.status==='overdue'||(i.status==='sent'&&i.dueDate<today()));
+  const exps=S.expenses.filter(e=>e.date&&e.date>=start);
+  const doneJobs=S.jobs.filter(j=>j.status==='done'&&j.completedDate&&j.completedDate>=start&&j.miles>0);
+  const totalPaid=paidInvs.reduce((s,i)=>s+(i.total||0),0);
+  const totalOut=sentInvs.reduce((s,i)=>s+(i.total||0),0);
+  const totalExp=exps.reduce((s,e)=>s+(parseFloat(e.amount)||0),0);
+  const totalMiles=doneJobs.reduce((s,j)=>s+(j.miles||0),0);
+  const mileClaim=totalMiles*(S.settings.mileageRate||0.45);
+  return{totalPaid,totalOut,overdue:overdue.length,totalExp,totalMiles,mileClaim,net:totalPaid-totalExp-mileClaim};
+}
+
+async function compressImg(file,maxW=900){
+  return new Promise(res=>{
+    const r=new FileReader();
+    r.onload=e=>{
+      const img=new Image();
+      img.onload=()=>{
+        const ratio=Math.min(1,maxW/img.width);
+        const c=document.createElement('canvas');
+        c.width=img.width*ratio;c.height=img.height*ratio;
+        c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+        res(c.toDataURL('image/jpeg',0.75));
+      };
+      img.src=e.target.result;
+    };
+    r.readAsDataURL(file);
+  });
+}
+function dataURLtoFile(dataURL,filename){
+  const arr=dataURL.split(','),mime=arr[0].match(/:(.*?);/)[1];
+  const bstr=atob(arr[1]);let n=bstr.length;const u=new Uint8Array(n);
+  while(n--)u[n]=bstr.charCodeAt(n);
+  return new File([u],filename,{type:mime});
+}
+
+// ═══════════════════════════════════
+// RENDER ENGINE
+// ═══════════════════════════════════
+function render(){
+  // Sock pair
+  document.getElementById('hdr-sock').textContent=SOCK_PAIRS[new Date().getDate()%SOCK_PAIRS.length];
+  // Tabs
+  const unconf=S.jobs.filter(j=>j.status!=='done'&&(!j.commsStatus||j.commsStatus==='unconfirmed')).length;
+  document.getElementById('tabs').innerHTML=TABS.map(t=>`<button class="tab${S.tab===t.id?' on':''}" onclick="go('${t.id}')"><span class="tab-ic">${t.ic}</span>${t.lb==='TODAY'&&unconf?`TODAY<span style="background:var(--red);color:#fff;font-size:4px;padding:1px 3px;margin-left:2px">${unconf}</span>`:t.lb}</button>`).join('');
+  // Badge
+  const n=S.jobs.filter(j=>j.status!=='done').length;
+  document.getElementById('hdr-badge').textContent=n+(n===1?' JOB':' JOBS');
+  // FAB visibility — hide on jobs tab (replaced by bottom bar)
+  const fab=document.getElementById('fab');
+  fab.style.display=['clients','money'].includes(S.tab)?'flex':'none';
+  // Bottom job bar
+  let jbar=document.getElementById('job-bar');
+  if(!jbar){jbar=document.createElement('div');jbar.id='job-bar';jbar.className='job-bar';document.querySelector('.app').appendChild(jbar);}
+  if(S.tab==='jobs'){
+    jbar.style.display='grid';
+    jbar.innerHTML=`
+      <button class="job-bar-btn" onclick="openAddJob()"><span class="job-bar-ic">📋</span>NEW JOB</button>
+      <button class="job-bar-btn" onclick="openExpenseScan()"><span class="job-bar-ic">📸</span>SCAN EXPENSE</button>`;
+  }else{
+    jbar.style.display='none';
+  }
+  // Content
+  const el=document.getElementById('content');
+  if(S.tab==='jobs')el.innerHTML=rJobs();
+  else if(S.tab==='today')el.innerHTML=rToday();
+  else if(S.tab==='clients')el.innerHTML=S.viewClient?rClientProfile(S.viewClient):rClients();
+  else if(S.tab==='money')el.innerHTML=rMoney();
+  else if(S.tab==='route')el.innerHTML=rRoute();
+  else el.innerHTML=rSettings();
+}
+
+function go(t){S.tab=t;if(t==='clients'&&S.viewClient){}render()}
+
+
+// ═══════════════════════════════════
+// TODAY TAB
+// ═══════════════════════════════════
+function nowStr(){const n=new Date();return String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')}
+function tsStr(){const n=new Date();return String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0')}
+function commsStatusLabel(s){return{unconfirmed:'UNCONFIRMED',confirmed:'CONFIRMED ✓',rescheduled:'RESCHEDULED ⏰',eta_sent:'ETA SENT 📱'}[s]||'UNCONFIRMED'}
+
+function logComms(jobId,type,note=''){
+  const j=S.jobs.find(x=>x.id===jobId);if(!j)return;
+  if(!j.commsLog)j.commsLog=[];
+  j.commsLog.push({ts:tsStr(),type,note,date:today()});
+  if(type==='confirmed')j.commsStatus='confirmed';
+  if(type==='rescheduled')j.commsStatus='rescheduled';
+  if(type==='eta_sent'){j.commsStatus='eta_sent';if(!j.etaSentDates)j.etaSentDates=[];j.etaSentDates.push(today());}
+  save();render();
+}
+function setAgreedTime(jobId,val){
+  const j=S.jobs.find(x=>x.id===jobId);if(!j)return;
+  j.agreedTime=val;save();
+}
+function confirmJob(jobId){logComms(jobId,'confirmed');}
+function logCall(jobId){
+  showMod(`<div class="m-title">📞 LOG CALL</div>
+    <div class="field"><label>NOTE (OPTIONAL)</label><input id="cn-note" placeholder="e.g. Moving to 3pm, asked for callback..."></div>
+    <button class="btn big" onclick="submitCallLog('${jobId}')">✓ SAVE</button>
+    <button class="btn" style="width:100%;margin-top:6px" onclick="closeModal()">✕ CANCEL</button>`);
+  setTimeout(()=>document.getElementById('cn-note')?.focus(),100);
+}
+function submitCallLog(jobId){
+  const note=document.getElementById('cn-note')?.value.trim()||'';
+  logComms(jobId,'called',note);closeModal();
+}
+function openReschedule(jobId){
+  const j=S.jobs.find(x=>x.id===jobId);if(!j)return;
+  showMod(`<div class="m-title">⏰ RESCHEDULE</div>
+    <div class="frow">
+      <div class="field"><label>NEW DATE</label><input type="date" id="rs-date" value="${j.dueDate||today()}" min="${today()}"></div>
+      <div class="field"><label>NEW TIME</label><input type="time" id="rs-time" value="${j.agreedTime||''}"></div>
+    </div>
+    <div class="field"><label>NOTE</label><input id="rs-note" placeholder="e.g. Client requested afternoon"></div>
+    <button class="btn big" onclick="submitReschedule('${jobId}')">✓ RESCHEDULE</button>
+    <button class="btn" style="width:100%;margin-top:6px" onclick="closeModal()">✕ CANCEL</button>`);
+}
+function submitReschedule(jobId){
+  const j=S.jobs.find(x=>x.id===jobId);if(!j)return;
+  const nd=document.getElementById('rs-date')?.value||today();
+  const nt=document.getElementById('rs-time')?.value||'';
+  const note=document.getElementById('rs-note')?.value.trim()||'';
+  j.dueDate=nd;j.agreedTime=nt;
+  logComms(jobId,'rescheduled',`→ ${nd}${nt?' '+nt:''}${note?' · '+note:''}`);
+  closeModal();
+}
+function openCommsNote(jobId){
+  showMod(`<div class="m-title">📝 ADD NOTE</div>
+    <div class="field"><label>NOTE</label><textarea id="cn-txt" placeholder="e.g. Client wants call before arrival..."></textarea></div>
+    <button class="btn big" onclick="submitCommsNote('${jobId}')">✓ SAVE NOTE</button>
+    <button class="btn" style="width:100%;margin-top:6px" onclick="closeModal()">✕ CANCEL</button>`);
+  setTimeout(()=>document.getElementById('cn-txt')?.focus(),100);
+}
+function submitCommsNote(jobId){
+  const note=document.getElementById('cn-txt')?.value.trim()||'';
+  if(!note)return;
+  logComms(jobId,'note',note);closeModal();
+}
+function etaSentToday(job){
+  return !!(job.etaSentDates&&job.etaSentDates.includes(today()));
+}
+async function sendETA(jobId,force=false){
+  const j=S.jobs.find(x=>x.id===jobId);if(!j)return;
+  if(etaSentToday(j)&&!force){
+    if(!confirm('ETA already sent today. Send again?'))return;
+  }
+  const client=getClient(j.clientId);
+  const phone=(client?.phone||'').replace(/[^0-9+]/g,'');
+  const timeStr=j.agreedTime||'today';
+  const bizName=S.settings.bizName||'Your delivery service';
+  const addr=jobAddr(j,'del');const msg=`Hi ${client?.name||''}! Your delivery of "${j.name}" is scheduled for ${timeStr}${addr?' to '+addr:''}. We'll be with you shortly. — ${bizName}`;
+  const waUrl=`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+  if(phone){
+    window.open(waUrl,'_blank');
+    logComms(jobId,'eta_sent',`Sent: ${timeStr}`);
+  }else{
+    // No phone — show modal to copy message
+    showMod(`<div class="m-title">📱 SEND ETA</div>
+      <div class="m-sub">NO PHONE NUMBER FOR THIS CLIENT<br>COPY MESSAGE BELOW</div>
+      <div style="background:var(--gb0);border:2px solid var(--gb2);padding:10px;font-size:6px;color:var(--gb3);line-height:2;margin-bottom:10px">${esc(msg)}</div>
+      <button class="btn big" onclick="navigator.clipboard?.writeText('${esc(msg)}');this.textContent='✓ COPIED'">📋 COPY MESSAGE</button>
+      <button class="btn big sec" onclick="logComms('${jobId}','eta_sent','Manual send');closeModal()">✓ MARK AS SENT</button>
+      <button class="btn" style="width:100%;margin-top:6px" onclick="closeModal()">✕ CANCEL</button>`);
+  }
+}
+
+function rCommsLog(job){
+  const log=(job.commsLog||[]).slice(-5).reverse();
+  if(!log.length)return'';
+  return`<div class="tc-log">
+    ${log.map(e=>{
+      const ic={confirmed:'✓',called:'📞',rescheduled:'⏰',eta_sent:'📱',note:'📝'}[e.type]||'·';
+      return`<div class="tc-log-entry"><span class="tc-log-ts">${e.ts}</span><span class="tc-log-txt">${ic} ${esc(e.note||e.type)}</span></div>`;
+    }).join('')}
+  </div>`;
+}
+
+function confirmAllToday(){
+  const dueToday=S.jobs.filter(j=>j.status!=='done'&&(!j.dueDate||j.dueDate===today()));
+  dueToday.forEach(j=>{
+    if(j.commsStatus!=='confirmed'){
+      j.commsStatus='confirmed';
+      if(!j.commsLog)j.commsLog=[];
+      j.commsLog.push({ts:tsStr(),type:'confirmed',note:'Bulk confirmed',date:today()});
+    }
+  });
+  save();render();
+}
+function rTodayCard(item){
+  const status=item.commsStatus||'unconfirmed';
+  const client=getClient(item.clientId);
+  const phone=(client?.phone||'').replace(/[^0-9+]/g,'');
+  const etaSent=etaSentToday(item);
+  const pickPost=item.pickPost||'?';
+  const delPost=item.delPost||'?';
+  return`<div class="tc tc-${status}">
+    <div class="tc-hdr">
+      <span class="tc-icon">${item.icon||'📦'}</span>
+      <div class="tc-info">
+        <div class="tc-name">${esc(item.name)}</div>
+        <div class="tc-client">👤 ${esc(clientName(item.clientId))}${client?.phone?` · 📞 ${esc(client.phone)}`:''}</div>
+      </div>
+      <span class="tc-badge ${status}">${commsStatusLabel(status)}</span>
+    </div>
+    <div class="tc-time-row">
+      <input class="tc-time" type="time" value="${esc(item.agreedTime||'')}" placeholder="--:--" onchange="setAgreedTime('${item.id}',this.value)" title="Agreed time">
+      <div class="tc-addr">▸ ${esc(pickPost)}${item.pickDate?' · '+fmtD(item.pickDate):''} → ▾ ${esc(delPost)}${item.dueDate?` · ${fmtD(item.dueDate)}`:''}
+        ${item.price?`<br>${fmtCur(item.price)}`:''}
+      </div>
+    </div>
+    <div class="tc-acts">
+      ${status!=='confirmed'?`<button class="btn sm dn" onclick="confirmJob('${item.id}')">✓ CONFIRM</button>`:'<button class="btn sm" style="opacity:.5" disabled>✓ CONFIRMED</button>'}
+      <button class="btn sm" onclick="logCall('${item.id}')">📞 CALLED</button>
+      <button class="btn sm" onclick="openReschedule('${item.id}')">⏰ RESCHEDULE</button>
+      <button class="btn sm" onclick="openCommsNote('${item.id}')">📝 NOTE</button>
+    </div>
+    <div class="tc-acts">
+      ${item.agreedTime||phone?`
+        <button class="btn sm${etaSent?' ld':''}" onclick="sendETA('${item.id}',${etaSent})" style="${etaSent?'opacity:.7':''}">
+          📱 ${etaSent?'ETA SENT ✓ (RESEND)':'SEND ETA'}
+        </button>
+      `:'<span style="font-size:5px;color:var(--gb2)">SET TIME + PHONE TO SEND ETA</span>'}
+      <button class="btn sm dn" onclick="startDoneFlow('${item.id}')">DONE ✓</button>
+    </div>
+    ${rCommsLog(item)}
+  </div>`;
+}
+
+function rToday(){
+  const active=S.jobs.filter(j=>j.status!=='done');
+  if(!active.length)return`<div class="empty"><span class="empty-ic">📅</span>NO ACTIVE JOBS<br>ADD JOBS IN THE JOBS TAB</div>`;
+
+  // Split into today/overdue/upcoming
+  const overdue=active.filter(j=>j.dueDate&&j.dueDate<today()).sort((a,b)=>a.dueDate>b.dueDate?1:-1);
+  const dueToday=active.filter(j=>!j.dueDate||j.dueDate===today()).sort((a,b)=>(a.agreedTime||'23:59').localeCompare(b.agreedTime||'23:59'));
+  const upcoming=active.filter(j=>j.dueDate&&j.dueDate>today()).sort((a,b)=>a.dueDate>b.dueDate?1:-1);
+
+  const confirmed=dueToday.filter(j=>j.commsStatus==='confirmed').length;
+  const total=dueToday.length;
+
+  const todayMapsUrl=dayMapsUrl(today());
+  const allConfirmed=total>0&&confirmed===total;
+  return`
+    <div style="background:var(--gb1);border:3px solid var(--gb2);padding:10px 12px;margin-bottom:12px">
+      <div style="font-size:8px;color:var(--gb4)">${new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}).toUpperCase()}</div>
+      <div style="font-size:6px;color:var(--gb2);margin-top:4px">${total} JOB${total!==1?'S':''} TODAY · ${confirmed}/${total} CONFIRMED${allConfirmed?' ✓ ALL SET!':''}</div>
+      <div style="margin-top:6px;background:var(--gb0);border:2px solid var(--gb2);height:8px;margin-bottom:8px">
+        <div style="height:100%;background:${allConfirmed?'var(--gb4)':'var(--gb3)'};width:${total?Math.round(confirmed/total*100):0}%;transition:width .3s"></div>
+      </div>
+      <div style="display:flex;gap:6px">
+        ${!allConfirmed&&total>0?`<button class="btn sm" style="flex:1" onclick="confirmAllToday()">✓ CONFIRM ALL</button>`:''}
+        ${todayMapsUrl?`<a href="${todayMapsUrl}" target="_blank" class="btn sm" style="text-decoration:none;flex:1;text-align:center">🗺️ TODAY'S ROUTE</a>`:''}
+        <button class="btn sm" style="flex:1" onclick="go('route')">📋 FULL ROUTE</button>
+      </div>
+    </div>
+
+    ${overdue.length?`<div class="tc-section">⚠️ OVERDUE (${overdue.length})</div>${overdue.map(rTodayCard).join('')}`:''}
+    ${dueToday.length?`<div class="tc-section">📅 TODAY (${dueToday.length})</div>${dueToday.map(rTodayCard).join('')}`:''}
+    ${upcoming.length?`<div class="tc-section">📆 UPCOMING (${upcoming.length})</div>${upcoming.map(rTodayCard).join('')}`:''}
+  `;
+}
+// ═══════════════════════════════════
+// JOBS TAB
+// ═══════════════════════════════════
+function rJobs(){
+  const items=S.jobs.filter(j=>j.status!=='done').sort((a,b)=>daysUntil(a.dueDate)-daysUntil(b.dueDate));
+  if(!items.length)return`<div class="empty"><span class="empty-ic">📦</span>NO ACTIVE JOBS<br><br><button class="btn big" onclick="openAddJob()" style="margin:0 auto;display:block;max-width:200px">+ ADD FIRST JOB</button><br><button class="btn" onclick="go('clients')" style="margin:0 auto;display:block;font-size:5px">OR START FROM A CLIENT ▶</button></div>`;
+  return items.map(item=>{
+    const u=urgency(item),d=daysUntil(item.dueDate);
+    const dl=d<0?`OVERDUE ${Math.abs(d)}D`:d===0?'DUE TODAY':`${d}D LEFT`;
+    const cName=clientName(item.clientId);
+    return`<div class="card ${u==='r'?'urg':u==='y'?'warn':'ok'} ${item.status==='loaded'?'loaded':''}">
+      <div class="ci">
+        <span class="c-icon">${item.icon||'📦'}</span>
+        <div class="c-meta">
+          <div class="c-name">${esc(item.name)}</div>
+          <div class="c-client">👤 ${esc(cName)}</div>
+        </div>
+        <span class="dot ${u}"></span>
+      </div>
+      ${item.notes?`<div class="c-notes">${esc(item.notes)}</div>`:''}
+      ${item.pod?`<div style="font-size:5px;color:var(--gb3);margin-bottom:4px">📸 POD${item.podDriveUrl?' · ☁️ IN DRIVE':' SAVED'}</div>`:''}
+      <div class="c-addr">▸ ${esc(jobAddr(item,'pick')||'?')}${item.pickDate?' · '+fmtD(item.pickDate):''}<br>▾ ${esc(jobAddr(item,'del')||'?')}</div>
+      <div class="c-row">
+        <div class="c-due">${dl}${item.dueDate?' · '+fmtD(item.dueDate):''}</div>
+        ${item.price?`<div class="c-price">${fmtCur(item.price)}</div>`:''}
+      </div>
+      <div class="c-acts">
+        <button class="btn${item.status==='loaded'?' ld':''}" onclick="toggleLoad('${item.id}')">${item.status==='loaded'?'✓ IN VAN':'LOAD'}</button>
+        <button class="btn dn" onclick="startDoneFlow('${item.id}')">DONE ✓</button>
+        <button class="btn" onclick="startQuickPOD('${item.id}')">📸 POD</button>
+        <button class="btn" onclick="openEditJob('${item.id}')">✏️ EDIT</button>
+        <button class="btn dl" onclick="delJob('${item.id}')">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleLoad(id){
+  const j=S.jobs.find(x=>x.id===id);
+  if(j){j.status=j.status==='loaded'?'active':'loaded';save();render()}
+}
+function delJob(id){if(confirm('Delete this job?')){S.jobs=S.jobs.filter(x=>x.id!==id);save();render()}}
+
+let _qpodJobId=null;
+function startQuickPOD(jobId){
+  _qpodJobId=jobId;
+  document.getElementById('quick-pod-input').click();
+}
+async function handleQuickPOD(file){
+  const job=S.jobs.find(j=>j.id===_qpodJobId);
+  if(!job)return;
+  const img=await compressImg(file,1000);
+  job.pod=img;
+  if(!job.completedDate)job.podDate=today();
+  save();
+  // Upload to Drive
+  let driveUrl=null;
+  if(gasIsOk()){
+    showMod(`<div class="m-title">☁️ SAVING TO DRIVE...</div><div class="loading"><p>▌ UPLOADING POD</p></div>`);
+    try{driveUrl=await gUploadPOD(job);if(driveUrl){job.podDriveUrl=driveUrl;save();}}catch(e){}
+  }
+  // Show send options
+  const client=getClient(job.clientId);
+  const phone=client?.phone?.replace(/[^0-9]/g,'');
+  const msg=encodeURIComponent('Hi '+esc(client?.name||'')+'! Your delivery of '+esc(job.name)+' has been photographed as proof of delivery. '+(driveUrl?'View: '+driveUrl:''));
+  showMod(`<div class="m-title">📸 POD SAVED</div>
+    <img src="${img}" style="width:100%;max-height:200px;object-fit:cover;border:3px solid var(--gb2);margin-bottom:10px">
+    ${driveUrl?`<div class="ok-msg">✓ UPLOADED TO GOOGLE DRIVE</div>`:''}
+    <div class="m-sub">SEND TO CLIENT?</div>
+    ${phone?`<a href="https://wa.me/${phone}?text=${msg}" target="_blank" class="btn big" style="display:block;text-decoration:none;margin-bottom:6px">💬 SEND VIA WHATSAPP</a>`:''}
+    <button class="btn big sec" onclick="shareQuickPOD('${job.id}')">↗ SHARE (ANY APP)</button>
+    <button class="btn" style="width:100%;margin-top:6px" onclick="closeModal();render()">✓ DONE (NO SEND)</button>`);
+}
+async function shareQuickPOD(jobId){
+  const j=S.jobs.find(x=>x.id===jobId);if(!j||!j.pod)return;
+  try{
+    const f=dataURLtoFile(j.pod,'POD-'+j.name.replace(/\s+/g,'-')+'.jpg');
+    if(navigator.share&&navigator.canShare({files:[f]})){
+      await navigator.share({title:'POD: '+j.name,text:'Proof of delivery for '+j.name,files:[f]});
+    }else{
+      const url=URL.createObjectURL(f);const a=document.createElement('a');
+      a.href=url;a.download=f.name;document.body.appendChild(a);a.click();
+      document.body.removeChild(a);URL.revokeObjectURL(url);
+    }
+  }catch(e){}
+}
+
+function openEditJob(id){
+  const j=S.jobs.find(x=>x.id===id);if(!j)return;
+  FD={
+    icon:j.icon||ICONS[0],clientId:j.clientId||'',name:j.name||'',
+    price:j.price||'',notes:j.notes||'',
+    pickDate:j.pickDate||'',pickPost:j.pickPost||'',pickNum:j.pickNum||'',pickStreet:j.pickStreet||'',
+    delPost:j.delPost||'',delNum:j.delNum||'',delStreet:j.delStreet||'',
+    dueDate:j.dueDate||'',
+    pm:!!(j.pickStreet||j.pickNum),dm:!!(j.delStreet||j.delNum),
+    editId:id
+  };
+  showMod(rEditJobModal());
+}
+function rEditJobModal(){
+  const clients=S.clients;
+  return`<div class="m-title">✏️ EDIT JOB</div>
+    <div class="field"><label>CLIENT</label>
+      <select id="jf-client" onchange="updateJobPrice()">
+        <option value="">— One-off (no client) —</option>
+        ${clients.map(c=>`<option value="${c.id}"${FD.clientId===c.id?' selected':''}>${esc(c.name)}</option>`).join('')}
+      </select>
+    </div>
+    <div id="mc">${rManualJobForm(FD)}</div>
+    <button class="btn" style="width:100%;margin-top:6px" onclick="closeModal()">✕ CANCEL</button>`;
+}
+function submitEditJob(){
+  const fd=rjf();
+  if(!fd.name.trim()){alert('Item name is required');return}
+  const j=S.jobs.find(x=>x.id===FD.editId);
+  if(!j)return;
+  Object.assign(j,{...fd,price:parseFloat(fd.price)||0});
+  save();closeModal();render();
+}
+
+function openEditJob(id){
+  const j=S.jobs.find(x=>x.id===id);if(!j)return;
+  FD={
+    icon:j.icon||ICONS[0],clientId:j.clientId||'',name:j.name||'',
+    price:j.price||'',notes:j.notes||'',
+    pickDate:j.pickDate||'',pickPost:j.pickPost||'',pickNum:j.pickNum||'',pickStreet:j.pickStreet||'',
+    delPost:j.delPost||'',delNum:j.delNum||'',delStreet:j.delStreet||'',
+    dueDate:j.dueDate||'',
+    pm:!!(j.pickStreet||j.pickNum),dm:!!(j.delStreet||j.delNum),
+    editId:id
+  };
+  showMod(rEditJobModal());
+}
+function rEditJobModal(){
+  const clients=S.clients;
+  return`<div class="m-title">✏️ EDIT JOB</div>
+    <div class="field"><label>CLIENT</label>
+      <select id="jf-client" onchange="updateJobPrice()">
+        <option value="">— One-off (no client) —</option>
+        ${clients.map(c=>`<option value="${c.id}"${FD.clientId===c.id?' selected':''}>${esc(c.name)}</option>`).join('')}
+      </select>
+    </div>
+    <div id="mc">${rManualJobForm(FD)}</div>
+    <button class="btn" style="width:100%;margin-top:6px" onclick="closeModal()">✕ CANCEL</button>`;
+}
+function submitEditJob(){
+  const fd=rjf();
+  if(!fd.name.trim()){alert('Item name is required');return}
+  const j=S.jobs.find(x=>x.id===FD.editId);
+  if(!j)return;
+  Object.assign(j,{...fd,price:parseFloat(fd.price)||0});
+  save();closeModal();render();
+}
+
+// ═══════════════════════════════════
+// DONE FLOW (multi-step modal)
+// ═══════════════════════════════════
+function startDoneFlow(id){
+  DF={jobId:id,step:1,pod:null,miles:''};
+  showMod(rDoneStep1());
+}
+function rDoneStep1(){
+  const driveOk=gasIsOk();
+  return`<div class="m-title">📸 PROOF OF DELIVERY</div>
+    <div class="m-sub">OPTIONAL — PHOTO SAVED ${driveOk?'TO GOOGLE DRIVE':'ON DEVICE'}</div>
+    ${DF.pod?`<img class="pod-thumb" src="${DF.pod}"><div class="ok-msg">✓ PHOTO READY${driveOk?' · WILL UPLOAD TO DRIVE':''}</div>`:''}
+    <button class="btn big" onclick="document.getElementById('pod-input').click()">📸 ${DF.pod?'RETAKE':'TAKE'} PHOTO</button>
+    <button class="btn big sec" onclick="doneToMiles()">▶ ${DF.pod?'NEXT':'SKIP PHOTO'}</button>
+    <button class="btn" style="width:100%;margin-top:6px" onclick="closeModal()">✕ CANCEL</button>`;
+}
+function doneToMiles(){DF.step=2;showMod(rDoneStep2())}
+function rDoneStep2(){
+  const job=S.jobs.find(j=>j.id===DF.jobId);
+  const pickPost=(job?.pickPost||'').trim();
+  const delPost=(job?.delPost||'').trim();
+  const canAuto=pickPost&&delPost;
+  return`<div class="m-title">🚐 MILES DRIVEN</div>
+    <div class="m-sub">HMRC RATE: ${fmtCur(S.settings.mileageRate||0.45)}/MILE</div>
+    ${canAuto?`<button class="btn big sec" onclick="calcMilesAuto()" style="margin-bottom:8px">📍 ESTIMATE FROM POSTCODES</button>`:''}
+    <div class="field"><label>MILES FOR THIS JOB</label>
+      <input type="number" id="df-miles" value="${DF.miles||''}" placeholder="0" min="0" step="1" inputmode="numeric">
+    </div>
+    <div id="miles-est" style="font-size:5px;color:var(--gb2);margin-bottom:6px"></div>
+    <button class="btn big" onclick="finishDone()">✓ MARK AS DONE</button>
+    <button class="btn big sec" onclick="DF.miles=0;finishDone()">SKIP MILEAGE · MARK DONE</button>`;
+}
+async function calcMilesAuto(){
+  const job=S.jobs.find(j=>j.id===DF.jobId);
+  if(!job)return;
+  const el=document.getElementById('miles-est');
+  if(el)el.textContent='Calculating...';
+  try{
+    const [r1,r2]=await Promise.all([
+      fetch('https://api.postcodes.io/postcodes/'+encodeURIComponent(job.pickPost.replace(/\s/g,''))),
+      fetch('https://api.postcodes.io/postcodes/'+encodeURIComponent(job.delPost.replace(/\s/g,'')))
+    ]);
+    const [d1,d2]=await Promise.all([r1.json(),r2.json()]);
+    if(d1.status!==200||d2.status!==200){if(el)el.textContent='Postcode not found';return;}
+    const lat1=d1.result.latitude,lon1=d1.result.longitude;
+    const lat2=d2.result.latitude,lon2=d2.result.longitude;
+    const R=3958.8;
+    const dLat=(lat2-lat1)*Math.PI/180;
+    const dLon=(lon2-lon1)*Math.PI/180;
+    const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+    const dist=R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+    const roadEst=Math.round(dist*1.28);
+    const mEl=document.getElementById('df-miles');
+    if(mEl)mEl.value=roadEst;
+    DF.miles=roadEst;
+    if(el)el.textContent=`Estimated ${roadEst} miles (${dist.toFixed(1)} mi straight line × 1.28 road factor)`;
+  }catch(e){if(el)el.textContent='Could not estimate — enter manually';}
+}
+async function finishDone(){
+  DF.miles=parseFloat(document.getElementById('df-miles')?.value)||0;
+  const job=S.jobs.find(j=>j.id===DF.jobId);
+  if(!job)return;
+  job.status='done';
+  job.completedDate=today();
+  job.pod=DF.pod||null;
+  job.miles=DF.miles||0;
+  job.podDriveUrl=null;
+  save();
+  // Upload POD to Drive via GAS in background
+  if(job.pod&&gasIsOk()){
+    showMod(`<div class="m-title">☁️ UPLOADING TO DRIVE...</div><div class="loading"><p>▌ SAVING POD PHOTO</p></div>`);
+    try{
+      const url=await gUploadPOD(job);
+      if(url){job.podDriveUrl=url;save();}
+      closeModal();render();
+    }catch(e){closeModal();render();}
+  }else{
+    closeModal();render();
+  }
+}
+async function handlePODFile(file){
+  DF.pod=await compressImg(file,1000);
+  showMod(rDoneStep1());
+}
+
+
+// ═══════════════════════════════════
+// GOOGLE APPS SCRIPT INTEGRATION
+// ═══════════════════════════════════
+function gasIsOk(){return !!(S.settings.gasUrl);}
+
+async function gasRequest(action, payload={}){
+  const url=S.settings.gasUrl;
+  if(!url)return null;
+  try{
+    const r=await fetch(url,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({action,...payload})
+    });
+    if(!r.ok)return null;
+    const txt=await r.text();
+    return JSON.parse(txt);
+  }catch(e){return null;}
+}
+
+async function testGasConnection(){
+  const res=await gasRequest('test');
+  return res?.ok?res:null;
+}
+
+async function gasUploadPhoto(dataUrl,subfolder,filename){
+  if(!gasIsOk()||!dataUrl)return null;
+  const base64=dataUrl.split(',')[1];
+  const mimeType=(dataUrl.match(/:(.*?);/)||[])[1]||'image/jpeg';
+  const res=await gasRequest('uploadPhoto',{base64,mimeType,subfolder,filename});
+  return res?.ok?res.url:null;
+}
+
+async function gUploadPOD(job){
+  if(!job.pod||!gasIsOk())return null;
+  const clientLabel=(clientName(job.clientId)||'One-off').replace(/[^a-zA-Z0-9 ]/g,'-').trim();
+  const filename='POD-'+job.name.replace(/[^a-zA-Z0-9]/g,'-').slice(0,40)+'-'+(job.completedDate||'unknown')+'.jpg';
+  return gasUploadPhoto(job.pod,'PODs/'+clientLabel,filename);
+}
+
+async function gasCreateInvoiceDoc(inv){
+  if(!gasIsOk())return null;
+  const res=await gasRequest('createInvoiceDoc',{
+    invoice:{
+      number:inv.number,clientName:inv.clientName||clientName(inv.clientId),
+      clientAddr:inv.clientAddr||'',clientEmail:inv.clientEmail||'',
+      issueDate:inv.issueDate,dueDate:inv.dueDate,
+      lineItems:inv.lineItems||[],total:inv.total,
+      notes:inv.notes||'',paymentTerms:(getClient(inv.clientId)||{}).paymentTerms||S.settings.paymentTerms||14
+    },
+    biz:{
+      bizName:S.settings.bizName,bizAddr:S.settings.bizAddr,
+      bizPhone:S.settings.bizPhone,bizEmail:S.settings.bizEmail,
+      bizBank:S.settings.bizBank,lateFee:S.settings.lateFee||''
+    }
+  });
+  return res?.ok?res.url:null;
+}
+
+// ═══════════════════════════════════
+// GOOGLE SHEETS SYNC (via Apps Script)
+// ═══════════════════════════════════
+function prepJobsRows(){
+  const h=['Date Completed','Client','Item','Pickup Date','Pickup Address','Delivery Date','Delivery Address','Price £','Miles','Mileage Claim £','Status','Invoice No','Invoice Status','Paid Date'];
+  const rows=S.jobs.filter(j=>j.status==='done').sort((a,b)=>b.completedDate>a.completedDate?1:-1).map(j=>{
+    const inv=S.invoices.find(i=>i.id===j.invoiceId);
+    return[j.completedDate||'',clientName(j.clientId),j.name||'',j.pickDate||'',jobAddr(j,'pick')||'',j.dueDate||'',jobAddr(j,'del')||'',
+      j.price||0,j.miles||0,((j.miles||0)*(S.settings.mileageRate||0.45)).toFixed(2),
+      j.status,inv?.number||'',inv?.status||'',inv?.paidDate||''];
+  });
+  return[h,...rows];
+}
+function prepInvoiceRows(){
+  const h=['Invoice No','Client','Issue Date','Due Date','Total £','Status','Paid Date','Payment Method'];
+  const rows=S.invoices.sort((a,b)=>b.issueDate>a.issueDate?1:-1).map(inv=>[
+    inv.number||'',inv.clientName||clientName(inv.clientId),inv.issueDate||'',inv.dueDate||'',
+    inv.total||0,inv.status||'',inv.paidDate||'',inv.payMethod||''
+  ]);
+  return[h,...rows];
+}
+function prepExpenseRows(){
+  const h=['Date','Category','Description','Amount £','Receipt Drive Link'];
+  const rows=S.expenses.sort((a,b)=>b.date>a.date?1:-1).map(e=>[
+    e.date||'',e.category||'',e.description||'',e.amount||0,e.receiptDriveUrl||''
+  ]);
+  return[h,...rows];
+}
+function prepMileageRows(){
+  const rate=S.settings.mileageRate||0.45;
+  const h=['Date','Job','Client','Pickup Post','Delivery Post','Miles','Rate £/mi','Claim £'];
+  const rows=S.jobs.filter(j=>j.status==='done'&&(j.miles||0)>0).sort((a,b)=>b.completedDate>a.completedDate?1:-1).map(j=>[
+    j.completedDate||'',j.name||'',clientName(j.clientId),j.pickPost||'',j.delPost||'',
+    j.miles||0,rate,((j.miles||0)*rate).toFixed(2)
+  ]);
+  return[h,...rows];
+}
+function prepPLRows(){
+  const h=['Month','Income Paid £','Outstanding £','Expenses £','Mileage Claims £','Net Profit £','Tax Stash £'];
+  const taxPct=(S.settings.taxStashPct||25)/100;
+  const rate=S.settings.mileageRate||0.45;
+  const months={};
+  for(let i=23;i>=0;i--){
+    const d=new Date();d.setDate(1);d.setMonth(d.getMonth()-i);
+    const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    months[k]={paid:0,out:0,exp:0,miles:0};
+  }
+  S.invoices.filter(i=>i.status==='paid'&&i.paidDate).forEach(i=>{const m=i.paidDate.slice(0,7);if(months[m])months[m].paid+=(i.total||0);});
+  S.invoices.filter(i=>(i.status==='sent'||i.status==='overdue')&&i.issueDate).forEach(i=>{const m=i.issueDate.slice(0,7);if(months[m])months[m].out+=(i.total||0);});
+  S.expenses.filter(e=>e.date).forEach(e=>{const m=e.date.slice(0,7);if(months[m])months[m].exp+=(parseFloat(e.amount)||0);});
+  S.jobs.filter(j=>j.status==='done'&&j.completedDate&&(j.miles||0)>0).forEach(j=>{const m=j.completedDate.slice(0,7);if(months[m])months[m].miles+=(j.miles||0)*rate;});
+  const rows=Object.entries(months).reverse().map(([m,d])=>{
+    const net=d.paid-d.exp-d.miles;
+    return[m,d.paid.toFixed(2),d.out.toFixed(2),d.exp.toFixed(2),d.miles.toFixed(2),net.toFixed(2),(d.paid*taxPct).toFixed(2)];
+  });
+  return[h,...rows];
+}
+
+async function syncToSheets(){
+  if(!gasIsOk()||_syncing)return;
+  _syncing=true;
+  S.settings.syncStatus='syncing';
+  const badge=document.getElementById('sync-badge');
+  if(badge)badge.innerHTML=rSyncBadge();
+  try{
+    const res=await gasRequest('syncAll',{
+      jobs:prepJobsRows(),
+      invoices:prepInvoiceRows(),
+      expenses:prepExpenseRows(),
+      mileage:prepMileageRows(),
+      pl:prepPLRows()
+    });
+    S.settings.syncStatus=res?.ok?'ok':'error';
+    if(res?.ok)S.settings.lastSync=new Date().toISOString();
+  }catch(e){S.settings.syncStatus='error';}
+  _syncing=false;
+  saveOnly();
+  if(badge)badge.innerHTML=rSyncBadge();
+}
+
+function rSyncBadge(){
+  if(!gasIsOk())return'';
+  const st=S.settings.syncStatus||'idle';
+  const ls=S.settings.lastSync;
+  const ago=ls?Math.round((Date.now()-new Date(ls).getTime())/60000):null;
+  const agoStr=ago===null?'never':ago<1?'just now':ago+' min ago';
+  const col=st==='ok'?'var(--gb3)':st==='syncing'?'var(--yellow)':'var(--red)';
+  const ic=st==='ok'?'☁️':st==='syncing'?'⏳':'⚠️';
+  return`<div style="display:flex;align-items:center;gap:8px;background:var(--gb1);border:2px solid var(--gb2);padding:7px 10px;margin-bottom:10px">
+    <span style="font-size:10px">${ic}</span>
+    <div style="flex:1">
+      <div style="font-size:5px;color:${col}">${st==='ok'?'SYNCED TO SHEETS':st==='syncing'?'SYNCING...':'SYNC ERROR'}</div>
+      <div style="font-size:4px;color:var(--gb2)">${agoStr}</div>
+    </div>
+    <button class="btn sm" onclick="syncToSheets()" style="font-size:4px">${st==='syncing'?'...':'SYNC NOW'}</button>
+  </div>`;
+}
+// ═══════════════════════════════════
+// CLIENTS TAB
+// ═══════════════════════════════════
+function rClients(){
+  if(!S.clients.length)return`<div class="empty"><span class="empty-ic">👥</span>NO CLIENTS YET<br>TAP + TO ADD YOUR<br>FIRST CLIENT</div>`;
+  return S.clients.map(c=>{
+    const cJobs=S.jobs.filter(j=>j.clientId===c.id);
+    const active=cJobs.filter(j=>j.status!=='done').length;
+    const uninvoiced=cJobs.filter(j=>j.status==='done'&&!j.invoiceId).length;
+    const cInvs=S.invoices.filter(i=>i.clientId===c.id);
+    const outstanding=cInvs.filter(i=>i.status==='sent'||i.status==='overdue').reduce((s,i)=>s+(i.total||0),0);
+    const earned=cInvs.filter(i=>i.status==='paid').reduce((s,i)=>s+(i.total||0),0);
+    return`<div class="cc" onclick="openClientProfile('${c.id}')">
+      <div class="cc-top">
+        <span class="cc-icon">👤</span>
+        <div class="cc-info">
+          <div class="cc-name">${esc(c.name)}${clientPost(c)?` <span style="font-size:5px;color:var(--gb2);background:var(--gb0);padding:1px 4px;border:1px solid var(--gb1)">${clientPost(c)}</span>`:''}</div>
+          <div class="cc-sub">${c.phone?'📞 '+esc(c.phone)+'<br>':''} ${c.email?'✉ '+esc(c.email):''}${c.defaultRate?' · '+fmtCur(c.defaultRate)+'/JOB':''}</div>
+        </div>
+      </div>
+      <div class="cc-stats">
+        <div class="cc-stat"><span class="cc-stat-num">${active}</span><span class="cc-stat-lbl">ACTIVE</span></div>
+        <div class="cc-stat"><span class="cc-stat-num${outstanding>0?' ':''}">${fmtCur(outstanding)}</span><span class="cc-stat-lbl">OWED</span></div>
+        <div class="cc-stat"><span class="cc-stat-num">${fmtCur(earned)}</span><span class="cc-stat-lbl">EARNED</span></div>
+      </div>
+      ${uninvoiced?`<div class="warn-bar" style="margin-top:8px;margin-bottom:0">🧾 ${uninvoiced} DONE JOB${uninvoiced>1?'S':''} NOT YET INVOICED — TAP TO SEND</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function openClientProfile(id){S.viewClient=id;render()}
+function backToClients(){S.viewClient=null;render()}
+
+function rClientProfile(id){
+  const c=getClient(id);if(!c)return`<button class="back-btn" onclick="backToClients()">◀ BACK</button>`;
+  const cJobs=S.jobs.filter(j=>j.clientId===id);
+  const activeJobs=cJobs.filter(j=>j.status!=='done');
+  const doneJobs=cJobs.filter(j=>j.status==='done').sort((a,b)=>b.completedDate>a.completedDate?1:-1);
+  const uninvoiced=doneJobs.filter(j=>!j.invoiceId);
+  const cInvs=S.invoices.filter(i=>i.clientId===id).sort((a,b)=>b.issueDate>a.issueDate?1:-1);
+  const earned=cInvs.filter(i=>i.status==='paid').reduce((s,i)=>s+(i.total||0),0);
+  const outstanding=cInvs.filter(i=>i.status==='sent'||i.status==='overdue').reduce((s,i)=>s+(i.total||0),0);
+  return`
+    <button class="back-btn" onclick="backToClients()">◀ BACK TO CLIENTS</button>
+    <div class="profile-hdr">
+      <div class="profile-name">${esc(c.name)}</div>
+      <div class="profile-contact">
+        ${c.phone?`📞 ${esc(c.phone)}<br>`:''}
+        ${c.email?`✉ ${esc(c.email)}<br>`:''}
+        ${c.addr?`🏠 ${esc(c.addr)}<br>`:''}
+        ${c.defaultRate?`💷 Default rate: ${fmtCur(c.defaultRate)}/job<br>`:''}
+        ${c.paymentTerms?`📅 Payment terms: ${c.paymentTerms} days`:''}
+      </div>
+      ${clientPost(c)||((c.locations||[]).length)?`<div style="font-size:6px;color:var(--gb2);line-height:2.2;margin-bottom:8px">
+        ${clientPost(c)?`📍 ${clientPost(c)}<br>`:''}
+        ${(c.locations||[]).length?`🗂️ ${(c.locations||[]).map(l=>esc(l.name)+' ('+esc(l.post)+')').join(' · ')}`:''}
+      </div>`:''}
+      <div class="profile-acts">
+        <button class="btn dn" onclick="quickAddJobForClient('${id}')">+ QUICK JOB</button>
+        <button class="btn" onclick="openEditClient('${id}')">✏️ EDIT</button>
+        <button class="btn dl" onclick="delClient('${id}')">✕ DELETE</button>
+      </div>
+    </div>
+
+    <!-- SEND INVOICE — always visible, prominent -->
+    <div style="background:var(--gb1);border:3px solid ${uninvoiced.length?'var(--gb4)':'var(--gb2)'};padding:12px;margin-bottom:12px">
+      <div style="font-size:7px;color:var(--gb4);margin-bottom:6px">🧾 INVOICING</div>
+      ${uninvoiced.length?`
+        <div style="font-size:6px;color:var(--gb3);margin-bottom:8px">${uninvoiced.length} DONE JOB${uninvoiced.length>1?'S':''} READY TO INVOICE · ${fmtCur(uninvoiced.reduce((s,j)=>s+(j.price||0),0))} TOTAL</div>
+        <button class="btn big" onclick="openSendInvoice('${id}')">📄 SEND INVOICE (${uninvoiced.length} JOB${uninvoiced.length>1?'S':''})</button>
+      `:`<div style="font-size:6px;color:var(--gb2);margin-bottom:8px">ALL DONE JOBS ARE INVOICED</div>`}
+      <button class="btn big sec" style="margin-top:6px" onclick="openCustomInvoice('${id}',null)">+ CUSTOM INVOICE</button>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-box"><span class="stat-num">${cJobs.length}</span><span class="stat-lbl">TOTAL JOBS</span></div>
+      <div class="stat-box"><span class="stat-num">${activeJobs.length}</span><span class="stat-lbl">ACTIVE</span></div>
+      <div class="stat-box highlight"><span class="stat-num">${fmtCur(earned)}</span><span class="stat-lbl">TOTAL EARNED</span></div>
+      <div class="stat-box${outstanding>0?' danger':''}"><span class="stat-num">${fmtCur(outstanding)}</span><span class="stat-lbl">OUTSTANDING</span></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">🧾 INVOICES</div>
+      ${!cInvs.length?`<div style="font-size:6px;color:var(--gb2);padding:8px">NO INVOICES YET</div>`:''}
+      ${cInvs.map(inv=>rInvItem(inv)).join('')}
+    </div>
+    <div class="section">
+      <div class="section-title">📋 ALL JOBS (${doneJobs.length} DONE)</div>
+      ${!doneJobs.length?`<div style="font-size:6px;color:var(--gb2);padding:8px">NO COMPLETED JOBS</div>`:''}
+      ${doneJobs.slice(0,15).map(j=>`<div class="inv-item done-card" style="cursor:default">
+        <div class="inv-top"><span style="font-size:14px">${j.icon||'📦'}</span><span class="inv-client">${esc(j.name)}</span><span class="inv-total">${fmtCur(j.price)}</span></div>
+        <div class="inv-meta">${fmtDShort(j.completedDate)} · ${j.miles?j.miles+' mi':'no mileage'} ${j.pod?'· 📸 POD':''} ${j.podDriveUrl?'· ☁️ DRIVE':''} ${j.invoiceId?'· 🧾 '+((S.invoices.find(i=>i.id===j.invoiceId)||{}).number||''):'<span style="color:var(--yellow)">· NOT INVOICED</span>'}</div>
+        <div class="inv-acts">
+          ${j.pod?`<button class="btn sm" onclick="viewPOD('${j.id}')">📸 POD</button>`:''}
+          ${j.pod?`<button class="btn sm" onclick="sharePOD('${j.id}')">↗ SEND</button>`:''}
+          ${j.podDriveUrl?`<a href="${j.podDriveUrl}" target="_blank" class="btn sm" style="text-decoration:none">☁️ DRIVE</a>`:''}
+          ${!j.invoiceId?`<button class="btn sm dn" onclick="openSendInvoice('${id}','${j.id}')">🧾 INVOICE</button>`:''}
+        </div>
+      </div>`).join('')}
+    </div>`;
+}
+
+// ═══════════════════════════════════
+// MONEY TAB
+// ═══════════════════════════════════
+
+function calcStreak(){
+  const dates=new Set(S.jobs.filter(j=>j.status==='done'&&j.completedDate).map(j=>j.completedDate));
+  if(!dates.size)return 0;
+  let streak=0,d=today();
+  while(dates.has(d)){
+    streak++;
+    const dt=new Date(d+'T00:00:00');dt.setDate(dt.getDate()-1);
+    d=dt.toISOString().split('T')[0];
+  }
+  return streak;
+}
+function bestMonth(){
+  const bm={};
+  S.invoices.filter(i=>i.status==='paid'&&i.paidDate).forEach(i=>{
+    const m=i.paidDate.slice(0,7);bm[m]=(bm[m]||0)+(i.total||0);
+  });
+  const vals=Object.values(bm);return vals.length?Math.max(...vals):0;
+}
+function collectRate(){
+  const total=S.invoices.filter(i=>i.status!=='draft').length;
+  if(!total)return 100;
+  const paid=S.invoices.filter(i=>i.status==='paid').length;
+  return Math.round(paid/total*100);
+}
+function thisMonthJobs(){
+  const n=new Date(),m=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0');
+  return S.jobs.filter(j=>j.status==='done'&&j.completedDate&&j.completedDate.startsWith(m)).length;
+}
+const ACHIEVEMENTS=[
+  {id:'first_job',ic:'📦',name:'FIRST JOB',check:()=>S.jobs.some(j=>j.status==='done')},
+  {id:'first_inv',ic:'🧾',name:'FIRST INV',check:()=>S.invoices.length>0},
+  {id:'first_paid',ic:'💰',name:'FIRST PAID',check:()=>S.invoices.some(i=>i.status==='paid')},
+  {id:'jobs5',ic:'⭐',name:'5 JOBS',check:()=>S.jobs.filter(j=>j.status==='done').length>=5},
+  {id:'jobs10',ic:'🌟',name:'10 JOBS',check:()=>S.jobs.filter(j=>j.status==='done').length>=10},
+  {id:'jobs50',ic:'🏆',name:'50 JOBS',check:()=>S.jobs.filter(j=>j.status==='done').length>=50},
+  {id:'clients5',ic:'👥',name:'5 CLIENTS',check:()=>S.clients.length>=5},
+  {id:'streak3',ic:'🔥',name:'3-DAY STREAK',check:()=>calcStreak()>=3},
+  {id:'k1',ic:'💷',name:'£1K MONTH',check:()=>bestMonth()>=1000},
+  {id:'k2',ic:'🎯',name:'£2K MONTH',check:()=>bestMonth()>=2000},
+];
+function progColor(pct){return pct>=1?'green':pct>=0.5?'green':'yellow'}
+function rMoney(){
+  const pl=getPL(S.moneyPeriod);
+  const allInvs=S.invoices.slice().sort((a,b)=>b.issueDate>a.issueDate?1:-1);
+  const allExps=S.expenses.slice().sort((a,b)=>b.date>a.date?1:-1);
+  const yr=taxYearRange();
+  const target=S.settings.monthlyTarget||0;
+  const targetPct=target?Math.min(1,pl.totalPaid/target):0;
+  const cr=collectRate();
+  const streak=calcStreak();
+  const bm=bestMonth();
+  const totalDone=S.jobs.filter(j=>j.status==='done').length;
+  const avgVal=totalDone?pl.totalPaid/Math.max(1,thisMonthJobs()):0;
+  const allTimePaid=S.invoices.filter(i=>i.status==='paid').reduce((s,i)=>s+(i.total||0),0);
+  const achs=ACHIEVEMENTS.map(a=>({...a,unlocked:a.check()}));
+  return`
+    <!-- SYNC BADGE -->
+    <div id="sync-badge">${rSyncBadge()}</div>
+    <!-- HERO -->
+    <div class="hero-box">
+      <div class="hero-net">
+        <div class="hero-net-label">NET PROFIT · ${S.moneyPeriod==='month'?'THIS MONTH':yr.label}</div>
+        <span class="hero-net-val ${pl.net>=0?'pos':'neg'}">${fmtCur(pl.net)}</span>
+      </div>
+      <div class="hero-grid">
+        <div class="hero-cell">
+          <span class="hero-cell-val">${fmtCur(pl.totalPaid)}</span>
+          <span class="hero-cell-lbl">EARNED</span>
+        </div>
+        <div class="hero-cell">
+          <span class="hero-cell-val" style="${pl.totalOut>0?'color:var(--yellow)':''}">${fmtCur(pl.totalOut)}</span>
+          <span class="hero-cell-lbl">OWED</span>
+        </div>
+        <div class="hero-cell">
+          <span class="hero-cell-val">${thisMonthJobs()}</span>
+          <span class="hero-cell-lbl">JOBS DONE</span>
+        </div>
+      </div>
+      <div style="margin-top:8px;display:flex;gap:4px">
+        <button class="pl-btn${S.moneyPeriod==='month'?' on':''}" onclick="setPeriod('month')" style="flex:1;font-size:5px;padding:6px">THIS MONTH</button>
+        <button class="pl-btn${S.moneyPeriod==='year'?' on':''}" onclick="setPeriod('year')" style="flex:1;font-size:5px;padding:6px">${yr.label}</button>
+      </div>
+    </div>
+
+    <!-- PROGRESS BARS -->
+    <div class="prog-section">
+      ${target?`<div class="prog-row">
+        <div class="prog-meta"><span>MONTHLY TARGET</span><span>${fmtCur(pl.totalPaid)} / ${fmtCur(target)}</span></div>
+        <div class="prog-track"><div class="prog-fill ${progColor(targetPct)}" style="width:${Math.round(targetPct*100)}%"></div></div>
+      </div>`:'<div style="font-size:5px;color:var(--gb2)">SET A MONTHLY TARGET IN SETTINGS TO TRACK PROGRESS</div>'}
+      <div class="prog-row" style="margin-top:${target?'9':'6'}px">
+        <div class="prog-meta"><span>INVOICE COLLECTION RATE</span><span>${cr}%</span></div>
+        <div class="prog-track"><div class="prog-fill ${cr>=80?'green':cr>=50?'yellow':'red'}" style="width:${cr}%"></div></div>
+      </div>
+      <div class="prog-row">
+        <div class="prog-meta"><span>EXPENSES VS INCOME</span><span>${pl.totalPaid>0?Math.round(pl.totalExp/pl.totalPaid*100):0}%</span></div>
+        <div class="prog-track"><div class="prog-fill ${pl.totalExp/Math.max(1,pl.totalPaid)<0.3?'green':pl.totalExp/Math.max(1,pl.totalPaid)<0.6?'yellow':'red'}" style="width:${Math.min(100,pl.totalPaid>0?Math.round(pl.totalExp/pl.totalPaid*100):0)}%"></div></div>
+      </div>
+    </div>
+
+    <!-- STATS GRID -->
+    <div class="stats-row">
+      <div class="stat-tile"><span class="stat-tile-val">${totalDone}</span><span class="stat-tile-lbl">TOTAL JOBS DONE</span></div>
+      <div class="stat-tile"><span class="stat-tile-val">${fmtCur(bm)}</span><span class="stat-tile-lbl">BEST MONTH</span></div>
+      <div class="stat-tile"><span class="stat-tile-val">${fmtCur(allTimePaid)}</span><span class="stat-tile-lbl">ALL-TIME EARNED</span></div>
+      <div class="stat-tile"><span class="stat-tile-val">${streak}<span style="font-size:7px"> DAY${streak===1?'':'S'}</span></span><span class="stat-tile-lbl">CURRENT STREAK</span></div>
+    </div>
+
+    <!-- ACHIEVEMENTS -->
+    <div class="section-title">🏅 ACHIEVEMENTS</div>
+    <div class="ach-row">
+      ${achs.map(a=>`<div class="ach ${a.unlocked?'unlocked':'locked'}">
+        <span class="ach-ic">${a.ic}</span>
+        <div class="ach-name">${a.name}</div>
+      </div>`).join('')}
+    </div>
+
+    <!-- TAX STASH -->
+    ${(()=>{
+      const pct=S.settings.taxStashPct||25;
+      const stash=pl.totalPaid*(pct/100);
+      const allTimePaidTax=S.invoices.filter(i=>i.status==='paid').reduce((s,i)=>s+(i.total||0),0)*(pct/100);
+      return`<div style="background:var(--gb1);border:3px solid var(--gb2);padding:12px;margin-bottom:10px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <span style="font-size:7px;color:var(--gb4)">🏦 TAX STASH</span>
+          <span style="font-size:5px;color:var(--gb2)">${pct}% RATE · <button class="btn sm" onclick="openTaxGuide()" style="font-size:4px;padding:2px 5px">? GUIDE</button></span>
+        </div>
+        <div style="font-size:14px;color:var(--gb4);margin-bottom:4px">${fmtCur(stash)}</div>
+        <div style="font-size:5px;color:var(--gb2);margin-bottom:8px">SET ASIDE FROM ${S.moneyPeriod==='month'?'THIS MONTH':'THIS TAX YEAR'}'S EARNINGS</div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <div style="font-size:5px;color:var(--gb2)">RATE:</div>
+          <button class="btn sm" onclick="adjustTaxPct(-5)">−5%</button>
+          <div style="font-size:8px;color:var(--gb3);min-width:30px;text-align:center">${pct}%</div>
+          <button class="btn sm" onclick="adjustTaxPct(5)">+5%</button>
+          <button class="btn sm" onclick="openTaxGuide()">? GUIDE</button>
+        </div>
+      </div>`;
+    })()}
+    <!-- P&L DETAIL (collapsible) -->
+    <button class="pl-collapse-btn" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.textContent=this.textContent.includes('▶')?'▼ HIDE P&L DETAIL':'▶ SHOW P&L DETAIL'">▶ SHOW P&L DETAIL</button>
+    <div style="display:none">
+      <div class="pl-box">
+        <div class="pl-row"><span class="pl-label">PAID INVOICES</span><span class="pl-val pos">${fmtCur(pl.totalPaid)}</span></div>
+        <div class="pl-row"><span class="pl-label">OUTSTANDING</span><span class="pl-val">${fmtCur(pl.totalOut)}</span></div>
+        ${pl.overdue?`<div class="pl-row"><span class="pl-label">OVERDUE</span><span class="pl-val neg">${pl.overdue} inv</span></div>`:''}
+        <div class="pl-row"><span class="pl-label">EXPENSES</span><span class="pl-val neg">-${fmtCur(pl.totalExp)}</span></div>
+        <div class="pl-row"><span class="pl-label">MILEAGE (${pl.totalMiles}mi)</span><span class="pl-val neg">-${fmtCur(pl.mileClaim)}</span></div>
+        <div class="pl-row total ${pl.net>=0?'pos':'neg'}"><span>NET PROFIT EST.</span><span>${fmtCur(pl.net)}</span></div>
+      </div>
+    </div>
+
+    <!-- QUICK EXPENSE -->
+    <div class="section">
+      <div class="section-title">⚡ QUICK EXPENSE</div>
+      <div class="exp-cats">${EXP_CATS.map(cat=>`<button class="exp-cat" onclick="quickExpense('${cat.id}')"><span class="ec-ic">${cat.ic}</span>${cat.lb}</button>`).join('')}</div>
+    </div>
+
+    <!-- INVOICES -->
+    <div class="section">
+      <div class="section-title">🧾 ALL INVOICES</div>
+      <button class="btn big sec" onclick="openCustomInvoice(null,null)" style="margin-bottom:8px">+ CUSTOM INVOICE</button>
+      ${!allInvs.length?`<div style="font-size:6px;color:var(--gb2);padding:8px">NO INVOICES YET</div>`:''}
+      ${allInvs.slice(0,20).map(inv=>rInvItem(inv)).join('')}
+    </div>
+
+    <!-- EXPENSES -->
+    <div class="section">
+      <div class="section-title">📊 EXPENSES</div>
+      ${!allExps.length?`<div style="font-size:6px;color:var(--gb2);padding:8px">NO EXPENSES YET</div>`:''}
+      ${allExps.slice(0,30).map(e=>`<div class="exp-item">
+        ${e.receipt?`<img src="${e.receipt}" style="width:36px;height:36px;object-fit:cover;border:2px solid var(--gb2);flex-shrink:0;cursor:pointer" onclick="viewReceipt('${e.id}')">`:`<span class="exp-badge">${EXP_CATS.find(cat=>cat.id===e.category)?.ic||'📝'} ${e.category}</span>`}
+        <div class="exp-desc">${esc(e.description||'')}<br><span class="exp-date">${fmtDShort(e.date)} · ${EXP_CATS.find(cat=>cat.id===e.category)?.ic||''} ${e.category}${e.receiptDriveUrl?' · ☁️':''}</span></div>
+        <div>
+          <div class="exp-amt">${fmtCur(e.amount)}</div>
+          <button class="btn dl sm" onclick="delExpense('${e.id}')">✕</button>
+        </div>
+      </div>`).join('')}
+    </div>
+
+    <!-- EXPORT -->
+    <div class="section">
+      <div class="section-title">📥 TAX YEAR EXPORT</div>
+      <div style="font-size:6px;color:var(--gb2);line-height:2;margin-bottom:8px">${yr.label} · DOWNLOAD CSVs FOR YOUR ACCOUNTANT</div>
+      <button class="btn big" onclick="exportJobs()">📋 DOWNLOAD JOBS CSV</button>
+      <button class="btn big sec" onclick="exportExpenses()">🧾 DOWNLOAD EXPENSES CSV</button>
+      <button class="btn big sec" onclick="exportMileage()">🚐 DOWNLOAD MILEAGE CSV</button>
+    </div>
+
+    <!-- REPORTS -->
+    <div class="section">
+      <div class="section-title">📈 REPORTS</div>
+      ${rReports()}
+    </div>`;
+}
+
+function getMonthlyData(n){
+  const months=[];
+  for(let i=n-1;i>=0;i--){
+    const d=new Date();d.setDate(1);d.setMonth(d.getMonth()-i);
+    const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    const label=d.toLocaleDateString('en-GB',{month:'short',year:'2-digit'});
+    const paid=S.invoices.filter(inv=>inv.status==='paid'&&inv.paidDate&&inv.paidDate.startsWith(k)).reduce((s,inv)=>s+(inv.total||0),0);
+    const exp=S.expenses.filter(e=>e.date&&e.date.startsWith(k)).reduce((s,e)=>s+(parseFloat(e.amount)||0),0);
+    const jobs=S.jobs.filter(j=>j.status==='done'&&j.completedDate&&j.completedDate.startsWith(k)).length;
+    months.push({k,label,paid,exp,jobs,net:paid-exp});
+  }
+  return months;
+}
+
+function rReports(){
+  const months=getMonthlyData(6);
+  const maxPaid=Math.max(...months.map(m=>m.paid),1);
+  const maxExp=Math.max(...months.map(m=>m.exp),1);
+  const maxVal=Math.max(maxPaid,maxExp,1);
+
+  // Expense breakdown
+  const expBycat={};
+  S.expenses.forEach(e=>{expBycat[e.category]=(expBycat[e.category]||0)+(parseFloat(e.amount)||0);});
+  const expTotal=Object.values(expBycat).reduce((s,v)=>s+v,0)||1;
+  const catColors={'FUEL':'#c4d96b','PARKING':'#9bbc0f','PACKING':'#8bac0f','VAN':'#306230','OTHER':'#0f380f'};
+
+  // Jobs per month max
+  const maxJobs=Math.max(...months.map(m=>m.jobs),1);
+
+  const barW=100/months.length;
+
+  return`
+  <!-- Monthly Income vs Expenses -->
+  <div style="background:var(--gb1);border:3px solid var(--gb2);padding:12px;margin-bottom:10px">
+    <div style="font-size:6px;color:var(--gb4);margin-bottom:10px">INCOME VS EXPENSES — LAST 6 MONTHS</div>
+    <div style="display:flex;align-items:flex-end;gap:3px;height:80px;margin-bottom:6px">
+      ${months.map(m=>{
+        const ph=Math.round((m.paid/maxVal)*72);
+        const eh=Math.round((m.exp/maxVal)*72);
+        return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:1px">
+          <div style="display:flex;align-items:flex-end;gap:1px;height:72px">
+            <div title="${fmtCur(m.paid)}" style="width:48%;background:var(--gb3);height:${ph||1}px;min-height:1px;transition:height .3s"></div>
+            <div title="${fmtCur(m.exp)}" style="width:48%;background:var(--red);height:${eh||1}px;min-height:1px;opacity:.8;transition:height .3s"></div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div style="display:flex;gap:3px">
+      ${months.map(m=>`<div style="flex:1;font-size:4px;color:var(--gb2);text-align:center;overflow:hidden">${m.label}</div>`).join('')}
+    </div>
+    <div style="display:flex;gap:10px;margin-top:7px">
+      <div style="display:flex;align-items:center;gap:4px;font-size:5px;color:var(--gb2)"><span style="width:8px;height:8px;background:var(--gb3);display:inline-block"></span>INCOME</div>
+      <div style="display:flex;align-items:center;gap:4px;font-size:5px;color:var(--gb2)"><span style="width:8px;height:8px;background:var(--red);display:inline-block;opacity:.8"></span>EXPENSES</div>
+    </div>
+  </div>
+
+  <!-- Net Profit trend -->
+  <div style="background:var(--gb1);border:3px solid var(--gb2);padding:12px;margin-bottom:10px">
+    <div style="font-size:6px;color:var(--gb4);margin-bottom:10px">NET PROFIT — LAST 6 MONTHS</div>
+    <div style="display:flex;align-items:flex-end;gap:3px;height:64px">
+      ${(()=>{
+        const maxNet=Math.max(...months.map(m=>Math.abs(m.net)),1);
+        return months.map(m=>{
+          const h=Math.round((Math.abs(m.net)/maxNet)*56)||1;
+          const isPos=m.net>=0;
+          return`<div style="flex:1;display:flex;flex-direction:column;align-items:center">
+            ${!isPos?`<div style="width:80%;background:var(--red);height:${h}px;opacity:.85"></div><div style="width:1px;height:4px;background:var(--gb2)"></div>`:'<div style="flex:1"></div>'}
+            <div style="font-size:4px;color:${isPos?'var(--gb3)':'var(--red)'};text-align:center;margin:1px 0">${m.net!==0?fmtCur(Math.abs(m.net)).replace('£','£').slice(0,5):''}</div>
+            ${isPos?`<div style="width:80%;background:var(--gb3);height:${h}px"></div>`:''}
+            <div style="font-size:4px;color:var(--gb2);text-align:center;margin-top:3px">${m.label}</div>
+          </div>`;
+        }).join('');
+      })()}
+    </div>
+  </div>
+
+  <!-- Jobs per month + expense breakdown side by side -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+    <div style="background:var(--gb1);border:3px solid var(--gb2);padding:10px">
+      <div style="font-size:5px;color:var(--gb4);margin-bottom:8px">JOBS / MONTH</div>
+      <div style="display:flex;align-items:flex-end;gap:2px;height:50px;margin-bottom:4px">
+        ${months.map(m=>{
+          const h=Math.round((m.jobs/maxJobs)*44)||1;
+          return`<div style="flex:1;display:flex;flex-direction:column;align-items:center">
+            <div style="font-size:3px;color:var(--gb3);margin-bottom:1px">${m.jobs||''}</div>
+            <div style="width:80%;background:var(--gb4);height:${h}px"></div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="display:flex;gap:2px">
+        ${months.map(m=>`<div style="flex:1;font-size:3px;color:var(--gb2);text-align:center">${m.label.split(' ')[0]}</div>`).join('')}
+      </div>
+    </div>
+    <div style="background:var(--gb1);border:3px solid var(--gb2);padding:10px">
+      <div style="font-size:5px;color:var(--gb4);margin-bottom:8px">EXPENSES</div>
+      ${Object.keys(expBycat).length?Object.entries(expBycat).map(([cat,amt])=>{
+        const pct=Math.round(amt/expTotal*100);
+        const col=catColors[cat]||'var(--gb2)';
+        return`<div style="margin-bottom:5px">
+          <div style="display:flex;justify-content:space-between;font-size:4px;color:var(--gb2);margin-bottom:2px">
+            <span>${cat}</span><span>${pct}%</span>
+          </div>
+          <div style="background:var(--gb0);height:6px;position:relative">
+            <div style="position:absolute;top:0;left:0;height:100%;width:${pct}%;background:${col}"></div>
+          </div>
+        </div>`;
+      }).join(''):`<div style="font-size:5px;color:var(--gb2)">NO EXPENSES YET</div>`}
+    </div>
+  </div>`;
+}
+function setPeriod(p){S.moneyPeriod=p;render()}
+function adjustTaxPct(delta){
+  S.settings.taxStashPct=Math.max(0,Math.min(60,(S.settings.taxStashPct||25)+delta));
+  save();render();
+}
+function openTaxGuide(){
+  showMod(`<div class="m-title">🏦 TAX STASH GUIDE</div>
+    <div class="m-sub">UK SELF-EMPLOYED ESTIMATES<br>INCOME TAX + CLASS 4 NI COMBINED</div>
+    <div style="background:var(--gb1);border:2px solid var(--gb2);padding:10px;margin-bottom:10px">
+      <div style="font-size:6px;color:var(--gb2);margin-bottom:8px;line-height:2">ESTIMATED ANNUAL PROFIT</div>
+      ${[
+        {range:'UNDER £12,570',pct:10,note:'Below personal allowance. Small NI buffer.'},
+        {range:'£12,570 – £26,000',pct:20,note:'20% income tax kicks in. Low NI.'},
+        {range:'£26,000 – £50,270',pct:28,note:'20% tax + ~8% Class 4 NI.'},
+        {range:'£50,270 – £100,000',pct:42,note:'40% higher rate tax + 2% NI.'},
+        {range:'OVER £100,000',pct:50,note:'45% + personal allowance tapers.'},
+      ].map(b=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--gb0)">
+        <div style="flex:1">
+          <div style="font-size:6px;color:var(--gb4)">${b.range}</div>
+          <div style="font-size:5px;color:var(--gb2);margin-top:2px">${b.note}</div>
+        </div>
+        <div style="font-size:10px;color:var(--gb3);font-weight:bold">${b.pct}%</div>
+      </div>`).join('')}
+    </div>
+    <div style="font-size:5px;color:var(--gb2);line-height:2;margin-bottom:10px">
+      ⚠ THESE ARE ESTIMATES ONLY. CONSULT AN<br>ACCOUNTANT FOR YOUR ACTUAL TAX LIABILITY.<br>ALWAYS KEEP RECEIPTS AND MILEAGE LOGS.
+    </div>
+    <button class="btn big" onclick="closeModal()">✓ GOT IT</button>`);
+}
+
+// ═══════════════════════════════════
+// INVOICE RENDERING
+// ═══════════════════════════════════
+function rInvItem(inv){
+  const statusClass=inv.status==='paid'?'status-paid':inv.status==='overdue'?'status-overdue':inv.status==='sent'?'status-sent':'status-draft';
+  const isOverdue=inv.status==='sent'&&inv.dueDate&&inv.dueDate<today();
+  return`<div class="inv-item${inv.status==='paid'?' paid':''}${isOverdue?' overdue':''}">
+    <div class="inv-top">
+      <span class="inv-num">${esc(inv.number)}</span>
+      <span class="inv-client">${esc(inv.clientName||clientName(inv.clientId))}</span>
+      <span class="inv-total">${fmtCur(inv.total)}</span>
+    </div>
+    <div class="inv-meta">Issued ${fmtDShort(inv.issueDate)} · Due ${fmtDShort(inv.dueDate)}${inv.paidDate?' · Paid '+fmtDShort(inv.paidDate):''}</div>
+    <span class="status-badge ${statusClass}">${isOverdue?'OVERDUE':inv.status.toUpperCase()}</span>
+    <div class="inv-acts">
+      <button class="btn sm" onclick="previewInvoice('${inv.id}')">👁 VIEW</button>
+      <button class="btn sm" onclick="shareInv('${inv.id}')">↗ SEND</button>
+      ${inv.status!=='paid'?`<button class="btn sm dn" onclick="openMarkPaid('${inv.id}')">✓ PAID</button>`:''}
+      <button class="btn sm dl" onclick="delInvoice('${inv.id}')">✕</button>
+    </div>
+  </div>`;
+}
+
+// ═══════════════════════════════════
+// ROUTE TAB
+// ═══════════════════════════════════
+// ── Route ordering helpers ──────────────────────────
+function getDayKey(job){return job.dueDate||'no-date';}
+function getDayJobs(dateKey){
+  return S.jobs.filter(j=>j.status!=='done'&&getDayKey(j)===dateKey)
+    .sort((a,b)=>(a.routeOrder??999)-(b.routeOrder??999)||(a.agreedTime||'').localeCompare(b.agreedTime||''));
+}
+function getRouteDays(){
+  const keys=new Set(S.jobs.filter(j=>j.status!=='done').map(getDayKey));
+  return [...keys].sort((a,b)=>{
+    if(a==='no-date')return 1;if(b==='no-date')return -1;
+    return a>b?1:-1;
+  });
+}
+function moveJobInRoute(jobId,dir){
+  const job=S.jobs.find(j=>j.id===jobId);if(!job)return;
+  const dayJobs=getDayJobs(getDayKey(job));
+  // Assign clean order if missing
+  dayJobs.forEach((j,i)=>{j.routeOrder=i;});
+  const idx=dayJobs.findIndex(j=>j.id===jobId);
+  const swapIdx=dir==='up'?idx-1:idx+1;
+  if(swapIdx<0||swapIdx>=dayJobs.length)return;
+  const tmp=dayJobs[idx].routeOrder;
+  dayJobs[idx].routeOrder=dayJobs[swapIdx].routeOrder;
+  dayJobs[swapIdx].routeOrder=tmp;
+  save();render();
+}
+function dayMapsUrl(dateKey){
+  const jobs=getDayJobs(dateKey);
+  const stops=jobs.map(j=>encodeURIComponent(jobAddr(j,'del')||'')).filter(Boolean);
+  if(!stops.length)return null;
+  const picks=jobs.map(j=>encodeURIComponent(jobAddr(j,'pick')||'')).filter(Boolean);
+  const origin=picks[0]||stops[0];
+  const dest=stops[stops.length-1];
+  const mid=stops.slice(0,-1);
+  return'https://www.google.com/maps/dir/?api=1&origin='+origin+'&destination='+dest+(mid.length?'&waypoints='+mid.join('|'):'')+'&travelmode=driving';
+}
+function rRouteStop(job,idx,dayJobs){
+  const isFirst=idx===0,isLast=idx===dayJobs.length-1;
+  const client=getClient(job.clientId);
+  const phone=(client?.phone||'').replace(/[^0-9+]/g,'');
+  const etaSent=etaSentToday(job);
+  const navUrl='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(jobAddr(job,'del')||'');
+  return`<div class="rc">
+    <div class="rc-top">
+      <div class="rc-order">
+        <button class="rc-ord-btn" onclick="moveJobInRoute('${job.id}','up')" ${isFirst?'disabled':''}>▲</button>
+        <button class="rc-ord-btn" onclick="moveJobInRoute('${job.id}','dn')" ${isLast?'disabled':''}>▼</button>
+      </div>
+      <div class="rc-body">
+        <div class="rc-num">#${idx+1} ${job.icon||'📦'}</div>
+        <div class="rc-name">${esc(job.name)} <span style="font-size:5px;color:var(--gb2)">· ${esc(clientName(job.clientId))}</span></div>
+        ${job.agreedTime?`<div style="font-size:6px;color:var(--gb4)">⏰ ${job.agreedTime}</div>`:''}
+        <div class="rc-addr">▸ ${esc(jobAddr(job,'pick')||'?')}<br>▾ ${esc(jobAddr(job,'del')||'?')}</div>
+      </div>
+    </div>
+    <div class="rc-acts">
+      <a href="${navUrl}" target="_blank" class="btn sm" style="text-decoration:none">📍 NAV</a>
+      ${phone||job.agreedTime?`
+        <button class="btn sm${etaSent?' ld':''}" onclick="sendETA('${job.id}',${etaSent})">
+          📱 ${etaSent?'ETA SENT ✓':'SEND ETA'}
+        </button>
+      `:''}
+      ${etaSent?`<span class="eta-sent-badge">SENT TODAY</span>`:''}
+      <button class="btn sm dn" onclick="startDoneFlow('${job.id}')">DONE ✓</button>
+    </div>
+  </div>`;
+}
+function rRouteDaySection(dateKey){
+  const jobs=getDayJobs(dateKey);
+  if(!jobs.length)return'';
+  const mapsUrl=dayMapsUrl(dateKey);
+  const label=dateKey==='no-date'?'📦 NO DATE SET':
+    dateKey===today()?'📅 TODAY — '+fmtD(dateKey).toUpperCase():
+    daysUntil(dateKey)<0?'⚠️ OVERDUE — '+fmtD(dateKey).toUpperCase():
+    '📆 '+fmtD(dateKey).toUpperCase();
+  return`<div class="rday">
+    <div class="rday-hdr">
+      <div class="rc-addr" style="flex:1">
+        <div class="rday-date">${label}</div>
+        <div class="rday-count">${jobs.length} JOB${jobs.length!==1?'S':''} · DRAG TO REORDER</div>
+      </div>
+    </div>
+    ${mapsUrl?`<a href="${mapsUrl}" target="_blank" class="btn big sec" style="display:block;text-decoration:none;margin-bottom:6px">🗺️ OPEN THIS DAY IN MAPS</a>`:''}
+    ${jobs.map((job,i)=>rRouteStop(job,i,jobs)).join('')}
+  </div>`;
+}
+function rRoute(){
+  const days=getRouteDays();
+  if(!days.length)return`<div class="empty"><span class="empty-ic">🗺️</span>NO ACTIVE JOBS<br>ADD JOBS FIRST</div>`;
+  return days.map(rRouteDaySection).join('');
+}
+
+// ═══════════════════════════════════
+// SETTINGS TAB
+// ═══════════════════════════════════
+function rSettings(){
+  const s=S.settings;
+  return`<div class="set-s">
+    <div class="set-t">🏢 YOUR BUSINESS</div>
+    <div class="field"><label>TRADING NAME</label><input id="s-bname" value="${esc(s.bizName)}" placeholder="Odd Socks Deliveries"></div>
+    <div class="field"><label>ADDRESS (FOR INVOICES)</label><textarea id="s-baddr" rows="2">${esc(s.bizAddr)}</textarea></div>
+    <div class="frow">
+      <div class="field"><label>PHONE</label><input id="s-bphone" value="${esc(s.bizPhone)}" placeholder="07xxx"></div>
+      <div class="field"><label>EMAIL</label><input id="s-bemail" value="${esc(s.bizEmail)}" placeholder="you@email.com"></div>
+    </div>
+    <div class="field"><label>BANK / PAYMENT DETAILS (PRINTED ON INVOICES)</label><textarea id="s-bbank" rows="2" placeholder="Sort: 12-34-56 · Acc: 12345678">${esc(s.bizBank)}</textarea></div>
+    <button class="btn big" onclick="saveSettings()">💾 SAVE BUSINESS DETAILS</button>
+  </div>
+  <div class="set-s">
+    <div class="set-t">⚙️ DEFAULTS</div>
+    <div class="frow">
+      <div class="field"><label>DEFAULT RATE (£)</label><input type="number" id="s-rate" value="${s.defaultRate||''}" placeholder="0" min="0"></div>
+      <div class="field"><label>PAYMENT TERMS (DAYS)</label><input type="number" id="s-terms" value="${s.paymentTerms||14}" min="1" max="90"></div>
+    </div>
+    <div class="field"><label>MONTHLY TARGET (£)</label><input type="number" id="s-target" value="${s.monthlyTarget||0}" placeholder="3000" min="0"></div>
+    <div class="field"><label>TAX STASH % <button class="btn sm" onclick="openTaxGuide()" style="margin-left:6px">? GUIDE</button></label><input type="number" id="s-taxpct" value="${s.taxStashPct||25}" min="0" max="60" step="1"></div>
+    <div class="field"><label>MILEAGE RATE (£/MILE)</label><input type="number" id="s-mrate" value="${s.mileageRate||0.45}" step="0.01" min="0"></div>
+    <div class="field"><label>TAX YEAR START (YEAR, e.g. 2025 = 2025-26)</label><input type="number" id="s-taxyr" value="${s.taxYear||2025}" min="2020" max="2099"></div>
+    <button class="btn big" onclick="saveSettings()">💾 SAVE DEFAULTS</button>
+  </div>
+  <div class="set-s">
+    <div class="set-t">🤖 AI FEATURES</div>
+    <div class="set-note">PHOTO SCAN + TEXT PARSE USE ANTHROPIC API.<br>GET A KEY AT CONSOLE.ANTHROPIC.COM<br>KEY STAYS ON THIS DEVICE ONLY.</div>
+    <div class="field"><label>ANTHROPIC API KEY</label><input type="password" id="s-apikey" value="${esc(s.apiKey)}" placeholder="sk-ant-..."></div>
+    <button class="btn big" onclick="saveSettings()">${s.apiKey?'✓ KEY SAVED — AI ACTIVE':'💾 SAVE API KEY'}</button>
+  </div>
+  <div class="set-s">
+    <div class="set-t">📄 INVOICE DEFAULTS</div>
+    <div class="field"><label>LATE FEE CLAUSE (PRINTED ON INVOICES)</label>
+      <textarea id="s-latefee" rows="2" placeholder="e.g. Invoices unpaid after 30 days incur a 2% monthly surcharge.">${esc(s.lateFee||'')}</textarea>
+    </div>
+    <button class="btn big" onclick="saveSettings()">💾 SAVE</button>
+  </div>
+  <div class="set-s">
+    <div class="set-t">☁️ GOOGLE INTEGRATION</div>
+    <div class="set-note" style="line-height:2.2">ONE APPS SCRIPT HANDLES EVERYTHING:<br>SHEETS SYNC · DRIVE PHOTOS · DOC INVOICES<br><br>
+      <b style="color:var(--gb4)">SETUP (one time, 5 minutes):</b><br>
+      1. Open a new Google Sheet<br>
+      2. Extensions → Apps Script<br>
+      3. Delete any code there, paste in the<br>
+         Odd Socks script (tap COPY below)<br>
+      4. Save → Deploy → New deployment<br>
+      5. Type: Web app<br>
+      6. Execute as: Me · Access: Anyone<br>
+      7. Click Deploy → copy the /exec URL<br>
+      8. Paste it below and tap Test
+    </div>
+    <button class="btn big sec" style="margin-bottom:10px" onclick="copyGASScript()">📋 COPY APPS SCRIPT CODE</button>
+    <div class="field"><label>APPS SCRIPT URL (/exec)</label>
+      <input id="s-gasurl" value="${esc(s.gasUrl||'')}" placeholder="https://script.google.com/macros/s/…/exec">
+    </div>
+    <div style="display:flex;gap:6px;margin-top:6px">
+      <button class="btn big" onclick="saveSettings()" style="flex:1">💾 SAVE URL</button>
+      <button class="btn big sec" onclick="testGAS()" style="flex:1">${s.gasUrl?'▶ TEST CONNECTION':'SAVE URL FIRST'}</button>
+    </div>
+    <div id="g-status" style="font-size:5px;color:var(--gb2);margin-top:6px"></div>
+    ${s.gasUrl?`<div style="margin-top:8px;font-size:5px;color:var(--gb3)">✓ APPS SCRIPT URL SAVED · DATA SYNCS AUTOMATICALLY</div>`:''}
+  </div>
+  <div class="set-s">
+    <div class="set-t">⚠️ DANGER ZONE</div>
+    <button class="btn dl" style="width:100%;padding:10px" onclick="clearAllData()">DELETE ALL DATA</button>
+  </div>`;
+}
+function saveSettings(){
+  S.settings.bizName=document.getElementById('s-bname')?.value||S.settings.bizName;
+  S.settings.bizAddr=document.getElementById('s-baddr')?.value||S.settings.bizAddr;
+  S.settings.bizPhone=document.getElementById('s-bphone')?.value||S.settings.bizPhone;
+  S.settings.bizEmail=document.getElementById('s-bemail')?.value||S.settings.bizEmail;
+  S.settings.bizBank=document.getElementById('s-bbank')?.value||S.settings.bizBank;
+  S.settings.apiKey=document.getElementById('s-apikey')?.value||S.settings.apiKey;
+  S.settings.defaultRate=parseFloat(document.getElementById('s-rate')?.value)||S.settings.defaultRate;
+  S.settings.paymentTerms=parseInt(document.getElementById('s-terms')?.value)||S.settings.paymentTerms;
+  S.settings.mileageRate=parseFloat(document.getElementById('s-mrate')?.value)||S.settings.mileageRate;
+  S.settings.taxYear=parseInt(document.getElementById('s-taxyr')?.value)||S.settings.taxYear;
+  const tEl=document.getElementById('s-target');if(tEl)S.settings.monthlyTarget=parseFloat(tEl.value)||0;
+  const txEl=document.getElementById('s-taxpct');if(txEl)S.settings.taxStashPct=parseFloat(txEl.value)||25;
+  const lfEl=document.getElementById('s-latefee');if(lfEl)S.settings.lateFee=lfEl.value;
+  const gasEl=document.getElementById('s-gasurl');if(gasEl&&gasEl.value.trim())S.settings.gasUrl=gasEl.value.trim();
+  save();render();
+}
+
+async function testGAS(){
+  const el=document.getElementById('g-status');
+  if(el)el.textContent='Testing connection...';
+  if(el)el.style.color='var(--gb2)';
+  const res=await testGasConnection();
+  if(el){
+    if(res?.ok){
+      el.textContent='✓ '+( res.msg||'Connected! Sheets, Drive, and Docs are ready.');
+      el.style.color='var(--gb3)';
+      // Trigger first sync
+      syncToSheets();
+    }else{
+      el.textContent='⚠️ Could not connect. Check URL and make sure Access is set to Anyone.';
+      el.style.color='var(--red)';
+    }
+  }
+}
+
+function copyGASScript(){
+  const script=getGASScript();
+  navigator.clipboard?.writeText(script).then(()=>{
+    alert('Apps Script code copied! Paste it into your Apps Script editor.');
+  }).catch(()=>{
+    // Fallback — show in modal
+    showMod(`<div class="m-title">📋 APPS SCRIPT CODE</div>
+      <div class="m-sub">SELECT ALL AND COPY, THEN PASTE INTO APPS SCRIPT</div>
+      <textarea style="width:100%;height:200px;font-size:6px;background:var(--gb0);border:2px solid var(--gb2);color:var(--gb3);font-family:monospace;padding:8px" readonly>${esc(script)}</textarea>
+      <button class="btn big sec" onclick="closeModal()" style="margin-top:8px">✕ CLOSE</button>`);
+  });
+}
+function clearAllData(){if(confirm('Delete ALL data? This cannot be undone.')){['os3_clients','os3_jobs','os3_invoices','os3_expenses','os3_set'].forEach(k=>localStorage.removeItem(k));location.reload()}}
+
+// ═══════════════════════════════════
+// CLIENT CRUD
+// ═══════════════════════════════════
+function quickAddJobForClient(clientId){
+  const cl=getClient(clientId);if(!cl)return;
+  const post=clientPost(cl)||'';
+  FD={
+    icon:ICONS[0],clientId:clientId,name:'',price:cl.defaultRate||'',notes:'',
+    pickDate:'',pickPost:'',pickNum:'',pickStreet:'',
+    delPost:post,delNum:cl.addrNum||'',delStreet:cl.addrStreet||'',
+    dueDate:'',pm:false,dm:!!(post||cl.addrStreet),editId:null
+  };
+  S.tab='jobs';
+  showMod(`<div class="m-title">+ QUICK JOB<br><span style="font-size:7px;color:var(--gb2)">${esc(cl.name)}</span></div>
+    <div class="field"><label>CLIENT</label>
+      <select id="jf-client" onchange="updateJobPrice()">
+        ${S.clients.map(c=>`<option value="${c.id}"${c.id===clientId?' selected':''}>${esc(c.name)}</option>`).join('')}
+      </select>
+    </div>
+    <div id="mc">${rManualJobForm(FD)}</div>
+    <button class="btn" style="width:100%;margin-top:6px" onclick="closeModal()">✕ CANCEL</button>`);
+}
+function openAddClient(){FD={};initEditLocs({});showMod(rClientForm({},'ADD NEW CLIENT'))}
+function openEditClient(id){const c=getClient(id);if(!c)return;FD={...c};initEditLocs(c);showMod(rClientForm(c,'EDIT CLIENT'))}
+function rClientForm(fd,title){
+  const locs=(fd.locations||[]);
+  return`<div class="m-title">👤 ${title||'CLIENT'}</div>
+    <div class="field"><label>NAME *</label><input id="cf-name" value="${esc(fd.name||'')}" placeholder="Client or company name"></div>
+    <div class="frow">
+      <div class="field"><label>PHONE</label><input id="cf-phone" value="${esc(fd.phone||'')}" placeholder="07xxx"></div>
+      <div class="field"><label>EMAIL</label><input id="cf-email" value="${esc(fd.email||'')}" placeholder="email"></div>
+    </div>
+    <div class="section-title" style="margin:8px 0 6px">🏠 DELIVERY ADDRESS (AUTO-FILLS JOBS)</div>
+    <div class="frow">
+      <div class="field" style="flex:0 0 65px"><label>NO.</label><input id="cf-anum" value="${esc(fd.addrNum||'')}" placeholder="14"></div>
+      <div class="field"><label>STREET</label><input id="cf-astreet" value="${esc(fd.addrStreet||'')}" placeholder="High Street"></div>
+    </div>
+    <div class="field"><label>POSTCODE *</label><input id="cf-post" value="${esc(fd.postcode||extractPost(fd.addr)||'')}" placeholder="W11 2ER" style="text-transform:uppercase"></div>
+    <div class="frow">
+      <div class="field"><label>DEFAULT RATE (£)</label><input type="number" id="cf-rate" value="${fd.defaultRate||''}" placeholder="${S.settings.defaultRate||0}" min="0"></div>
+      <div class="field"><label>PAYMENT TERMS (DAYS)</label><input type="number" id="cf-terms" value="${fd.paymentTerms||S.settings.paymentTerms||14}" min="1" max="90"></div>
+    </div>
+    <div class="field"><label>NOTES</label><textarea id="cf-notes" placeholder="Notes about this client...">${esc(fd.notes||'')}</textarea></div>
+    <div class="section-title" style="margin:10px 0 6px">📍 SAVED PICKUP LOCATIONS</div>
+    <div id="cf-locs">${rLocList(locs)}</div>
+    <button class="btn sm" onclick="addLocField()">+ ADD LOCATION</button>
+    <button class="btn big" style="margin-top:10px" onclick="submitClient('${fd.id||''}')">✓ SAVE CLIENT</button>
+    <button class="btn" style="width:100%;margin-top:6px" onclick="closeModal()">✕ CANCEL</button>`;
+}
+function rLocList(locs){
+  if(!locs.length)return`<div style="font-size:6px;color:var(--gb2);margin-bottom:6px">No saved locations yet</div>`;
+  return locs.map((l,i)=>`<div class="li-row" id="loc-row-${i}">
+    <input class="li-desc" placeholder="Location name (e.g. The Shop)" value="${esc(l.name||'')}" oninput="locSet(${i},'name',this.value)" style="flex:1.2">
+    <input class="li-desc" placeholder="Postcode" value="${esc(l.post||'')}" oninput="locSet(${i},'post',this.value)" style="flex:0.7;text-transform:uppercase">
+    <input class="li-desc" placeholder="Street" value="${esc(l.street||'')}" oninput="locSet(${i},'street',this.value)">
+    <button class="btn dl sm" onclick="delLoc(${i})">✕</button>
+  </div>`).join('');
+}
+let _editLocs=[];
+function addLocField(){
+  _editLocs.push({id:uid(),name:'',post:'',street:'',num:''});
+  document.getElementById('cf-locs').innerHTML=rLocList(_editLocs);
+}
+function locSet(i,f,v){_editLocs[i][f]=v;}
+function delLoc(i){_editLocs.splice(i,1);document.getElementById('cf-locs').innerHTML=rLocList(_editLocs);}
+function initEditLocs(fd){_editLocs=[...(fd.locations||[]).map(l=>({...l}))];return _editLocs;}
+function submitClient(editId){
+  const name=document.getElementById('cf-name').value.trim();
+  if(!name){alert('Name is required');return}
+  const post=(document.getElementById('cf-post').value||'').trim().toUpperCase();
+  const data={
+    name,
+    phone:document.getElementById('cf-phone').value.trim(),
+    email:document.getElementById('cf-email').value.trim(),
+    postcode:post,
+    addrNum:document.getElementById('cf-anum').value.trim(),
+    addrStreet:document.getElementById('cf-astreet').value.trim(),
+    addr:[document.getElementById('cf-anum').value.trim(),document.getElementById('cf-astreet').value.trim(),post].filter(Boolean).join(', '),
+    defaultRate:parseFloat(document.getElementById('cf-rate').value)||0,
+    paymentTerms:parseInt(document.getElementById('cf-terms').value)||14,
+    notes:document.getElementById('cf-notes').value.trim(),
+    locations:_editLocs.filter(l=>l.name||l.post)
+  };
+  if(editId){
+    const c=getClient(editId);if(c)Object.assign(c,data);
+  }else{
+    S.clients.push({id:uid(),...data});
+  }
+  save();closeModal();render();
+}
+function delClient(id){
+  if(!confirm('Delete this client? Their jobs and invoices remain.'))return;
+  S.clients=S.clients.filter(c=>c.id!==id);
+  save();S.viewClient=null;render();
+}
+
+// ═══════════════════════════════════
+// ADD JOB MODAL
+// ═══════════════════════════════════
+function openAddJob(pre){
+  FD=pre||{icon:ICONS[0],name:'',notes:'',pickDate:'',pickPost:'',pickStreet:'',pickNum:'',delPost:'',delStreet:'',delNum:'',dueDate:'',price:'',clientId:'',pm:false,dm:false};
+  showMod(rAddJobModal());
+}
+function rAddJobModal(){
+  const hasKey=!!S.settings.apiKey;
+  const clients=S.clients;
+  return`<div class="m-title">+ NEW JOB</div>
+    <div class="field"><label>CLIENT</label>
+      <select id="jf-client" onchange="updateJobPrice()">
+        <option value="">— One-off (no client) —</option>
+        ${clients.map(c=>`<option value="${c.id}"${FD.clientId===c.id?' selected':''}>${esc(c.name)}${clientPost(c)?' · '+clientPost(c):''}</option>`).join('')}
+      </select>
+    </div>
+    <div class="modes">
+      <button class="mode" onclick="doPhoto()"><span class="mi">📸</span>PHOTO<br>SCAN</button>
+      <button class="mode" onclick="showPaste()"><span class="mi">💬</span>PASTE<br>TEXT</button>
+      <button class="mode" onclick="showManual()"><span class="mi">✏️</span>MANUAL<br>ENTRY</button>
+    </div>
+    ${!hasKey?`<div class="warn-bar">⚠️ ADD API KEY IN SETTINGS<br>TO USE AI FEATURES</div>`:''}
+    <div id="mc"></div>
+    <button class="btn" style="width:100%;margin-top:6px" onclick="closeModal()">✕ CANCEL</button>`;
+}
+function updateJobPrice(){
+  const id=document.getElementById('jf-client')?.value||'';
+  FD.clientId=id;
+  const cl=getClient(id);
+  const el=document.getElementById('jf-price');
+  if(el&&cl?.defaultRate)el.value=cl.defaultRate;
+  // Auto-fill delivery from client address
+  if(cl){
+    const post=cl.postcode||extractPost(cl.addr)||'';
+    const dpEl=document.getElementById('jf-dp');
+    if(dpEl&&post&&!dpEl.value)dpEl.value=post;
+    const dnEl=document.getElementById('jf-dn');
+    if(dnEl&&cl.addrNum&&!dnEl.value)dnEl.value=cl.addrNum;
+    const dsEl=document.getElementById('jf-ds');
+    if(dsEl&&cl.addrStreet&&!dsEl.value)dsEl.value=cl.addrStreet;
+  }
+  // Show "use client address as pickup" chip if client has postcode
+  const pickChip=document.getElementById('pickup-from-client');
+  if(pickChip){
+    const post=cl?clientPost(cl):'';
+    pickChip.style.display=post?'block':'none';
+    if(post)pickChip.innerHTML=`<button class="btn sm" style="width:100%;margin-bottom:4px" onclick="useClientAsPickup('${id}')">📍 USE ${esc(cl.name).toUpperCase()} ADDRESS AS PICKUP (${post})</button>`;
+  }
+  // Refresh pickup dropdown if exists
+  refreshPickupDropdown(id);
+}
+function useClientAsPickup(clientId){
+  const cl=getClient(clientId);if(!cl)return;
+  const post=clientPost(cl);
+  const ppEl=document.getElementById('jf-pp');if(ppEl)ppEl.value=post;
+  const pnEl=document.getElementById('jf-pn');if(pnEl)pnEl.value=cl.addrNum||'';
+  const psEl=document.getElementById('jf-ps');if(psEl)psEl.value=cl.addrStreet||'';
+  const pm=document.getElementById('jf-pm');
+  if(pm&&(cl.addrNum||cl.addrStreet))pm.style.display='block';
+  FD.pm=!!(cl.addrNum||cl.addrStreet);
+}
+function refreshPickupDropdown(clientId){
+  const wrap=document.getElementById('pickup-loc-wrap');
+  if(!wrap)return;
+  const locs=clientLocations(clientId);
+  wrap.innerHTML=rPickupDropdown(clientId,locs);
+}
+function rPickupDropdown(clientId,locs){
+  if(!locs||!locs.length)return'';
+  return`<div class="field" id="pickup-loc-wrap"><label>PICKUP LOCATION</label>
+    <select id="jf-pickup-loc" onchange="applyPickupLocation(this.value,'${clientId}')">
+      <option value="">— Select saved location —</option>
+      ${locs.map(l=>`<option value="${l.id}">${esc(l.name)} · ${esc(l.post)}</option>`).join('')}
+      <option value="__manual">✏️ Manual entry</option>
+    </select>
+  </div>`;
+}
+function applyPickupLocation(locId,clientId){
+  if(!locId||locId==='__manual'){
+    // show manual fields
+    const pm=document.getElementById('jf-pm');if(pm)pm.style.display='block';
+    FD.pm=true;
+    return;
+  }
+  const locs=clientLocations(clientId);
+  const loc=locs.find(l=>l.id===locId);
+  if(!loc)return;
+  const ppEl=document.getElementById('jf-pp');if(ppEl)ppEl.value=loc.post||'';
+  const pnEl=document.getElementById('jf-pn');if(pnEl)pnEl.value=loc.num||'';
+  const psEl=document.getElementById('jf-ps');if(psEl)psEl.value=loc.street||'';
+  // show the street fields so user can see them
+  const pm=document.getElementById('jf-pm');if(pm)pm.style.display='block';
+  FD.pm=true;
+}
+function showManual(){
+  const cid=document.getElementById('jf-client')?.value||'';
+  const c=getClient(cid);
+  FD={...FD,clientId:cid,price:FD.price||(c?.defaultRate||'')};
+  document.getElementById('mc').innerHTML=rManualJobForm(FD);
+}
+function rManualJobForm(fd){
+  return`<div style="margin-bottom:8px">
+    <div style="font-size:6px;color:var(--gb2);margin-bottom:6px">ICON</div>
+    <div class="icon-grid">${ICONS.map(ic=>`<span class="ic-opt${fd.icon===ic?' sel':''}" onclick="setIc('${ic}')">${ic}</span>`).join('')}</div>
+  </div>
+  <div class="field"><label>ITEM NAME *</label><input id="jf-name" value="${esc(fd.name||'')}" placeholder="Victorian oak dresser"></div>
+  <div class="field"><label>PRICE (£)</label><input type="number" id="jf-price" value="${fd.price||''}" placeholder="0" min="0" step="0.01"></div>
+  <div class="field"><label>NOTES</label><textarea id="jf-notes" placeholder="Fragile, heavy...">${esc(fd.notes||'')}</textarea></div>
+  <div id="pickup-loc-wrap">${(()=>{const locs=clientLocations(fd.clientId);return locs.length?`<div class="field"><label>PICKUP LOCATION</label><select id="jf-pickup-loc" onchange="applyPickupLocation(this.value,'${fd.clientId||''}')"><option value="">— Select saved location —</option>${locs.map(l=>`<option value="${l.id}">${esc(l.name)} · ${esc(l.post)}</option>`).join('')}<option value="__manual">✏️ Manual entry</option></select></div>`:'';})()}</div>
+  <div id="pickup-from-client" style="display:none"></div>
+  <div class="ab">
+    <div class="ab-lbl">▸ PICKUP</div>
+    <div class="field"><label>PICKUP DATE</label><input type="date" id="jf-pickdate" value="${esc(fd.pickDate||'')}" min="${today()}"></div>
+    <div class="field"><label>POSTCODE</label><input id="jf-pp" value="${esc(fd.pickPost||'')}" placeholder="W11 2ER"></div>
+    <button class="see-more" onclick="togPick()">▾ add house no / street</button>
+    <div id="jf-pm" style="display:${fd.pm?'block':'none'}">
+      <div class="frow">
+        <div class="field" style="flex:0 0 60px"><label>NO.</label><input id="jf-pn" value="${esc(fd.pickNum||'')}" placeholder="14"></div>
+        <div class="field"><label>STREET</label><input id="jf-ps" value="${esc(fd.pickStreet||'')}" placeholder="Portobello Rd"></div>
+      </div>
+    </div>
+  </div>
+  <div class="ab">
+    <div class="ab-lbl">▾ DELIVERY</div>
+    <div class="field"><label>DELIVERY DATE</label><input type="date" id="jf-due" value="${esc(fd.dueDate||'')}" min="${today()}"></div>
+    <div class="field"><label>POSTCODE</label><input id="jf-dp" value="${esc(fd.delPost||'')}" placeholder="OX1 1DP"></div>
+    <button class="see-more" onclick="togDel()">▾ add house no / street</button>
+    <div id="jf-dm" style="display:${fd.dm?'block':'none'}">
+      <div class="frow">
+        <div class="field" style="flex:0 0 60px"><label>NO.</label><input id="jf-dn" value="${esc(fd.delNum||'')}" placeholder="8"></div>
+        <div class="field"><label>STREET</label><input id="jf-ds" value="${esc(fd.delStreet||'')}" placeholder="King St"></div>
+      </div>
+    </div>
+  </div>
+  <button class="btn big" onclick="FD.editId?submitEditJob():submitJob()">${FD.editId?'✓ SAVE CHANGES':'► ADD TO MANIFEST'}</button>`;
+}
+function setIc(ic){FD=rjf();FD.icon=ic;document.getElementById('mc').innerHTML=rManualJobForm(FD)}
+function togPick(){FD=rjf();FD.pm=!FD.pm;const e=document.getElementById('jf-pm');if(e)e.style.display=FD.pm?'block':'none'}
+function togDel(){FD=rjf();FD.dm=!FD.dm;const e=document.getElementById('jf-dm');if(e)e.style.display=FD.dm?'block':'none'}
+function rjf(){
+  return{
+    icon:FD.icon||ICONS[0],
+    clientId:document.getElementById('jf-client')?.value||FD.clientId||'',
+    name:(document.getElementById('jf-name')||{}).value||FD.name||'',
+    price:(document.getElementById('jf-price')||{}).value||FD.price||'',
+    notes:(document.getElementById('jf-notes')||{}).value||FD.notes||'',
+    pickDate:(document.getElementById('jf-pickdate')||{}).value||FD.pickDate||'',
+    pickPost:(document.getElementById('jf-pp')||{}).value||FD.pickPost||'',
+    pickNum:(document.getElementById('jf-pn')||{}).value||FD.pickNum||'',
+    pickStreet:(document.getElementById('jf-ps')||{}).value||FD.pickStreet||'',
+    delPost:(document.getElementById('jf-dp')||{}).value||FD.delPost||'',
+    delNum:(document.getElementById('jf-dn')||{}).value||FD.delNum||'',
+    delStreet:(document.getElementById('jf-ds')||{}).value||FD.delStreet||'',
+    dueDate:(document.getElementById('jf-due')||{}).value||FD.dueDate||'',
+    pm:FD.pm,dm:FD.dm
+  };
+}
+function submitJob(){
+  const fd=rjf();
+  if(!fd.name.trim()){alert('Item name is required');return}
+  S.jobs.push({id:uid(),...fd,price:parseFloat(fd.price)||0,status:'active',loaded:false,done:false});
+  save();closeModal();render();
+}
+
+// ═══════════════════════════════════
+// INVOICE SYSTEM
+// ═══════════════════════════════════
+function createInvFromJobs(clientId, jobIds){
+  const client=getClient(clientId);
+  const jobs=S.jobs.filter(j=>jobIds.includes(j.id));
+  const lineItems=jobs.map(j=>({description:j.name,date:j.completedDate,amount:j.price||0}));
+  const total=lineItems.reduce((s,l)=>s+(l.amount||0),0);
+  const iss=today();
+  const terms=client?.paymentTerms||S.settings.paymentTerms||14;
+  const inv={
+    id:uid(),number:nextInvNum(),type:jobIds.length===1?'immediate':'batch',
+    clientId:clientId||null,
+    clientName:client?.name||'',clientEmail:client?.email||'',clientAddr:client?.addr||'',
+    jobIds,lineItems,issueDate:iss,dueDate:addDays(iss,terms),total,
+    status:'draft',paidDate:null,payMethod:null,notes:''
+  };
+  jobIds.forEach(jid=>{const j=S.jobs.find(x=>x.id===jid);if(j)j.invoiceId=inv.id;});
+  S.invoices.push(inv);save();
+  return inv;
+}
+
+function openSendInvoice(clientId, preSelectJobId){
+  const client=getClient(clientId);
+  if(!client)return;
+  // All done jobs with no invoice for this client
+  const uninvoiced=S.jobs.filter(j=>j.clientId===clientId&&j.status==='done'&&!j.invoiceId)
+    .sort((a,b)=>b.completedDate>a.completedDate?1:-1);
+  if(!uninvoiced.length){
+    showMod(`<div class="m-title">🧾 SEND INVOICE</div>
+      <div class="m-sub">NO UNINVOICED JOBS FOR ${esc(client.name).toUpperCase()}</div>
+      <button class="btn big sec" onclick="openCustomInvoice('${clientId}',null)">+ CUSTOM INVOICE INSTEAD</button>
+      <button class="btn" style="width:100%;margin-top:6px" onclick="closeModal()">✕ CLOSE</button>`);
+    return;
+  }
+  const runningTotal=uninvoiced.reduce((s,j)=>s+(j.price||0),0);
+  showMod(`<div class="m-title">🧾 SEND INVOICE<br><span style="font-size:7px;color:var(--gb2)">${esc(client.name)}</span></div>
+    <div class="m-sub">SELECT JOBS TO INCLUDE</div>
+    ${uninvoiced.map(j=>`<div class="inv-item">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+        <input type="checkbox" id="si-${j.id}" ${(!preSelectJobId||j.id===preSelectJobId)?'checked':''} onchange="updateInvTotal('${clientId}')" style="width:18px;height:18px;accent-color:var(--gb3)">
+        <div style="flex:1">
+          <div style="font-size:7px;color:var(--gb4)">${j.icon||'📦'} ${esc(j.name)}</div>
+          <div style="font-size:5px;color:var(--gb2)">${fmtDShort(j.completedDate)} · ${esc(jobAddr(j,'del')||'?')}${j.pod?' · 📸':''}</div>
+        </div>
+        <span style="font-size:8px;color:var(--gb3)">${fmtCur(j.price)}</span>
+      </label>
+    </div>`).join('')}
+    <div id="inv-total-row" style="display:flex;justify-content:space-between;padding:8px 0;border-top:2px solid var(--gb2);margin-top:4px;font-size:7px">
+      <span style="color:var(--gb2)">TOTAL SELECTED</span>
+      <span id="inv-total-val" style="color:var(--gb4)">${fmtCur(preSelectJobId?uninvoiced.find(j=>j.id===preSelectJobId)?.price||0:runningTotal)}</span>
+    </div>
+    <button class="btn big" onclick="submitSendInvoice('${clientId}')">📄 CREATE INVOICE${gasIsOk()?' + GOOGLE DOC':''}</button>
+    <button class="btn" style="width:100%;margin-top:6px" onclick="closeModal()">✕ CANCEL</button>`);
+}
+
+function updateInvTotal(clientId){
+  const uninvoiced=S.jobs.filter(j=>j.clientId===clientId&&j.status==='done'&&!j.invoiceId);
+  const total=uninvoiced.filter(j=>document.getElementById('si-'+j.id)?.checked).reduce((s,j)=>s+(j.price||0),0);
+  const el=document.getElementById('inv-total-val');
+  if(el)el.textContent=fmtCur(total);
+}
+
+async function submitSendInvoice(clientId){
+  const uninvoiced=S.jobs.filter(j=>j.clientId===clientId&&j.status==='done'&&!j.invoiceId);
+  const selected=uninvoiced.filter(j=>document.getElementById('si-'+j.id)?.checked);
+  if(!selected.length){alert('Select at least one job.');return}
+  const inv=createInvFromJobs(clientId,selected.map(j=>j.id));
+
+  // If GAS connected, create Google Doc invoice immediately
+  if(gasIsOk()){
+    showMod(`<div class="m-title">📄 CREATING INVOICE...</div><div class="loading"><p>▌ BUILDING GOOGLE DOC</p></div>`);
+    try{
+      const docUrl=await gasCreateInvoiceDoc(inv);
+      if(docUrl){
+        inv.docUrl=docUrl;save();
+        showInvoiceSendOptions(inv,docUrl);
+        return;
+      }
+    }catch(e){}
+    // GAS failed, fall through to preview
+  }
+  closeModal();
+  await previewInvoice(inv.id);
+}
+
+function showInvoiceSendOptions(inv,docUrl){
+  const client=getClient(inv.clientId);
+  const phone=(client?.phone||'').replace(/[^0-9+]/g,'');
+  const bizName=S.settings.bizName||'Odd Socks';
+  const msg=`Hi ${client?.name||''}! Your invoice ${inv.number} for ${fmtCur(inv.total)} is ready. Due: ${fmtDShort(inv.dueDate)}.\n\nView invoice: ${docUrl}\n\n${S.settings.bizBank?'Payment: '+S.settings.bizBank:''}`;
+  const waUrl=phone?`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`:null;
+  const mailUrl=client?.email?`mailto:${client.email}?subject=${encodeURIComponent(inv.number+' — '+fmtCur(inv.total))}&body=${encodeURIComponent(msg)}`:null;
+  if(inv.status==='draft'){inv.status='sent';save();}
+  showMod(`<div class="m-title">✓ INVOICE CREATED</div>
+    <div style="background:var(--gb0);border:2px solid var(--gb2);padding:10px;margin-bottom:12px">
+      <div style="font-size:6px;color:var(--gb2);margin-bottom:4px">${esc(inv.number)} · ${esc(inv.clientName)} · DUE ${fmtDShort(inv.dueDate)}</div>
+      <div style="font-size:11px;color:var(--gb4)">${fmtCur(inv.total)}</div>
+    </div>
+    <a href="${docUrl}" target="_blank" class="btn big" style="display:block;text-decoration:none;text-align:center;margin-bottom:6px">📄 OPEN GOOGLE DOC</a>
+    ${waUrl?`<a href="${waUrl}" target="_blank" class="btn big" style="display:block;text-decoration:none;text-align:center;background:var(--gb1);color:var(--gb4);margin-bottom:6px">💬 SEND VIA WHATSAPP</a>`:''}
+    ${mailUrl?`<a href="${mailUrl}" class="btn big" style="display:block;text-decoration:none;text-align:center;background:var(--gb1);color:var(--gb4);margin-bottom:6px">✉ SEND VIA EMAIL</a>`:''}
+    <button class="btn big sec" onclick="navigator.clipboard?.writeText('${docUrl}');this.textContent='✓ LINK COPIED!'" style="margin-bottom:6px">📋 COPY INVOICE LINK</button>
+    <button class="btn big sec" onclick="shareInvPDF('${inv.id}')">📥 DOWNLOAD PDF</button>
+    <button class="btn" style="width:100%;margin-top:6px" onclick="closeModal();render()">✓ DONE</button>`);
+}
+
+// ── CUSTOM INVOICE ──
+function openCustomInvoice(clientId, jobId){
+  CI=[];
+  const client=getClient(clientId);
+  CI_CLIENT={
+    id:clientId||'',
+    name:client?.name||'',
+    email:client?.email||'',
+    addr:client?.addr||''
+  };
+  // Pre-fill from job if provided
+  if(jobId){
+    const job=S.jobs.find(j=>j.id===jobId);
+    if(job)CI.push({description:job.name+' — delivery',amount:job.price||0});
+  }
+  if(!CI.length)CI.push({description:'',amount:0});
+  showMod(rCustomInvModal());
+}
+function rCustomInvModal(){
+  const clients=S.clients;
+  const total=CI.reduce((s,l)=>s+(parseFloat(l.amount)||0),0);
+  const terms=S.settings.paymentTerms||14;
+  const due=addDays(today(),terms);
+  return`<div class="m-title">📄 CUSTOM INVOICE</div>
+    <div class="field"><label>CLIENT</label>
+      <select id="ci-client" onchange="ciClientChange()">
+        <option value="">— Type below for one-off —</option>
+        ${clients.map(c=>`<option value="${c.id}"${CI_CLIENT.id===c.id?' selected':''}>${esc(c.name)}</option>`).join('')}
+      </select>
+    </div>
+    <div id="ci-manual-client" style="display:${CI_CLIENT.id?'none':'block'}">
+      <div class="frow">
+        <div class="field"><label>CLIENT NAME</label><input id="ci-cname" value="${esc(CI_CLIENT.name)}" placeholder="Client name"></div>
+        <div class="field"><label>EMAIL</label><input id="ci-cemail" value="${esc(CI_CLIENT.email)}" placeholder="email"></div>
+      </div>
+      <div class="field"><label>BILLING ADDRESS</label><input id="ci-caddr" value="${esc(CI_CLIENT.addr)}" placeholder="Address"></div>
+    </div>
+    <div class="section-title" style="margin-top:8px;margin-bottom:8px">LINE ITEMS</div>
+    <div id="ci-lines">${rCILines()}</div>
+    <button class="btn sm" onclick="addCILine()" style="margin-bottom:10px">+ ADD LINE</button>
+    <div style="text-align:right;font-size:9px;color:var(--gb4);margin-bottom:10px">TOTAL: <span id="ci-total">${fmtCur(total)}</span></div>
+    <div class="frow">
+      <div class="field"><label>DUE DATE</label><input type="date" id="ci-due" value="${due}" min="${today()}"></div>
+      <div class="field"><label>NOTES</label><input id="ci-notes" placeholder="e.g. Thank you"></div>
+    </div>
+    <button class="btn big" onclick="submitCustomInv()">📄 GENERATE INVOICE</button>
+    <button class="btn" style="width:100%;margin-top:6px" onclick="closeModal()">✕ CANCEL</button>`;
+}
+function rCILines(){
+  return CI.map((l,i)=>`<div class="li-row">
+    <input class="li-desc" placeholder="Description of work" value="${esc(l.description||'')}" oninput="ciSet(${i},'description',this.value)">
+    <input class="li-amt" type="number" placeholder="£" value="${l.amount||''}" oninput="ciSet(${i},'amount',this.value)" min="0" step="0.01">
+    <button class="btn dl sm" onclick="ciDel(${i})">✕</button>
+  </div>`).join('')}
+function ciSet(i,f,v){CI[i][f]=f==='amount'?parseFloat(v)||0:v;refreshCILines()}
+function ciDel(i){CI.splice(i,1);refreshCILines()}
+function addCILine(){CI.push({description:'',amount:0});refreshCILines()}
+function refreshCILines(){
+  const el=document.getElementById('ci-lines');if(el)el.innerHTML=rCILines();
+  const t=CI.reduce((s,l)=>s+(parseFloat(l.amount)||0),0);
+  const tel=document.getElementById('ci-total');if(tel)tel.textContent=fmtCur(t);
+}
+function ciClientChange(){
+  const id=document.getElementById('ci-client')?.value||'';
+  CI_CLIENT.id=id;
+  const c=getClient(id);
+  if(c){CI_CLIENT.name=c.name;CI_CLIENT.email=c.email;CI_CLIENT.addr=c.addr||'';}
+  const man=document.getElementById('ci-manual-client');
+  if(man)man.style.display=id?'none':'block';
+}
+async function submitCustomInv(){
+  const cid=document.getElementById('ci-client')?.value||'';
+  const cname=cid?getClient(cid)?.name:document.getElementById('ci-cname')?.value||'';
+  const cemail=cid?getClient(cid)?.email:document.getElementById('ci-cemail')?.value||'';
+  const caddr=cid?getClient(cid)?.addr:document.getElementById('ci-caddr')?.value||'';
+  const due=document.getElementById('ci-due')?.value||addDays(today(),14);
+  const notes=document.getElementById('ci-notes')?.value||'';
+  if(!cname&&!cid){alert('Enter a client name.');return}
+  if(!CI.some(l=>l.description)){alert('Add at least one line item.');return}
+  const total=CI.reduce((s,l)=>s+(parseFloat(l.amount)||0),0);
+  const inv={
+    id:uid(),number:nextInvNum(),type:'custom',
+    clientId:cid||null,clientName:cname,clientEmail:cemail,clientAddr:caddr,
+    jobIds:[],lineItems:CI.map(l=>({description:l.description,date:today(),amount:parseFloat(l.amount)||0})),
+    issueDate:today(),dueDate:due,total,status:'draft',paidDate:null,payMethod:null,notes
+  };
+  S.invoices.push(inv);save();closeModal();
+  await previewInvoice(inv.id);
+}
+
+// ── INVOICE PDF ──
+async function genPDF(inv){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'mm',format:'a4'});
+  const biz=S.settings;const W=210,M=15;
+  // Header left: business
+  doc.setFont('helvetica','bold');doc.setFontSize(18);doc.setTextColor(15,56,15);
+  doc.text(biz.bizName||'Odd Socks',M,24);
+  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(80,80,80);
+  let ly=31;
+  if(biz.bizAddr){biz.bizAddr.split('\n').forEach(l=>{doc.text(l,M,ly);ly+=5});};
+  if(biz.bizPhone){doc.text(biz.bizPhone,M,ly);ly+=5}
+  if(biz.bizEmail){doc.text(biz.bizEmail,M,ly);ly+=5}
+  // Header right: invoice number
+  doc.setFont('helvetica','bold');doc.setFontSize(20);doc.setTextColor(15,56,15);
+  doc.text('INVOICE',W-M,22,{align:'right'});
+  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(60,60,60);
+  doc.text(inv.number,W-M,30,{align:'right'});
+  doc.text('Issued: '+fmtDShort(inv.issueDate),W-M,37,{align:'right'});
+  doc.text('Due: '+fmtDShort(inv.dueDate),W-M,44,{align:'right'});
+  // Divider
+  doc.setDrawColor(15,56,15);doc.setLineWidth(0.8);doc.line(M,52,W-M,52);
+  // Bill to
+  doc.setFontSize(7);doc.setTextColor(120,120,120);doc.text('BILL TO',M,60);
+  doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(20,20,20);
+  doc.text(inv.clientName||'',M,67);
+  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(80,80,80);
+  let cy=73;
+  if(inv.clientAddr){inv.clientAddr.split('\n').forEach(l=>{doc.text(l,M,cy);cy+=5});}
+  if(inv.clientEmail){doc.text(inv.clientEmail,M,cy);cy+=5}
+  // Table header
+  const tY=Math.max(85,cy+8);
+  doc.setFillColor(15,56,15);doc.rect(M,tY-5,W-2*M,9,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(196,217,107);
+  doc.text('DESCRIPTION',M+3,tY);
+  doc.text('DATE',150,tY);
+  doc.text('AMOUNT',W-M-3,tY,{align:'right'});
+  // Items
+  let iY=tY+9;doc.setFont('helvetica','normal');doc.setTextColor(30,30,30);
+  inv.lineItems.forEach((item,i)=>{
+    if(i%2===0){doc.setFillColor(245,248,230);doc.rect(M,iY-4,W-2*M,8,'F');}
+    doc.setFontSize(8);
+    const lines=doc.splitTextToSize(item.description||'',120);
+    doc.text(lines,M+3,iY);
+    if(item.date)doc.text(fmtDShort(item.date),150,iY);
+    doc.text(fmtCur(item.amount||item.total||0),W-M-3,iY,{align:'right'});
+    iY+=Math.max(8,lines.length*5+2);
+  });
+  // Total
+  iY+=4;doc.setDrawColor(15,56,15);doc.setLineWidth(0.5);doc.line(M,iY,W-M,iY);
+  iY+=8;
+  doc.setFillColor(15,56,15);doc.rect(W-M-55,iY-5,55,10,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(196,217,107);
+  doc.text('TOTAL',W-M-45,iY+1);
+  doc.text(fmtCur(inv.total),W-M-3,iY+1,{align:'right'});
+  // Payment details
+  iY+=16;doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(60,60,60);
+  if(biz.bizBank){const bl=doc.splitTextToSize('Payment: '+biz.bizBank,W-2*M);doc.text(bl,M,iY);iY+=bl.length*5+3;}
+  doc.text(`Terms: ${(getClient(inv.clientId)||{}).paymentTerms||biz.paymentTerms||14} days from issue`,M,iY);iY+=5;
+  if(inv.notes){doc.text('Note: '+inv.notes,M,iY);iY+=5;}
+  // POD Drive links
+  const podLinks=inv.jobIds?.map(jid=>S.jobs.find(j=>j.id===jid)).filter(j=>j?.podDriveUrl)||[];
+  if(podLinks.length){
+    iY+=6;doc.setFontSize(7);doc.setTextColor(60,60,60);
+    doc.text('Proof of Delivery:',M,iY);iY+=5;
+    podLinks.forEach(j=>{
+      doc.setTextColor(15,56,150);
+      const line=doc.splitTextToSize(j.name+': '+j.podDriveUrl,W-2*M);
+      doc.text(line,M,iY);iY+=line.length*4+2;
+    });
+  }
+  if(biz.lateFee){doc.setFontSize(7);doc.setTextColor(100,100,100);const lfl=doc.splitTextToSize(biz.lateFee,W-2*M);doc.text(lfl,M,iY+4);}
+  // Footer
+  doc.setFontSize(7);doc.setTextColor(180,180,180);doc.text('Thank you for your business',W/2,285,{align:'center'});
+  return doc;
+}
+
+async function previewInvoice(invId){
+  const inv=S.invoices.find(i=>i.id===invId);if(!inv)return;
+  const lines=inv.lineItems.map(l=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--gb1);font-size:6px"><span style="color:var(--gb3);flex:1">${esc(l.description)}</span><span style="color:var(--gb2)">${l.date?fmtDShort(l.date):''}</span><span style="color:var(--gb4);margin-left:10px">${fmtCur(l.amount||l.total||0)}</span></div>`).join('');
+  showMod(`<div class="m-title">🧾 ${esc(inv.number)}</div>
+    <div style="font-size:6px;color:var(--gb2);margin-bottom:8px">TO: ${esc(inv.clientName)} · DUE: ${fmtDShort(inv.dueDate)}</div>
+    ${lines}
+    <div style="text-align:right;font-size:10px;color:var(--gb4);margin-top:8px;padding-top:6px;border-top:2px solid var(--gb2)">TOTAL: ${fmtCur(inv.total)}</div>
+    ${inv.docUrl?`<a href="${inv.docUrl}" target="_blank" class="btn big" style="display:block;text-decoration:none;margin-bottom:6px">📄 OPEN GOOGLE DOC</a>`:''}
+    <button class="btn big${inv.docUrl?' sec':''}" onclick="shareInv('${invId}')">↗ ${gasIsOk()?'CREATE GOOGLE DOC':'SEND / DOWNLOAD PDF'}</button>
+    <button class="btn big sec" onclick="closeModal();render()">✓ DONE</button>`);
+}
+
+async function shareInv(invId){
+  const inv=S.invoices.find(i=>i.id===invId);if(!inv)return;
+  // If GAS connected, create Google Doc invoice
+  if(gasIsOk()){
+    showMod(`<div class="m-title">📄 CREATING INVOICE...</div><div class="loading"><p>▌ BUILDING GOOGLE DOC</p></div>`);
+    try{
+      const docUrl=await gasCreateInvoiceDoc(inv);
+      if(docUrl){
+        if(!inv.docUrl){inv.docUrl=docUrl;save();}
+        if(inv.status==='draft'){inv.status='sent';save();}
+        showMod(`<div class="m-title">✓ INVOICE CREATED</div>
+          <div class="m-sub" style="line-height:2.2">GOOGLE DOC INVOICE SAVED TO YOUR DRIVE<br>OPEN AND SHARE WITH YOUR CLIENT</div>
+          <a href="${docUrl}" target="_blank" class="btn big" style="display:block;text-decoration:none;text-align:center;margin-bottom:6px">📄 OPEN IN GOOGLE DOCS</a>
+          <button class="btn big sec" onclick="navigator.clipboard?.writeText('${docUrl}');this.textContent='✓ COPIED'">📋 COPY LINK</button>
+          <button class="btn big sec" onclick="shareInvPDF('${invId}')">📥 ALSO DOWNLOAD PDF</button>
+          <button class="btn" style="width:100%;margin-top:6px" onclick="closeModal();render()">✕ DONE</button>`);
+        return;
+      }
+    }catch(e){}
+    // GAS failed — fall through to PDF
+  }
+  // Fallback: PDF
+  await shareInvPDF(invId);
+}
+
+async function shareInvPDF(invId){
+  const inv=S.invoices.find(i=>i.id===invId);if(!inv)return;
+  try{
+    const doc=await genPDF(inv);
+    const blob=doc.output('blob');
+    const file=new File([blob],inv.number+'.pdf',{type:'application/pdf'});
+    if(navigator.share&&navigator.canShare({files:[file]})){
+      await navigator.share({title:inv.number,text:`Invoice ${inv.number} — ${fmtCur(inv.total)}`,files:[file]});
+      if(inv.status==='draft'){inv.status='sent';save();render();}
+    }else{
+      const url=URL.createObjectURL(blob);const a=document.createElement('a');
+      a.href=url;a.download=inv.number+'.pdf';document.body.appendChild(a);a.click();
+      document.body.removeChild(a);URL.revokeObjectURL(url);
+      if(inv.status==='draft'){inv.status='sent';save();render();}
+    }
+  }catch(e){alert('Could not generate PDF: '+e.message)}
+}
+
+function openMarkPaid(invId){
+  showMod(`<div class="m-title">✓ MARK AS PAID</div>
+    <div class="field"><label>DATE RECEIVED</label><input type="date" id="mp-date" value="${today()}" max="${today()}"></div>
+    <div class="field"><label>PAYMENT METHOD</label>
+      <select id="mp-method"><option value="BACS">BACS</option><option value="CASH">Cash</option><option value="CHEQUE">Cheque</option><option value="OTHER">Other</option></select>
+    </div>
+    <button class="btn big dn" onclick="saveMarkPaid('${invId}')">✓ CONFIRM PAID</button>
+    <button class="btn" style="width:100%;margin-top:6px" onclick="closeModal()">✕ CANCEL</button>`);
+}
+function saveMarkPaid(invId){
+  const inv=S.invoices.find(i=>i.id===invId);if(!inv)return;
+  inv.status='paid';
+  inv.paidDate=document.getElementById('mp-date')?.value||today();
+  inv.payMethod=document.getElementById('mp-method')?.value||'BACS';
+  save();closeModal();render();
+  // Immediate sync on payment received
+  if(gasIsOk()){clearTimeout(_syncTimer);_syncTimer=setTimeout(syncToSheets,500);}
+}
+function delInvoice(invId){
+  if(!confirm('Delete this invoice?'))return;
+  const inv=S.invoices.find(i=>i.id===invId);
+  if(inv&&inv.jobIds){inv.jobIds.forEach(jid=>{const j=S.jobs.find(x=>x.id===jid);if(j)j.invoiceId=null;});}
+  S.invoices=S.invoices.filter(i=>i.id!==invId);save();render();
+}
+
+// ═══════════════════════════════════
+// EXPENSES
+// ═══════════════════════════════════
+function openExpenseScan(){
+  document.getElementById('expense-scan-input').click();
+}
+async function handleExpenseScan(file){
+  RF={photo:null,cat:'OTHER'};
+  RF.photo=await compressImg(file,1200);
+  if(!S.settings.apiKey){
+    // No AI key — just open form with photo
+    showReceiptForm();
+    return;
+  }
+  showMod(`<div class="m-title">🤖 SCANNING RECEIPT...</div><div class="loading"><p>▌ AI READING EXPENSE</p></div>`);
+  const reader=new FileReader();
+  reader.onload=async e=>{
+    const b64=e.target.result.split(',')[1],mt=file.type||'image/jpeg';
+    const sys=`You are reading a receipt or expense photo. Return ONLY valid JSON with these fields: category (one of: FUEL, PARKING, PACKING, VAN, OTHER), amount (number, pounds, no currency symbol), description (short string e.g. "BP petrol M4"), date (YYYY-MM-DD, today is ${today()} if not visible). No markdown, no explanation.`;
+    const raw=await callAI([{role:'user',content:[
+      {type:'image',source:{type:'base64',media_type:mt,data:b64}},
+      {type:'text',text:'Read this expense receipt and return the JSON.'}
+    ]}],sys);
+    if(!raw){showReceiptForm();return;}
+    let parsed=null;
+    try{const m=raw.match(/\{[\s\S]*\}/);if(m)parsed=JSON.parse(m[0]);}catch(e){}
+    if(parsed){
+      if(parsed.category&&EXP_CATS.find(x=>x.id===parsed.category))RF.cat=parsed.category;
+      RF.scanned={amount:parsed.amount||'',description:parsed.description||'',date:parsed.date||today()};
+    }
+    showReceiptForm(parsed);
+  };
+  reader.readAsDataURL(file);
+}
+// Receipt flow state
+let RF={photo:null,cat:'OTHER'};
+
+function openReceiptCamera(){
+  RF={photo:null,cat:'OTHER'};
+  document.getElementById('rcpt-input').click();
+}
+function openReceiptGallery(){
+  document.getElementById('rcpt-gallery').click();
+}
+async function handleReceiptFile(file){
+  RF.photo=await compressImg(file,1200);
+  showReceiptForm();
+}
+function showReceiptForm(){
+  showMod(rReceiptForm());
+  setTimeout(()=>document.getElementById('ef-amt')?.focus(),100);
+}
+function rReceiptForm(scanned){
+  const sc=RF.scanned||scanned||{};
+  return`<div class="m-title">${sc.amount?'✓ RECEIPT SCANNED':'🧾 ADD EXPENSE'}</div>
+    ${RF.photo?`<img src="${RF.photo}" style="width:100%;max-height:160px;object-fit:cover;border:3px solid var(--gb2);margin-bottom:8px">`:''}
+    ${!RF.photo?`<div style="display:flex;gap:6px;margin-bottom:10px">
+      <button class="btn big" onclick="document.getElementById('rcpt-input').click()" style="flex:1">📸 TAKE PHOTO</button>
+      <button class="btn big sec" onclick="openReceiptGallery()" style="flex:1">🖼️ UPLOAD</button>
+    </div>`:`<button class="btn sm" style="margin-bottom:8px;width:100%" onclick="RF.photo=null;showReceiptForm()">✕ REMOVE PHOTO</button>`}
+    <div style="font-size:6px;color:var(--gb2);margin-bottom:6px">CATEGORY</div>
+    <div class="exp-cats" style="margin-bottom:10px">
+      ${EXP_CATS.map(cat=>`<button class="exp-cat${RF.cat===cat.id?' on':''}" onclick="RF.cat='${cat.id}';showReceiptForm()"><span class="ec-ic">${cat.ic}</span>${cat.lb}</button>`).join('')}
+    </div>
+    ${sc.amount!==undefined?`<div class="ok-msg">✓ AI READ: ${sc.description||""} · £${sc.amount||0}</div>`:""}
+    <div class="field"><label>AMOUNT (£) *</label><input type="number" id="ef-amt" value="${sc.amount||''}" placeholder="0.00" min="0" step="0.01" inputmode="decimal"></div>
+    <div class="field"><label>DESCRIPTION</label><input id="ef-desc" value="${esc(sc.description||'')}" placeholder="e.g. BP petrol, M4 junction 5"></div>
+    <div class="field"><label>DATE</label><input type="date" id="ef-date" value="${sc.date||today()}" max="${today()}"></div>
+    ${gasIsOk()?`<div style="font-size:5px;color:var(--gb3);margin-bottom:8px">☁️ RECEIPT PHOTO WILL SAVE TO GOOGLE DRIVE</div>`:''}
+    <button class="btn big" onclick="submitExpense()">✓ SAVE EXPENSE</button>
+    <button class="btn" style="width:100%;margin-top:6px" onclick="closeModal()">✕ CANCEL</button>`;
+}
+// Also keep quickExpense for category buttons in money tab
+function quickExpense(cat){
+  RF={photo:null,cat:cat};
+  showReceiptForm();
+}
+async function submitExpense(){
+  const amt=parseFloat(document.getElementById('ef-amt')?.value)||0;
+  if(!amt){alert('Enter an amount.');return}
+  const exp={
+    id:uid(),
+    date:document.getElementById('ef-date')?.value||today(),
+    category:RF.cat||EXP_CAT||'OTHER',
+    amount:amt,
+    description:document.getElementById('ef-desc')?.value.trim()||'',
+    receipt:RF.photo||null,
+    receiptDriveUrl:null
+  };
+  S.expenses.push(exp);
+  save();closeModal();render();
+  // Upload receipt to Drive via GAS in background
+  if(exp.receipt&&gasIsOk()){
+    try{
+      const filename='receipt-'+exp.category+'-'+exp.date+'-'+exp.id.slice(-4)+'.jpg';
+      const url=await gasUploadPhoto(exp.receipt,'Business Expenses',filename);
+      if(url){exp.receiptDriveUrl=url;save();}
+    }catch(e){}
+  }
+}
+function delExpense(id){S.expenses=S.expenses.filter(e=>e.id!==id);save();render()}
+function viewReceipt(expId){
+  const e=S.expenses.find(x=>x.id===expId);if(!e||!e.receipt)return;
+  showMod(`<div class="m-title">🧾 RECEIPT</div>
+    <div style="font-size:6px;color:var(--gb2);margin-bottom:8px">${esc(e.category)} · ${fmtCur(e.amount)} · ${fmtDShort(e.date)}</div>
+    <img src="${e.receipt}" style="width:100%;border:3px solid var(--gb2);margin-bottom:8px">
+    ${e.receiptDriveUrl?`<a href="${e.receiptDriveUrl}" target="_blank" class="btn big sec" style="display:block;text-decoration:none;margin-bottom:6px">☁️ VIEW IN DRIVE</a>`:''}
+    <button class="btn" style="width:100%" onclick="closeModal()">✕ CLOSE</button>`);
+}
+
+// ═══════════════════════════════════
+// POD
+// ═══════════════════════════════════
+function viewPOD(jobId){
+  const j=S.jobs.find(x=>x.id===jobId);if(!j||!j.pod)return;
+  showMod(`<div class="m-title">📸 PROOF OF DELIVERY</div>
+    <div style="font-size:6px;color:var(--gb2);margin-bottom:8px">${esc(j.name)} · ${fmtDShort(j.completedDate)}</div>
+    <img src="${j.pod}" style="width:100%;border:3px solid var(--gb2)">
+    <button class="btn big" onclick="sharePOD('${jobId}');closeModal()">↗ SEND POD</button>
+    <button class="btn" style="width:100%;margin-top:6px" onclick="closeModal()">✕ CLOSE</button>`);
+}
+async function sharePOD(jobId){
+  const j=S.jobs.find(x=>x.id===jobId);if(!j||!j.pod)return;
+  try{
+    const file=dataURLtoFile(j.pod,`POD-${j.name.replace(/\s+/g,'-')}.jpg`);
+    if(navigator.share&&navigator.canShare({files:[file]})){
+      await navigator.share({title:`POD: ${j.name}`,text:`Proof of delivery for ${j.name} — completed ${fmtDShort(j.completedDate)}`,files:[file]});
+    }else{
+      const url=URL.createObjectURL(file);const a=document.createElement('a');
+      a.href=url;a.download=file.name;document.body.appendChild(a);a.click();
+      document.body.removeChild(a);URL.revokeObjectURL(url);
+    }
+  }catch(e){}
+}
+
+// ═══════════════════════════════════
+// TAX EXPORT
+// ═══════════════════════════════════
+function downloadText(content,filename){
+  const blob=new Blob([content],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');
+  a.href=url;a.download=filename;document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+function exportJobs(){
+  const {start,end,label}=taxYearRange();
+  const jobs=S.jobs.filter(j=>j.status==='done'&&j.completedDate&&j.completedDate>=start&&j.completedDate<=end);
+  let csv='Date,Client,Description,Pickup,Delivery,Amount,Invoice,Invoice Status,Paid Date\n';
+  jobs.forEach(j=>{
+    const inv=S.invoices.find(i=>i.id===j.invoiceId);
+    csv+=`${j.completedDate},"${clientName(j.clientId)}","${j.name}","${jobAddr(j,'pick')}","${jobAddr(j,'del')}",${j.price||0},"${inv?.number||''}","${inv?.status||''}","${inv?.paidDate||''}"\n`;
+  });
+  downloadText(csv,`odd-socks-jobs-${label}.csv`);
+}
+function exportExpenses(){
+  const {start,end,label}=taxYearRange();
+  const exps=S.expenses.filter(e=>e.date>=start&&e.date<=end);
+  let csv='Date,Category,Description,Amount\n';
+  exps.forEach(e=>{csv+=`${e.date},"${e.category}","${e.description||''}",${e.amount}\n`;});
+  downloadText(csv,`odd-socks-expenses-${label}.csv`);
+}
+function exportMileage(){
+  const {start,end,label}=taxYearRange();
+  const jobs=S.jobs.filter(j=>j.status==='done'&&j.completedDate>=start&&j.completedDate<=end&&j.miles>0);
+  const rate=S.settings.mileageRate||0.45;
+  let csv='Date,Job,Client,Miles,Rate,Claim\n';
+  jobs.forEach(j=>{
+    const claim=(j.miles*rate).toFixed(2);
+    csv+=`${j.completedDate},"${j.name}","${clientName(j.clientId)}",${j.miles},${rate},${claim}\n`;
+  });
+  downloadText(csv,`odd-socks-mileage-${label}.csv`);
+}
+
+// ═══════════════════════════════════
+// MODAL SYSTEM
+// ═══════════════════════════════════
+function showMod(html){document.getElementById('modal').innerHTML=html;document.getElementById('ov').style.display='flex';document.getElementById('modal').scrollTop=0}
+function closeModal(){document.getElementById('ov').style.display='none'}
+document.getElementById('ov').addEventListener('click',e=>{if(e.target===document.getElementById('ov'))closeModal()});
+
+// ═══════════════════════════════════
+// CLAUDE AI
+// ═══════════════════════════════════
+async function callAI(messages,sys){
+  const key=S.settings.apiKey;
+  if(!key){alert('Add your API key in Settings first.');return null}
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:700,system:sys,messages})
+    });
+    if(!res.ok){const e=await res.json().catch(()=>({}));alert('API error: '+(e.error?.message||res.status));return null}
+    const d=await res.json();return d.content?.[0]?.text||null;
+  }catch(e){alert('Network error.');return null}
+}
+function parseJSON(txt){try{const m=txt.match(/\{[\s\S]*\}/);if(m)return JSON.parse(m[0])}catch(e){}return null}
+async function parseText(txt){
+  if(!txt.trim()){alert('Paste some text first.');return}
+  document.getElementById('mc').innerHTML=`<div class="loading"><p>▌ AI READING TEXT...</p></div>`;
+  const sys=`Extract delivery job info. Return ONLY JSON: name (item), icon (one of 🛋️🪑🪞🖼️🏺🕰️📦🪔🗝️🧸🐶🪆🏮🧲🪟🚪), notes (handling), pickDate (YYYY-MM-DD pickup date), pickPost, pickStreet, pickNum, delPost, delStreet, delNum (UK addresses), dueDate (YYYY-MM-DD delivery date, today is ${today()}). Empty string for any missing fields.`;
+  const raw=await callAI([{role:'user',content:txt}],sys);
+  if(!raw)return;
+  const p=parseJSON(raw);
+  if(!p){document.getElementById('mc').innerHTML=`<div class="err-msg">⚠️ COULD NOT PARSE</div>`;setTimeout(showManual,1500);return}
+  FD={...FD,...p,pm:!!(p.pickStreet||p.pickNum),dm:!!(p.delStreet||p.delNum)};
+  document.getElementById('mc').innerHTML=`<div class="ok-msg">✓ AI FILLED THE FORM — CHECK DETAILS</div>`+rManualJobForm(FD);
+}
+async function handlePhoto(file){
+  if(!S.settings.apiKey){alert('Add your API key in Settings first.');return}
+  showMod(rAddJobModal());
+  document.getElementById('mc').innerHTML=`<div class="loading"><p>▌ AI SCANNING PHOTO...</p></div>`;
+  const reader=new FileReader();
+  reader.onload=async e=>{
+    const b64=e.target.result.split(',')[1],mt=file.type||'image/jpeg';
+    const sys=`Identify antique/vintage items from photos. Return ONLY JSON: name (short item name), icon (one of 🛋️🪑🪞🖼️🏺🕰️📦🪔🗝️🧸🐶🪆🏮🧲🪟🚪), notes (condition, material, handling).`;
+    const raw=await callAI([{role:'user',content:[{type:'image',source:{type:'base64',media_type:mt,data:b64}},{type:'text',text:'Identify this item.'}]}],sys);
+    if(!raw)return;
+    const p=parseJSON(raw);
+    if(!p){document.getElementById('mc').innerHTML=`<div class="err-msg">⚠️ COULD NOT IDENTIFY</div>`+rManualJobForm(FD);return}
+    FD={...FD,...p};
+    document.getElementById('mc').innerHTML=`<div class="ok-msg">✓ ITEM IDENTIFIED — ADD ADDRESSES + DATE</div>`+rManualJobForm(FD);
+  };
+  reader.readAsDataURL(file);
+}
+function showPaste(){
+  document.getElementById('mc').innerHTML=`
+    <div class="field"><label>PASTE MESSAGE OR EMAIL</label>
+    <textarea id="pt" style="min-height:100px" placeholder="Paste any WhatsApp message, email, or text about the delivery..."></textarea></div>
+    <button class="btn big" onclick="parseText(document.getElementById('pt').value)">🤖 PARSE WITH AI</button>`;
+}
+function doPhoto(){
+  if(!S.settings.apiKey){alert('Add your API key in Settings first.');return}
+  document.getElementById('cam').click();
+}
+
+// ═══════════════════════════════════
+// FAB + EVENTS
+// ═══════════════════════════════════
+document.getElementById('fab').addEventListener('click',()=>{
+  if(S.tab==='jobs')openAddJob();
+  else if(S.tab==='clients')openAddClient();
+  else if(S.tab==='money')openReceiptCamera();
+});
+document.getElementById('cam').addEventListener('change',e=>{const f=e.target.files?.[0];if(f)handlePhoto(f);e.target.value=''});
+document.getElementById('pod-input').addEventListener('change',e=>{const f=e.target.files?.[0];if(f)handlePODFile(f);e.target.value=''});
+document.getElementById('rcpt-input').addEventListener('change',e=>{const f=e.target.files?.[0];if(f)handleReceiptFile(f);e.target.value=''});
+document.getElementById('rcpt-gallery').addEventListener('change',e=>{const f=e.target.files?.[0];if(f)handleReceiptFile(f);e.target.value=''});
+
+// ═══════════════════════════════════
+// SOCK EASTER EGG
+// ═══════════════════════════════════
+function tapSock(){
+  sockN++;clearTimeout(sockT);
+  sockT=setTimeout(()=>sockN=0,3000);
+  if(sockN>=5){sockN=0;openWorld();}
+}
+
+// ═══════════════════════════════════
+// PWA
+// ═══════════════════════════════════
+function setupPWA(){
+  const m={name:'Odd Socks',short_name:'Odd Socks',description:'Van delivery manifest',start_url:'./',display:'standalone',background_color:'#0f380f',theme_color:'#0f380f',
+    icons:[{src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230f380f'/%3E%3Ctext y='.9em' font-size='85'%3E🧦%3C/text%3E%3C/svg%3E",sizes:'any',type:'image/svg+xml'}],
+    share_target:{action:'./',method:'GET',params:{text:'text',title:'title',url:'url'}}};
+  try{const blob=new Blob([JSON.stringify(m)],{type:'application/manifest+json'});document.getElementById('manifest-link').href=URL.createObjectURL(blob);}catch(e){}
+  if('serviceWorker' in navigator){
+    const sw=`self.addEventListener('install',e=>e.waitUntil(caches.open('os3').then(c=>c.addAll(['./']))));self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>r))))`;
+    try{navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'})));}catch(e){}
+  }
+}
+function checkShare(){
+  const p=new URLSearchParams(window.location.search);
+  const txt=p.get('text')||p.get('shared_text');
+  if(txt){window.history.replaceState({},'',window.location.pathname);openAddJob();setTimeout(()=>parseText(txt),400);}
+}
+
+// ═══════════════════════════════════
+// WORLD GAME — EASTER EGG
+// ═══════════════════════════════════
+const WT=16,WS=2,WVW=10,WVH=9,WCW=WVW*WT*WS,WCH=WVH*WT*WS;
+const TG=0,TP=1,TR=2,TB=3,TH=4,TF=5,TW=6,TL=7,TV=8,TS=9;
+const TWALK=new Set([TG,TP,TL,TV,TS]);
+const WMAP=[[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],[3,0,0,0,0,0,7,2,0,0,0,0,2,7,0,0,0,0,0,3],[3,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,3],[3,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,3],[3,0,0,0,0,0,0,2,0,0,0,0,2,0,0,0,0,0,0,3],[3,0,0,0,2,0,0,0,0,0,0,0,0,0,2,0,0,0,0,3],[3,1,1,1,1,1,1,1,1,9,1,1,1,1,1,1,1,1,1,3],[3,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,3],[3,0,2,0,0,5,0,0,0,1,0,0,0,5,0,0,2,0,0,3],[3,0,0,0,0,4,0,0,0,1,0,0,0,4,0,0,0,0,0,3],[3,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,3],[3,0,0,0,8,8,0,0,0,1,0,0,0,0,6,6,0,0,0,3],[3,0,2,0,0,0,0,0,0,1,0,0,0,0,6,6,0,0,0,3],[3,0,2,0,0,0,0,0,0,1,0,0,0,0,0,0,0,2,0,3],[3,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,3],[3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3]];
+const WNPCS=[{tx:6,ty:1,dir:2,chat:['WELCOME TO THE\nODD SOCKS MARKET!','FIND THE RIVAL\nDEALERS AND\nHAGGLE THEM DOWN!']},{tx:13,ty:1,dir:2,chat:['FIVE SOCK TAPS\nTO FIND THIS PLACE.','YOU\'RE A TRUE\nODD SOCKS LEGEND!']},{tx:4,ty:11,dir:1,chat:['MY GRANNY HAD\nTHAT EXACT DRESSER.','SHE SOLD IT FOR\nA FORTUNE AT AUCTION!']},{tx:15,ty:11,dir:3,chat:['MILEAGE CLAIMS,\nBACKS AND FONT.\nNEVER FORGET THEM!']}];
+const WRIVALS=[{tx:3,ty:3,dir:2,col:'#8b4513',name:'DEALER DAN',title:'The Lowballer',maxHp:80,moves:[0,0,1,3],intro:['DEALER DAN\nAPPROACHES!','I\'LL GIVE YOU\nTEN QUID FOR\nTHE LOT...'],winLine:'YOU CAME,\nYOU SOLD CHEAP.',loseLine:'FINE, FAIR\nPRICE IT IS!',},{tx:16,ty:3,dir:2,col:'#4a0080',name:'MADAM PRICE',title:'The Appraiser',maxHp:100,moves:[1,1,2,3],intro:['MADAM PRICE\nINSPECTS YOU!','HMMMM... YOUR\nVAN SMELLS OF\nANTIQUES...'],winLine:'YOUR PRICES LACK\nPROVENANCE.',loseLine:'I CONCEDE —\nEXCELLENT VALUE!',},{tx:9,ty:13,dir:0,col:'#8b0000',name:'BARON VON BID',title:'The Auctioneer',maxHp:120,moves:[0,1,3,3],intro:['BARON VON BID\nDESCENDS!','GOING ONCE...\nGOING TWICE...'],winLine:'SOLD! TO THE\nMAN WHO GAVE IN.',loseLine:'LOT 1 — WITHDRAWN!\nYOU WIN!',}];
+const BMOVES=[{name:'HAGGLE',fn(b){const d=15+(Math.random()*12|0);b.enemy.hp=Math.max(0,b.enemy.hp-d);b.shk={t:'e',f:16};return`YOU HAGGLE!\n-${d} HP`}},{name:'APPRAISE',fn(b){if(Math.random()<0.75){const d=22+(Math.random()*10|0);b.enemy.hp=Math.max(0,b.enemy.hp-d);b.shk={t:'e',f:16};return`SHARP APPRAISE!\n-${d} HP`}return`MISSED THE\nMARK!`}},{name:'POLISH',fn(b){const h=20;b.pHP=Math.min(b.pMaxHP,b.pHP+h);return`YOU POLISH UP!\n+${h} HP`}},{name:'BLUFF',fn(b){if(Math.random()<0.55){const d=32+(Math.random()*15|0);b.enemy.hp=Math.max(0,b.enemy.hp-d);b.shk={t:'e',f:20};return`BOLD BLUFF!\n-${d} HP`}return`BLUFF CALLED!\nNO EFFECT.`}}];
+let WP={tx:9,ty:9,dir:2,ox:0,oy:0,moving:false,mtx:0,mty:0,mp:0,af:0,at:0,keys:{up:0,dn:0,lt:0,rt:0,a:0},ap:false,msg:null,raf:null};
+let WB=null;
+function wt(tx,ty){if(ty<0||ty>=WMAP.length||tx<0||tx>=WMAP[0].length)return TB;return WMAP[ty][tx]}
+function ww2(tx,ty){if(!TWALK.has(wt(tx,ty)))return false;if(WNPCS.find(n=>n.tx===tx&&n.ty===ty))return false;if(WRIVALS.find(n=>n.tx===tx&&n.ty===ty))return false;return true}
+function dTile(ctx,t,px,py,tk){const s=WS,sz=WT*WS;if(t===TG){ctx.fillStyle='#9bbc0f';ctx.fillRect(px,py,sz,sz);ctx.fillStyle='#8bac0f';[[2,3],[5,1],[4,6],[8,4],[1,8],[10,2],[12,7]].forEach(([x,y])=>ctx.fillRect(px+x*s,py+y*s,s,s));}else if(t===TP){ctx.fillStyle='#c4d96b';ctx.fillRect(px,py,sz,sz);ctx.fillStyle='#9bbc0f';ctx.fillRect(px,py,sz,s);ctx.fillRect(px,py+sz-s,sz,s);}else if(t===TR){ctx.fillStyle='#306230';ctx.fillRect(px,py,sz,sz);ctx.fillStyle='#0f380f';ctx.fillRect(px+s,py+s,sz-2*s,sz/2);ctx.fillStyle='#9bbc0f';ctx.fillRect(px+3*s,py,2*s,4*s);ctx.fillStyle='#8bac0f';ctx.fillRect(px+3*s,py+sz-4*s,2*s,4*s);}else if(t===TB){ctx.fillStyle='#306230';ctx.fillRect(px,py,sz,sz);ctx.fillStyle='#0f380f';ctx.fillRect(px+2*s,py+2*s,sz-4*s,sz-4*s);}else if(t===TF){ctx.fillStyle='#0f380f';ctx.fillRect(px,py,sz,sz);ctx.fillStyle='#306230';ctx.fillRect(px+s,py+sz/2,sz-2*s,sz/2);}else if(t===TH){ctx.fillStyle='#8bac0f';ctx.fillRect(px,py,sz,sz);ctx.fillStyle='#0f380f';ctx.fillRect(px+5*s,py+6*s,6*s,sz-6*s);ctx.fillRect(px+2*s,py+5*s,3*s,3*s);ctx.fillRect(px+11*s,py+5*s,3*s,3*s);ctx.fillStyle='#c4d96b';ctx.fillRect(px+2*s,py+5*s,s,s);ctx.fillRect(px+11*s,py+5*s,s,s);}else if(t===TW){ctx.fillStyle='#306230';ctx.fillRect(px,py,sz,sz);ctx.fillStyle='#0f380f';ctx.fillRect(px,py,sz,2*s);ctx.fillStyle='#9bbc0f';const r=(tk/10|0)%4;ctx.fillRect(px+(1+r)*s*2,py+5*s,4*s,s);ctx.fillRect(px+(3-r)*s*2,py+10*s,3*s,s);}else if(t===TL){ctx.fillStyle='#9bbc0f';ctx.fillRect(px,py,sz,sz);ctx.fillStyle='#c4d96b';ctx.fillRect(px+6*s,py+5*s,4*s,4*s);ctx.fillStyle='#8bac0f';ctx.fillRect(px+7*s,py+6*s,2*s,2*s);}else if(t===TV){ctx.fillStyle='#8bac0f';ctx.fillRect(px,py,sz,sz);ctx.fillStyle='#0f380f';ctx.fillRect(px+s,py+4*s,sz-2*s,9*s);ctx.fillStyle='#c4d96b';ctx.fillRect(px+2*s,py+5*s,5*s,3*s);ctx.fillStyle='#9bbc0f';ctx.fillRect(px+8*s,py+5*s,3*s,3*s);ctx.fillStyle='#306230';ctx.fillRect(px+2*s,py+12*s,3*s,3*s);ctx.fillRect(px+11*s,py+12*s,3*s,3*s);}else if(t===TS){ctx.fillStyle='#9bbc0f';ctx.fillRect(px,py,sz,sz);ctx.fillStyle='#306230';ctx.fillRect(px+7*s,py+3*s,2*s,sz-3*s);ctx.fillStyle='#0f380f';ctx.fillRect(px+3*s,py+3*s,10*s,5*s);ctx.fillStyle='#c4d96b';ctx.fillRect(px+4*s,py+4*s,8*s,3*s);}else{ctx.fillStyle='#0f380f';ctx.fillRect(px,py,sz,sz);ctx.fillStyle='#306230';ctx.fillRect(px+s,py+s,sz-2*s,sz-2*s);}}
+function dChar(ctx,px,py,dir,fr,isP){const s=WS,sz=WT*WS;ctx.fillStyle='rgba(0,0,0,0.2)';ctx.fillRect(px+3*s,py+sz-2*s,10*s,2*s);ctx.fillStyle='#306230';if(fr===1){ctx.fillRect(px+5*s,py+11*s,3*s,4*s);ctx.fillRect(px+9*s,py+12*s,3*s,3*s);}else{ctx.fillRect(px+5*s,py+11*s,3*s,5*s);ctx.fillRect(px+9*s,py+11*s,3*s,5*s);}ctx.fillStyle='#0f380f';if(fr===1){ctx.fillRect(px+4*s,py+sz-2*s,4*s,2*s);ctx.fillRect(px+9*s,py+sz-s,4*s,s);}else{ctx.fillRect(px+4*s,py+sz-2*s,4*s,2*s);ctx.fillRect(px+9*s,py+sz-2*s,4*s,2*s);}ctx.fillStyle=isP?'#c4d96b':'#9bbc0f';ctx.fillRect(px+4*s,py+7*s,8*s,5*s);ctx.fillStyle='#8bac0f';ctx.fillRect(px+2*s,py+7*s,3*s,4*s);ctx.fillRect(px+11*s,py+7*s,3*s,4*s);ctx.fillStyle='#c4d96b';ctx.fillRect(px+6*s,py+5*s,4*s,3*s);ctx.fillRect(px+4*s,py+2*s,8*s,5*s);ctx.fillStyle='#0f380f';if(dir===2){ctx.fillRect(px+5*s,py+4*s,2*s,2*s);ctx.fillRect(px+9*s,py+4*s,2*s,2*s);}else if(dir===0){ctx.fillRect(px+5*s,py+3*s,2*s,s);ctx.fillRect(px+9*s,py+3*s,2*s,s);}else{ctx.fillRect(px+5*s,py+4*s,2*s,2*s);ctx.fillRect(px+(dir===1?9:5)*s,py+4*s,s,2*s);}ctx.fillStyle='#0f380f';ctx.fillRect(px+3*s,py+s,10*s,3*s);ctx.fillRect(px+4*s,py,8*s,2*s);ctx.fillStyle=isP?'#9bbc0f':'#c4d96b';ctx.fillRect(px+3*s,py+3*s,10*s,s);if(isP){ctx.fillStyle='rgba(200,80,80,0.35)';ctx.fillRect(px+4*s,py+5*s,2*s,s);ctx.fillRect(px+10*s,py+5*s,2*s,s);}}
+function dRival(ctx,px,py,dir,col){const s=WS,sz=WT*WS;ctx.fillStyle='rgba(0,0,0,0.2)';ctx.fillRect(px+3*s,py+sz-2*s,10*s,2*s);ctx.fillStyle='#306230';ctx.fillRect(px+5*s,py+11*s,3*s,5*s);ctx.fillRect(px+9*s,py+11*s,3*s,5*s);ctx.fillStyle='#0f380f';ctx.fillRect(px+4*s,py+sz-2*s,4*s,2*s);ctx.fillRect(px+9*s,py+sz-2*s,4*s,2*s);ctx.fillStyle=col;ctx.fillRect(px+4*s,py+7*s,8*s,5*s);ctx.fillStyle='#8bac0f';ctx.fillRect(px+2*s,py+7*s,3*s,4*s);ctx.fillRect(px+11*s,py+7*s,3*s,4*s);ctx.fillStyle='#c4d96b';ctx.fillRect(px+6*s,py+5*s,4*s,3*s);ctx.fillRect(px+4*s,py+2*s,8*s,5*s);ctx.fillStyle='#0f380f';if(dir===2){ctx.fillRect(px+5*s,py+4*s,2*s,2*s);ctx.fillRect(px+9*s,py+4*s,2*s,2*s);}else{ctx.fillRect(px+5*s,py+4*s,2*s,2*s);ctx.fillRect(px+5*s,py+4*s,s,2*s);}ctx.fillStyle='#8bac0f';ctx.fillRect(px+3*s,py+s,10*s,3*s);ctx.fillRect(px+4*s,py,8*s,2*s);ctx.fillStyle='#0f380f';ctx.fillRect(px+3*s,py+3*s,10*s,s);ctx.strokeStyle='#0f380f';ctx.lineWidth=1;ctx.strokeRect(px+9*s,py+3*s,3*s,3*s);}
+function hpColor(pct){return pct>0.5?'#9bbc0f':pct>0.25?'#c49000':'#d03030'}
+function dBattle(ctx,tk){const b=WB;ctx.fillStyle='#0f380f';ctx.fillRect(0,0,WCW,WCH);ctx.fillStyle='#306230';ctx.fillRect(WCW*0.45,WCH*0.3,WCW*0.55,WCH*0.18);ctx.fillStyle='#306230';ctx.fillRect(0,WCH*0.58,WCW*0.55,WCH*0.18);const es=WB.shk&&WB.shk.t==='e'&&WB.shk.f>0?Math.sin(WB.shk.f)*4:0;ctx.save();ctx.translate(WCW*0.62+es,WCH*0.05);ctx.scale(3/WS,3/WS);dRival(ctx,0,0,3,b.enemy.col);ctx.restore();const ps=WB.shk&&WB.shk.t==='p'&&WB.shk.f>0?Math.sin(WB.shk.f)*3:0;ctx.save();ctx.translate(WCW*0.05+ps,WCH*0.38);ctx.scale(1.5,1.5);dChar(ctx,0,0,2,((tk/8|0)%2)&&b.state==='select'?1:0,true);ctx.restore();ctx.fillStyle='#0f380f';ctx.fillRect(4,4,WCW*0.55,32);ctx.strokeStyle='#c4d96b';ctx.lineWidth=1;ctx.strokeRect(4,4,WCW*0.55,32);ctx.fillStyle='#c4d96b';ctx.font=`6px 'Press Start 2P',monospace`;ctx.textBaseline='top';ctx.fillText(b.enemy.name,8,8);ctx.fillText(b.enemy.title,8,16);const epct=b.enemy.hp/b.enemy.maxHp;ctx.fillStyle='#306230';ctx.fillRect(8,26,WCW*0.5-8,6);ctx.fillStyle=hpColor(epct);ctx.fillRect(8,26,Math.max(0,(WCW*0.5-8)*epct),6);ctx.strokeStyle='#8bac0f';ctx.strokeRect(8,26,WCW*0.5-8,6);const pbx=WCW*0.45,pby=WCH*0.52;ctx.fillStyle='#0f380f';ctx.fillRect(pbx,pby,WCW*0.52,32);ctx.strokeStyle='#c4d96b';ctx.lineWidth=1;ctx.strokeRect(pbx,pby,WCW*0.52,32);ctx.fillStyle='#c4d96b';ctx.font=`6px 'Press Start 2P',monospace`;ctx.textBaseline='top';ctx.fillText('YOU',pbx+4,pby+4);const ppct=b.pHP/b.pMaxHP;ctx.fillStyle='#306230';ctx.fillRect(pbx+4,pby+20,WCW*0.46,6);ctx.fillStyle=hpColor(ppct);ctx.fillRect(pbx+4,pby+20,Math.max(0,WCW*0.46*ppct),6);ctx.strokeStyle='#8bac0f';ctx.strokeRect(pbx+4,pby+20,WCW*0.46,6);ctx.fillStyle='#c4d96b';ctx.fillText(`${b.pHP}/${b.pMaxHP}`,pbx+4,pby+12);if(b.state==='msg'||b.state==='win'||b.state==='lose'){const mby=WCH-46;ctx.fillStyle='#0f380f';ctx.fillRect(2,mby,WCW-4,44);ctx.strokeStyle='#c4d96b';ctx.lineWidth=WS;ctx.strokeRect(2,mby,WCW-4,44);ctx.fillStyle='#c4d96b';ctx.font=`6px 'Press Start 2P',monospace`;ctx.textBaseline='top';(b.msg||'').split('\n').forEach((l,i)=>ctx.fillText(l,8,mby+6+i*12));if((tk/12|0)%2===0)ctx.fillText('▼',WCW-14,mby+32);}if(WB.shk&&WB.shk.f>0)WB.shk.f--;updateBtns();}
+function updateBtns(){const dp=document.getElementById('wdpad'),bb=document.getElementById('wbtns');if(!dp||!bb)return;const inB=!!WB;dp.style.display=inB?'none':'grid';bb.style.display=inB?'grid':'none';}
+function wCam(){return{cx:Math.max(0,Math.min(20-WVW,WP.tx-Math.floor(WVW/2))),cy:Math.max(0,Math.min(16-WVH,WP.ty-Math.floor(WVH/2)))};}
+function dWorld(ctx,tk){const{cx,cy}=wCam(),ts=WT*WS;for(let r=0;r<=WVH;r++)for(let c=0;c<=WVW;c++)dTile(ctx,wt(cx+c,cy+r),c*ts,r*ts,tk);WNPCS.forEach(n=>{const px=(n.tx-cx)*ts,py=(n.ty-cy)*ts;if(px>-ts&&px<WCW&&py>-ts&&py<WCH)dChar(ctx,px,py,n.dir,0,false);});WRIVALS.forEach(n=>{const px=(n.tx-cx)*ts,py=(n.ty-cy)*ts;if(px>-ts&&px<WCW&&py>-ts&&py<WCH)dRival(ctx,px,py,n.dir,n.col);});const ppx=(WP.tx-cx)*ts+WP.ox*WS,ppy=(WP.ty-cy)*ts+WP.oy*WS;dChar(ctx,ppx,ppy,WP.dir,WP.af,true);if(WP.msg){const bh=42*WS,by=WCH-bh-2;ctx.fillStyle='#0f380f';ctx.fillRect(2,by,WCW-4,bh);ctx.strokeStyle='#c4d96b';ctx.lineWidth=WS;ctx.strokeRect(2,by,WCW-4,bh);ctx.strokeStyle='#8bac0f';ctx.lineWidth=1;ctx.strokeRect(2+WS*2,by+WS*2,WCW-4-WS*4,bh-WS*4);ctx.fillStyle='#c4d96b';ctx.font=`7px 'Press Start 2P',monospace`;ctx.textBaseline='top';(WP.msg.lines[WP.msg.idx]||'').split('\n').forEach((l,i)=>ctx.fillText(l,2+WS*4,by+WS*4+i*11));if((tk/12|0)%2===0){ctx.fillText('▼',WCW-WS*10,by+bh-WS*6);}}}
+const WDIRS=[[0,-1],[1,0],[0,1],[-1,0]];
+function wMove(d){if(WP.moving||WP.msg||WB)return;WP.dir=d;const[dx,dy]=WDIRS[d],nx=WP.tx+dx,ny=WP.ty+dy;if(!ww2(nx,ny))return;WP.moving=true;WP.mtx=nx;WP.mty=ny;WP.mp=0;}
+function wAct(){if(WB){if(WB.state==='msg'){bNextMsg();}return;}if(WP.msg){WP.msg.idx++;if(WP.msg.idx>=WP.msg.lines.length)WP.msg=null;return;}const[dx,dy]=WDIRS[WP.dir],fx=WP.tx+dx,fy=WP.ty+dy;const npc=WNPCS.find(n=>n.tx===fx&&n.ty===fy);if(npc){WP.msg={lines:npc.chat,idx:0};return;}const rival=WRIVALS.find(n=>n.tx===fx&&n.ty===fy);if(rival){WP.msg={lines:[...rival.intro,'GET READY!'],idx:0,onDone:()=>startBattle(rival)};return;}}
+function startBattle(rival){WB={enemy:{name:rival.name,title:rival.title,hp:rival.maxHp,maxHp:rival.maxHp,col:rival.col,moves:rival.moves,winLine:rival.winLine,loseLine:rival.loseLine},pHP:100,pMaxHP:100,state:'select',msg:'',shk:null};updateBtns();}
+function bMove(idx){if(!WB||WB.state!=='select')return;const result=BMOVES[idx].fn(WB);WB.state='msg';WB.msg=result;WB.msgNext=()=>{if(WB.enemy.hp<=0){WB.state='win';WB.msg='YOU WIN!\n'+WB.enemy.loseLine;WB.msgNext=()=>{WB=null;updateBtns();};return;}bEnemyTurn();};}
+function bEnemyTurn(){const mi=WB.enemy.moves[Math.random()*WB.enemy.moves.length|0];let msg='';if(mi===0){const d=12+(Math.random()*10|0);WB.pHP=Math.max(0,WB.pHP-d);WB.shk={t:'p',f:16};msg=`${WB.enemy.name}\nHAGGLES HARD!\n-${d} HP`;}else if(mi===1){if(Math.random()<0.65){const d=18+(Math.random()*8|0);WB.pHP=Math.max(0,WB.pHP-d);WB.shk={t:'p',f:16};msg=`${WB.enemy.name}\nAPPRAISES!\n-${d} HP`;}else msg=`${WB.enemy.name}\nMISSED THE MARK!`;}else if(mi===2){const h=18;WB.enemy.hp=Math.min(WB.enemy.maxHp,WB.enemy.hp+h);msg=`${WB.enemy.name}\nPOLISHES TROPHY!\n+${h} HP`;}else{if(Math.random()<0.5){const d=28+(Math.random()*12|0);WB.pHP=Math.max(0,WB.pHP-d);WB.shk={t:'p',f:20};msg=`${WB.enemy.name}\nBLUFFS BOLDLY!\n-${d} HP`;}else msg=`${WB.enemy.name}\nBLUFF FAILED!`;}WB.state='msg';WB.msg=msg;WB.msgNext=()=>{if(WB.pHP<=0){WB.state='lose';WB.msg='YOU LOST!\n'+WB.enemy.winLine;WB.msgNext=()=>{WB=null;WP.msg=null;updateBtns();};return;}WB.state='select';updateBtns();};}
+function bNextMsg(){if(WB.msgNext){const fn=WB.msgNext;WB.msgNext=null;fn();}}
+let WTick=0;
+function wLoop(){WP.raf=requestAnimationFrame(wLoop);const c=document.getElementById('wc');if(!c)return;const ctx=c.getContext('2d');WTick++;if(WB){ctx.clearRect(0,0,WCW,WCH);dBattle(ctx,WTick);return;}if(WP.moving){WP.mp+=2;const[dx,dy]=WDIRS[WP.dir];WP.ox=dx*WP.mp;WP.oy=dy*WP.mp;WP.at++;if(WP.at%6===0)WP.af=WP.af?0:1;if(WP.mp>=WT){WP.tx=WP.mtx;WP.ty=WP.mty;WP.ox=0;WP.oy=0;WP.moving=false;}}else{WP.af=0;if(!WP.msg){if(WP.keys.up)wMove(0);else if(WP.keys.rt)wMove(1);else if(WP.keys.dn)wMove(2);else if(WP.keys.lt)wMove(3);}if(WP.keys.a&&!WP.ap){WP.ap=true;if(WP.msg&&WP.msg.idx>=WP.msg.lines.length-1&&WP.msg.onDone){const fn=WP.msg.onDone;WP.msg=null;fn();}else{wAct();}}if(!WP.keys.a)WP.ap=false;}ctx.clearRect(0,0,WCW,WCH);dWorld(ctx,WTick);}
+function wKD(e){if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','KeyZ'].includes(e.code))e.preventDefault();if(e.code==='ArrowUp'||e.code==='KeyW')WP.keys.up=1;if(e.code==='ArrowDown'||e.code==='KeyS')WP.keys.dn=1;if(e.code==='ArrowLeft'||e.code==='KeyA')WP.keys.lt=1;if(e.code==='ArrowRight'||e.code==='KeyD')WP.keys.rt=1;if(e.code==='Space'||e.code==='KeyZ'||e.code==='Enter')WP.keys.a=1;}
+function wKU(e){if(e.code==='ArrowUp'||e.code==='KeyW')WP.keys.up=0;if(e.code==='ArrowDown'||e.code==='KeyS')WP.keys.dn=0;if(e.code==='ArrowLeft'||e.code==='KeyA')WP.keys.lt=0;if(e.code==='ArrowRight'||e.code==='KeyD')WP.keys.rt=0;if(e.code==='Space'||e.code==='KeyZ'||e.code==='Enter')WP.keys.a=0;}
+function wBtn(d,on){if(d==='up')WP.keys.up=on?1:0;else if(d==='dn')WP.keys.dn=on?1:0;else if(d==='lt')WP.keys.lt=on?1:0;else if(d==='rt')WP.keys.rt=on?1:0;else if(d==='a')WP.keys.a=on?1:0;}
+function openWorld(){
+  const c=document.getElementById('wc');
+  c.width=WCW;c.height=WCH;c.style.width=WCW+'px';c.style.height=WCH+'px';
+  document.getElementById('world-ov').style.display='flex';
+  WP.raf=requestAnimationFrame(wLoop);
+  document.addEventListener('keydown',wKD);document.addEventListener('keyup',wKU);
+}
+function closeWorld(){
+  if(WP.raf){cancelAnimationFrame(WP.raf);WP.raf=null;}
+  document.removeEventListener('keydown',wKD);document.removeEventListener('keyup',wKU);
+  Object.keys(WP.keys).forEach(k=>WP.keys[k]=0);
+  document.getElementById('world-ov').style.display='none';
+}
+
+// ═══════════════════════════════════
+// THEME TOGGLE
+// ═══════════════════════════════════
+function toggleTheme(){
+  const isClean=document.body.classList.toggle('clean');
+  localStorage.setItem('os3_theme',isClean?'clean':'pixel');
+  // Update badge label
+  const badge=document.getElementById('hdr-badge');
+  if(badge)badge.title=isClean?'Switch to pixel mode':'Switch to clean mode';
+  render();
+}
+function applyTheme(){
+  if(localStorage.getItem('os3_theme')==='clean')document.body.classList.add('clean');
+}
+
+// ═══════════════════════════════════
+// INIT
+// ═══════════════════════════════════
+function getGASScript(){
+return `// ═══════════════════════════════════════════════════
+// ODD SOCKS — Google Apps Script  v2
+// ═══════════════════════════════════════════════════
+// 1. Open a new Google Sheet
+// 2. Extensions > Apps Script > paste this > Save
+// 3. Deploy > New deployment > Web App
+//    Execute as: Me   |   Access: Anyone
+// 4. Copy the /exec URL into Odd Socks Settings
+// ═══════════════════════════════════════════════════
+
+// ── FOLDER STRUCTURE ──────────────────────────────
+// Google Drive/
+//   Odd Socks/
+//     Odd Socks Master Log  (this spreadsheet)
+//     Business Expenses/    (receipt photos)
+//     Invoices/
+//       [Client Name]/      (Google Doc invoices)
+//     PODs/
+//       [Client Name]/      (proof of delivery photos)
+
+var ROOT_NAME = 'Odd Socks';
+
+function getRootFolder() {
+  var driveRoot = DriveApp.getRootFolder();
+  var it = driveRoot.getFoldersByName(ROOT_NAME);
+  return it.hasNext() ? it.next() : driveRoot.createFolder(ROOT_NAME);
+}
+
+function getOrCreateFolder(name, parent) {
+  var p = parent || getRootFolder();
+  var it = p.getFoldersByName(name);
+  return it.hasNext() ? it.next() : p.createFolder(name);
+}
+
+function initFolders() {
+  var root = getRootFolder();
+  getOrCreateFolder('Business Expenses', root);
+  getOrCreateFolder('Invoices', root);
+  getOrCreateFolder('PODs', root);
+  // Move this spreadsheet into the root folder if it isn't already
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ssFile = DriveApp.getFileById(ss.getId());
+  var parents = ssFile.getParents();
+  var alreadyInRoot = false;
+  while (parents.hasNext()) {
+    if (parents.next().getId() === root.getId()) { alreadyInRoot = true; break; }
+  }
+  if (!alreadyInRoot) {
+    root.addFile(ssFile);
+    try { DriveApp.getRootFolder().removeFile(ssFile); } catch(e) {}
+  }
+  return root;
+}
+
+// ── REQUEST HANDLER ───────────────────────────────
+function doPost(e) {
+  try {
+    var data = JSON.parse(e.postData.contents);
+    var action = data.action;
+    if (action === 'test')           return testConnection();
+    if (action === 'syncAll')        return syncAll(data);
+    if (action === 'uploadPhoto')    return uploadPhoto(data);
+    if (action === 'createInvoiceDoc') return createInvoiceDoc(data);
+    return respond({ok: false, msg: 'Unknown action: ' + action});
+  } catch(err) {
+    return respond({ok: false, msg: err.toString()});
+  }
+}
+
+function doGet(e) {
+  return respond({ok: true, msg: 'Odd Socks GAS is running.'});
+}
+
+function respond(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function testConnection() {
+  initFolders();
+  var root = getRootFolder();
+  return respond({
+    ok: true,
+    msg: 'Connected! Drive folder and Sheets are ready.',
+    folderUrl: root.getUrl()
+  });
+}
+
+// ── SHEETS SYNC ───────────────────────────────────
+function syncAll(data) {
+  initFolders();
+  writeSheet('Jobs',
+    ['Date Completed','Client','Item','Pickup Post','Delivery Post',
+     'Price £','Miles','Mileage Claim £','Status','Invoice No',
+     'Invoice Status','Paid Date','POD URL'],
+    data.jobs || [],
+    {currency:[6,8], status:{col:9, paid:'#c8e6c9', draft:'#fff9c4', sent:'#bbdefb', overdue:'#ffcdd2'}});
+  writeSheet('Invoices',
+    ['Invoice No','Client','Issue Date','Due Date','Total £',
+     'Status','Paid Date','Payment Method','Doc URL'],
+    data.invoices || [],
+    {currency:[5], status:{col:6, paid:'#c8e6c9', draft:'#fff9c4', sent:'#bbdefb', overdue:'#ffcdd2'}});
+  writeSheet('Business Expenses',
+    ['Date','Category','Description','Amount £','Receipt URL'],
+    data.expenses || [],
+    {currency:[4]});
+  writeSheet('Mileage',
+    ['Date','Job','Client','Pickup Post','Delivery Post',
+     'Miles','Rate £/mi','Claim £'],
+    data.mileage || [],
+    {currency:[7,8]});
+  writeSheet('P&L',
+    ['Month','Income Paid £','Outstanding £','Expenses £',
+     'Mileage Claims £','Net Profit £','Tax Stash £'],
+    data.pl || [],
+    {currency:[2,3,4,5,6,7]});
+  writeDashboard(data);
+  return respond({ok: true});
+}
+
+function writeSheet(name, headers, rows, opts) {
+  opts = opts || {};
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName(name);
+  if (!sh) sh = ss.insertSheet(name);
+  sh.clearContents();
+  sh.clearFormats();
+
+  var allRows = [headers].concat(rows);
+  if (allRows.length > 0) {
+    sh.getRange(1, 1, allRows.length, headers.length).setValues(allRows);
+  }
+
+  // Header row styling
+  var hdr = sh.getRange(1, 1, 1, headers.length);
+  hdr.setBackground('#0f380f')
+     .setFontColor('#c4d96b')
+     .setFontWeight('bold')
+     .setFontSize(9)
+     .setVerticalAlignment('middle')
+     .setHorizontalAlignment('center');
+  sh.setRowHeight(1, 28);
+  sh.setFrozenRows(1);
+
+  if (rows.length === 0) return;
+
+  // Alternating row colors
+  for (var r = 0; r < rows.length; r++) {
+    var bg = (r % 2 === 0) ? '#ffffff' : '#f4f8f0';
+    sh.getRange(r + 2, 1, 1, headers.length).setBackground(bg).setFontSize(9);
+    sh.setRowHeight(r + 2, 22);
+  }
+
+  // Currency columns — right-align and format
+  (opts.currency || []).forEach(function(c) {
+    if (c <= headers.length) {
+      sh.getRange(2, c, rows.length, 1)
+        .setNumberFormat('£#,##0.00')
+        .setHorizontalAlignment('right');
+    }
+  });
+
+  // Status column — colour-code by value
+  if (opts.status) {
+    var sc = opts.status.col;
+    rows.forEach(function(row, ri) {
+      var val = (row[sc - 1] || '').toString().toLowerCase();
+      var bg2 = null;
+      if (val === 'paid') bg2 = opts.status.paid;
+      else if (val === 'draft') bg2 = opts.status.draft;
+      else if (val === 'sent') bg2 = opts.status.sent;
+      else if (val === 'overdue') bg2 = opts.status.overdue;
+      else if (val === 'done') bg2 = opts.status.paid;
+      if (bg2) sh.getRange(ri + 2, sc, 1, 1).setBackground(bg2).setFontWeight('bold');
+    });
+  }
+
+  // Border around all data
+  sh.getRange(1, 1, allRows.length, headers.length)
+    .setBorder(true, true, true, true, true, true,
+      '#cccccc', SpreadsheetApp.BorderStyle.SOLID);
+
+  sh.autoResizeColumns(1, headers.length);
+}
+
+function writeDashboard(data) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName('Dashboard');
+  if (!sh) {
+    sh = ss.insertSheet('Dashboard');
+    // Move dashboard to front
+    ss.setActiveSheet(sh);
+    ss.moveActiveSheet(1);
+  }
+  sh.clearContents();
+  sh.clearFormats();
+  sh.setColumnWidth(1, 20);   // left margin
+  sh.setColumnWidth(2, 160);
+  sh.setColumnWidth(3, 160);
+  sh.setColumnWidth(4, 160);
+  sh.setColumnWidth(5, 160);
+  sh.setColumnWidth(6, 20);   // right margin
+
+  // ── Title bar ──
+  var titleRange = sh.getRange(1, 1, 1, 6);
+  titleRange.merge().setValue('').setBackground('#0f380f');
+  sh.setRowHeight(1, 8);
+
+  var titleRow = sh.getRange(2, 1, 1, 6);
+  titleRow.merge().setValue('ODD SOCKS — FINANCIAL DASHBOARD')
+    .setBackground('#0f380f')
+    .setFontColor('#c4d96b')
+    .setFontWeight('bold')
+    .setFontSize(16)
+    .setHorizontalAlignment('center')
+    .setVerticalAlignment('middle');
+  sh.setRowHeight(2, 48);
+
+  sh.getRange(3, 1, 1, 6).merge().setBackground('#0f380f');
+  sh.setRowHeight(3, 6);
+
+  // ── Build summary numbers from data ──
+  var jobs = data.jobs || [];
+  var invoices = data.invoices || [];
+  var expenses = data.expenses || [];
+  var mileage = data.mileage || [];
+
+  var totalEarned = 0, outstanding = 0, totalExpenses = 0, totalMileageClaim = 0;
+  var totalJobs = jobs.length;
+  var paidCount = 0, draftCount = 0;
+
+  invoices.forEach(function(row) {
+    var amt = parseFloat(row[4]) || 0;
+    var status = (row[5] || '').toLowerCase();
+    if (status === 'paid') { totalEarned += amt; paidCount++; }
+    else if (status === 'sent' || status === 'overdue') outstanding += amt;
+    else if (status === 'draft') draftCount++;
+  });
+  expenses.forEach(function(row) { totalExpenses += parseFloat(row[3]) || 0; });
+  mileage.forEach(function(row) { totalMileageClaim += parseFloat(row[7]) || 0; });
+  var netProfit = totalEarned - totalExpenses - totalMileageClaim;
+
+  function heroCell(sh, row, col, label, value, bg, fg) {
+    sh.setRowHeight(row, 18);
+    sh.setRowHeight(row + 1, 52);
+    sh.setRowHeight(row + 2, 22);
+    sh.setRowHeight(row + 3, 8);
+    sh.getRange(row, col).merge().setValue(label)
+      .setBackground(bg).setFontColor(fg).setFontSize(8)
+      .setHorizontalAlignment('center').setFontWeight('bold');
+    sh.getRange(row + 1, col).merge().setValue(value)
+      .setBackground(bg).setFontColor(fg).setFontSize(22).setFontWeight('bold')
+      .setHorizontalAlignment('center').setVerticalAlignment('middle');
+    sh.getRange(row + 2, col).merge().setBackground(bg);
+    sh.getRange(row + 3, col).merge().setBackground('#ffffff');
+  }
+
+  function fmt(n) { return '£' + Math.max(0, n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+
+  // ── Row of hero cards ──
+  sh.setRowHeight(4, 12);
+  var heroRow = 5;
+  var heroColor = '#0f380f';
+  var heroFg = '#c4d96b';
+
+  // Earned
+  heroCell(sh, heroRow, 2, 'TOTAL EARNED', fmt(totalEarned), heroColor, heroFg);
+  // Outstanding
+  var outBg = outstanding > 0 ? '#e65100' : '#1b5e20';
+  heroCell(sh, heroRow, 3, 'OUTSTANDING', fmt(outstanding), outBg, '#ffffff');
+  // Net Profit
+  var netBg = netProfit >= 0 ? '#1b5e20' : '#b71c1c';
+  heroCell(sh, heroRow, 4, 'NET PROFIT', fmt(netProfit), netBg, '#ffffff');
+  // Jobs Done
+  heroCell(sh, heroRow, 5, 'JOBS DONE', totalJobs, '#37474f', '#eceff1');
+
+  sh.setRowHeight(heroRow + 4, 12); // gap after hero
+
+  // ── Second row of stat boxes ──
+  var row2 = heroRow + 5;
+  function statBox(sh, row, col, label, value, bg) {
+    sh.setRowHeight(row, 20);
+    sh.setRowHeight(row + 1, 36);
+    sh.setRowHeight(row + 2, 10);
+    sh.getRange(row, col).setValue(label)
+      .setBackground(bg).setFontColor('#666666').setFontSize(7)
+      .setHorizontalAlignment('center').setFontWeight('bold');
+    sh.getRange(row + 1, col).setValue(value)
+      .setBackground(bg).setFontColor('#111111').setFontSize(14).setFontWeight('bold')
+      .setHorizontalAlignment('center').setVerticalAlignment('middle');
+    sh.getRange(row + 2, col).setBackground(bg);
+  }
+  statBox(sh, row2, 2, 'TOTAL EXPENSES', fmt(totalExpenses), '#fff3e0');
+  statBox(sh, row2, 3, 'MILEAGE CLAIMS', fmt(totalMileageClaim), '#e3f2fd');
+  statBox(sh, row2, 4, 'PAID INVOICES', paidCount, '#e8f5e9');
+  statBox(sh, row2, 5, 'UNPAID / DRAFT', outstanding > 0 ? draftCount + ' draft · ' + fmt(outstanding) + ' owed' : draftCount + ' draft', '#fce4ec');
+
+  sh.setRowHeight(row2 + 3, 16);
+
+  // ── Monthly summary table ──
+  var tRow = row2 + 4;
+  sh.getRange(tRow, 1, 1, 6).merge()
+    .setValue('MONTHLY INCOME SUMMARY')
+    .setBackground('#306230').setFontColor('#c4d96b').setFontWeight('bold')
+    .setFontSize(10).setHorizontalAlignment('center');
+  sh.setRowHeight(tRow, 32);
+
+  var mHeaders = ['MONTH','EARNED £','OUTSTANDING £','EXPENSES £','MILEAGE £','NET £'];
+  var mHdrRange = sh.getRange(tRow + 1, 1, 1, 6);
+  mHdrRange.setValues([mHeaders])
+    .setBackground('#8bac0f').setFontColor('#0f380f').setFontWeight('bold')
+    .setFontSize(8).setHorizontalAlignment('center');
+  sh.setRowHeight(tRow + 1, 24);
+
+  var plRows = data.pl || [];
+  var displayRows = plRows.slice(0, 12); // last 12 months
+  displayRows.forEach(function(row, ri) {
+    var bgRow = ri % 2 === 0 ? '#f9fff5' : '#ffffff';
+    var dataRow = sh.getRange(tRow + 2 + ri, 1, 1, 6);
+    var net = parseFloat(row[5]) || 0;
+    dataRow.setValues([row.slice(0, 6)])
+      .setBackground(bgRow).setFontSize(9).setHorizontalAlignment('center');
+    if (net < 0) sh.getRange(tRow + 2 + ri, 6).setFontColor('#c62828').setFontWeight('bold');
+    else if (net > 0) sh.getRange(tRow + 2 + ri, 6).setFontColor('#2e7d32').setFontWeight('bold');
+    sh.setRowHeight(tRow + 2 + ri, 20);
+    // Format currency cols
+    [2,3,4,5,6].forEach(function(c){
+      sh.getRange(tRow + 2 + ri, c).setNumberFormat('£#,##0.00');
+    });
+  });
+
+  // Border around monthly table
+  if (displayRows.length > 0) {
+    sh.getRange(tRow, 1, 2 + displayRows.length, 6)
+      .setBorder(true, true, true, true, true, true,
+        '#cccccc', SpreadsheetApp.BorderStyle.SOLID);
+  }
+
+  // ── Last updated ──
+  var lastRow = tRow + 2 + displayRows.length + 1;
+  sh.getRange(lastRow, 1, 1, 6).merge()
+    .setValue('Last synced: ' + new Date().toLocaleString('en-GB'))
+    .setFontSize(7).setFontColor('#999999').setHorizontalAlignment('right')
+    .setBackground('#ffffff');
+}
+
+// ── PHOTO UPLOAD ──────────────────────────────────
+function uploadPhoto(data) {
+  // data.subfolder: 'Business Expenses' or 'PODs/Client Name'
+  var root = getRootFolder();
+  var parts = (data.subfolder || 'Business Expenses').split('/');
+  var folder = root;
+  for (var i = 0; i < parts.length; i++) {
+    if (parts[i]) folder = getOrCreateFolder(parts[i], folder);
+  }
+  var bytes = Utilities.base64Decode(data.base64);
+  var blob = Utilities.newBlob(bytes, data.mimeType || 'image/jpeg', data.filename || 'photo.jpg');
+  var file = folder.createFile(blob);
+  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  return respond({ok: true, url: file.getUrl(), id: file.getId()});
+}
+
+// ── INVOICE DOC ───────────────────────────────────
+function createInvoiceDoc(data) {
+  var inv = data.invoice;
+  var biz = data.biz;
+  var root = getRootFolder();
+  var invRoot = getOrCreateFolder('Invoices', root);
+  // Sub-folder per client
+  var clientFolder = getOrCreateFolder(inv.clientName || 'One-off', invRoot);
+
+  var docTitle = inv.number + ' — ' + (inv.clientName || 'Invoice') + ' — ' + (inv.issueDate || '');
+  var doc = DocumentApp.create(docTitle);
+  var body = doc.getBody();
+  body.clear();
+
+  var normal = {};
+  normal[DocumentApp.Attribute.FONT_SIZE] = 10;
+  normal[DocumentApp.Attribute.FONT_FAMILY] = 'Arial';
+
+  // ── Business header ──
+  var h1 = body.appendParagraph(biz.bizName || 'Odd Socks Deliveries');
+  h1.setHeading(DocumentApp.ParagraphHeading.HEADING1);
+  h1.editAsText().setForegroundColor('#0f380f');
+  if (biz.bizAddr) {
+    biz.bizAddr.split('\\n').forEach(function(line) {
+      if (line.trim()) body.appendParagraph(line).setAttributes(normal);
+    });
+  }
+  if (biz.bizPhone) body.appendParagraph('Tel: ' + biz.bizPhone).setAttributes(normal);
+  if (biz.bizEmail) body.appendParagraph(biz.bizEmail).setAttributes(normal);
+  body.appendParagraph('');
+
+  // ── Invoice ref block ──
+  var invHdr = body.appendParagraph('INVOICE ' + inv.number);
+  invHdr.setHeading(DocumentApp.ParagraphHeading.HEADING2);
+  invHdr.editAsText().setForegroundColor('#0f380f');
+  body.appendParagraph('Issued: ' + inv.issueDate).setAttributes(normal);
+  body.appendParagraph('Due: ' + inv.dueDate).setAttributes(normal);
+  body.appendParagraph('');
+
+  // ── Bill to ──
+  var billTo = body.appendParagraph('BILL TO');
+  billTo.setHeading(DocumentApp.ParagraphHeading.HEADING3);
+  billTo.editAsText().setForegroundColor('#306230');
+  body.appendParagraph(inv.clientName || '').editAsText().setBold(true);
+  if (inv.clientAddr) body.appendParagraph(inv.clientAddr).setAttributes(normal);
+  if (inv.clientEmail) body.appendParagraph(inv.clientEmail).setAttributes(normal);
+  body.appendParagraph('');
+
+  // ── Line items table ──
+  var table = body.appendTable();
+  var hRow = table.appendTableRow();
+  ['DESCRIPTION', 'DATE', 'AMOUNT'].forEach(function(h) {
+    var cell = hRow.appendTableCell(h);
+    cell.editAsText().setBold(true).setForegroundColor('#c4d96b').setBackgroundColor('#0f380f');
+    cell.setPaddingTop(4).setPaddingBottom(4);
+  });
+  (inv.lineItems || []).forEach(function(item, i) {
+    var row = table.appendTableRow();
+    row.appendTableCell(item.description || '');
+    row.appendTableCell(item.date || '');
+    var amtCell = row.appendTableCell('\\u00a3' + (parseFloat(item.amount) || 0).toFixed(2));
+    if (i % 2 === 0) {
+      [0,1,2].forEach(function(ci) {
+        row.getCell(ci).setBackgroundColor('#f5f8f0');
+      });
+    }
+  });
+  // Total row
+  var totRow = table.appendTableRow();
+  var totLbl = totRow.appendTableCell('TOTAL');
+  totLbl.editAsText().setBold(true);
+  totRow.appendTableCell('');
+  var totAmt = totRow.appendTableCell('\\u00a3' + (parseFloat(inv.total) || 0).toFixed(2));
+  totAmt.editAsText().setBold(true).setForegroundColor('#0f380f').setFontSize(12);
+
+  body.appendParagraph('');
+
+  // ── Payment / terms ──
+  if (biz.bizBank) {
+    var payHdr = body.appendParagraph('Payment details');
+    payHdr.editAsText().setBold(true);
+    body.appendParagraph(biz.bizBank).setAttributes(normal);
+  }
+  body.appendParagraph('Payment terms: ' + (inv.paymentTerms || 14) + ' days from invoice date').setAttributes(normal);
+  if (inv.notes) body.appendParagraph('Note: ' + inv.notes).setAttributes(normal);
+  if (biz.lateFee) {
+    body.appendParagraph('');
+    body.appendParagraph(biz.lateFee).editAsText().setItalic(true).setFontSize(8);
+  }
+  body.appendParagraph('');
+  body.appendParagraph('Thank you for your business.').editAsText().setItalic(true);
+
+  doc.saveAndClose();
+
+  // Move into correct Drive folder
+  var docFile = DriveApp.getFileById(doc.getId());
+  clientFolder.addFile(docFile);
+  try { DriveApp.getRootFolder().removeFile(docFile); } catch(e) {}
+  docFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+
+  return respond({ok: true, url: doc.getUrl(), id: doc.getId(), docTitle: docTitle});
+}`;
+}
+
+load();applyTheme();setupPWA();render();checkShare();
+</script>
+</body>
+</html>
