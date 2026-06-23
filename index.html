@@ -277,7 +277,7 @@ body.clean .theme-btn{background:#1e1e2c!important;color:#6a6258!important}
 .tc-time-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .tc-time{background:var(--gb0);border:2px solid var(--gb2);color:var(--gb4);font-family:var(--px);font-size:14px;padding:8px 10px;width:110px}
 .tc-addr{font-size:9px;color:var(--gb2);flex:1;line-height:1.9}
-.tc-acts{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.tc-acts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px}
 .tc-acts-row{display:flex;gap:6px;margin-bottom:8px}
 .tc-log{border-top:1px solid var(--gb0);padding-top:7px;margin-top:4px}
 .tc-log-entry{display:flex;gap:8px;font-size:8px;color:var(--gb2);margin-bottom:4px;line-height:1.8}
@@ -762,13 +762,42 @@ function confirmAllToday(){
   });
   save();render();
 }
-function rTodayCard(item){
+function rTodayCard(item, mode='deliver'){
+  // mode: 'deliver' | 'pickup' (multi-day collect stop) | 'both' (same-day collect+deliver)
+  if(mode==='pickup'){
+    const pickAddr=jobAddr(item,'pick')||item.pickPost||'?';
+    return`<div class="tc" style="border-color:var(--gb2)">
+      <div class="tc-hdr">
+        <span class="tc-icon">${item.icon||'📦'}</span>
+        <div class="tc-info">
+          <div class="tc-name">${esc(item.name)}</div>
+          <div class="tc-client">👤 ${esc(clientName(item.clientId))}</div>
+        </div>
+        <span class="tc-badge" style="background:var(--gb2);color:var(--gb0)">↑ COLLECT</span>
+      </div>
+      <div class="tc-time-row">
+        <div class="tc-addr" style="flex:1">↑ FROM: ${esc(pickAddr)}<br><span style="color:var(--gb2)">↓ DELIVER: ${fmtD(item.dueDate||'')}</span></div>
+      </div>
+      <div class="tc-acts-row">
+        ${item.pickedUp
+          ?'<button class="btn sm" style="flex:1;opacity:.6" disabled>✓ COLLECTED</button>'
+          :`<button class="btn sm dn" style="flex:1" onclick="markPickedUp('${item.id}')">✓ MARK COLLECTED</button>`}
+      </div>
+      ${rCommsLog(item)}
+    </div>`;
+  }
   const status=item.commsStatus||'unconfirmed';
   const client=getClient(item.clientId);
   const phone=(client?.phone||'').replace(/[^0-9+]/g,'');
   const etaSent=etaSentToday(item);
-  const pickPost=item.pickPost||'?';
-  const delPost=item.delPost||'?';
+  const pickAddr=jobAddr(item,'pick')||item.pickPost||'?';
+  const delAddr=jobAddr(item,'del')||item.delPost||'?';
+  const badge=mode==='both'
+    ?`<span class="tc-badge" style="background:var(--gb3);color:var(--gb0)">↑↓ SAME DAY</span>`
+    :`<span class="tc-badge ${status}">${commsStatusLabel(status)}</span>`;
+  const addrLine=mode==='both'
+    ?`↑ ${esc(pickAddr)}<br>↓ ${esc(delAddr)}${item.price?` · ${fmtCur(item.price)}`:''}`
+    :`▸ ${esc(item.pickPost||'?')}${item.pickDate?' · '+fmtD(item.pickDate):''}<br>▾ ${esc(item.delPost||'?')}${item.dueDate?` · ${fmtD(item.dueDate)}`:''}${item.price?` · ${fmtCur(item.price)}`:''}`;
   return`<div class="tc tc-${status}">
     <div class="tc-hdr">
       <span class="tc-icon">${item.icon||'📦'}</span>
@@ -776,16 +805,14 @@ function rTodayCard(item){
         <div class="tc-name">${esc(item.name)}</div>
         <div class="tc-client">👤 ${esc(clientName(item.clientId))}${client?.phone?` · 📞 ${esc(client.phone)}`:''}</div>
       </div>
-      <span class="tc-badge ${status}">${commsStatusLabel(status)}</span>
+      ${badge}
     </div>
     <div class="tc-time-row">
       <input class="tc-time" type="time" value="${esc(item.agreedTime||'')}" placeholder="--:--" onchange="setAgreedTime('${item.id}',this.value)" title="Agreed time">
-      <div class="tc-addr">▸ ${esc(pickPost)}${item.pickDate?' · '+fmtD(item.pickDate):''}<br>▾ ${esc(delPost)}${item.dueDate?` · ${fmtD(item.dueDate)}`:''}${item.price?` · ${fmtCur(item.price)}`:''}
-      </div>
+      <div class="tc-addr">${addrLine}</div>
     </div>
     <div class="tc-acts">
       ${status!=='confirmed'?`<button class="btn sm dn" onclick="confirmJob('${item.id}')">✓ CONFIRM</button>`:'<button class="btn sm" style="opacity:.5" disabled>✓ CONFIRMED</button>'}
-      <button class="btn sm" onclick="logCall('${item.id}')">📞 CALLED</button>
       <button class="btn sm" onclick="openReschedule('${item.id}')">⏰ RESCHEDULE</button>
       <button class="btn sm" onclick="openCommsNote('${item.id}')">📝 NOTE</button>
     </div>
@@ -812,8 +839,10 @@ function rCalendar(){
   const startDow=(firstDay.getDay()+6)%7; // 0=Mon
 
   const jobsByDate={};
+  const pickupByDate={};
   S.jobs.filter(j=>j.status!=='done').forEach(j=>{
     if(j.dueDate){if(!jobsByDate[j.dueDate])jobsByDate[j.dueDate]=[];jobsByDate[j.dueDate].push(j);}
+    if(j.pickDate&&j.pickDate!==j.dueDate){if(!pickupByDate[j.pickDate])pickupByDate[j.pickDate]=[];pickupByDate[j.pickDate].push(j);}
   });
 
   const td=today();
@@ -826,14 +855,17 @@ function rCalendar(){
   for(let d=1;d<=lastDay.getDate();d++){
     const ds=`${vy}-${String(vm+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const jobs=jobsByDate[ds]||[];
+    const pickups=pickupByDate[ds]||[];
+    const totalCount=jobs.length+pickups.length;
     const isToday=ds===td, isPast=ds<td, isSel=ds===S.calSelected;
     const unconf=jobs.filter(j=>!j.commsStatus||j.commsStatus==='unconfirmed'||j.commsStatus==='rescheduled').length;
     const ok=jobs.filter(j=>j.commsStatus==='confirmed'||j.commsStatus==='eta_sent').length;
-    let cls='cal-day'+(jobs.length?' has-jobs':'')+(isToday?' is-today':'')+(isSel?' is-selected':'')+(isPast&&!jobs.length?' is-past':'');
-    cells+=`<div class="${cls}" onclick="${jobs.length?`selectCalDay('${ds}')`:''}" >
+    let cls='cal-day'+(totalCount?' has-jobs':'')+(isToday?' is-today':'')+(isSel?' is-selected':'')+(isPast&&!totalCount?' is-past':'');
+    cells+=`<div class="${cls}" onclick="${totalCount?`selectCalDay('${ds}')`:''}" >
       <div class="cal-day-num">${d}</div>
-      ${jobs.length?`<div class="cal-day-count">${jobs.length}</div>
+      ${totalCount?`<div class="cal-day-count">${totalCount}</div>
       <div class="cal-dots">
+        ${pickups.length>0?`<div style="width:8px;height:8px;background:var(--gb2);border-radius:50%;border:1px solid var(--gb3)" title="collections"></div>`:''}
         ${unconf>0?`<div style="width:8px;height:8px;background:var(--yellow);border-radius:50%"></div>`:''}
         ${ok>0?`<div style="width:8px;height:8px;background:var(--gb3);border-radius:50%"></div>`:''}
       </div>`:''}
@@ -850,26 +882,29 @@ function rCalendar(){
       <div class="cal-grid">${cells}</div>
     </div>`;
 
-  const showDate=S.calSelected||(jobsByDate[td]?td:null);
+  const showDate=S.calSelected||(jobsByDate[td]?td:(pickupByDate[td]?td:null));
   if(showDate){
     const dayJobs=(jobsByDate[showDate]||[]).sort((a,b)=>(a.agreedTime||'23:59').localeCompare(b.agreedTime||'23:59'));
-    if(dayJobs.length){
+    const dayPickups=pickupByDate[showDate]||[];
+    const total=dayJobs.length+dayPickups.length;
+    if(total){
       const confirmed=dayJobs.filter(j=>j.commsStatus==='confirmed'||j.commsStatus==='eta_sent').length;
-      const allConf=confirmed===dayJobs.length;
+      const allConf=dayJobs.length>0&&confirmed===dayJobs.length;
       const mUrl=dayMapsUrl(showDate);
       html+=`<div style="background:var(--gb1);border:3px solid var(--gb2);padding:12px;margin-bottom:12px">
         <div style="font-size:14px;color:var(--gb4);margin-bottom:6px">${fmtD(showDate).toUpperCase()}</div>
-        <div style="font-size:10px;color:var(--gb2);margin-bottom:10px">${dayJobs.length} JOB${dayJobs.length!==1?'S':''} · ${confirmed}/${dayJobs.length} CONFIRMED${allConf?' ✓':''}</div>
-        <div style="background:var(--gb0);border:2px solid var(--gb2);height:10px;margin-bottom:10px">
+        <div style="font-size:10px;color:var(--gb2);margin-bottom:10px">${total} JOB${total!==1?'S':''}${dayJobs.length?` · ${confirmed}/${dayJobs.length} CONFIRMED${allConf?' ✓':''}`:''} ${dayPickups.length?`· ${dayPickups.length} TO COLLECT`:''}</div>
+        ${dayJobs.length?`<div style="background:var(--gb0);border:2px solid var(--gb2);height:10px;margin-bottom:10px">
           <div style="height:100%;background:${allConf?'var(--gb4)':'var(--gb3)'};width:${Math.round(confirmed/dayJobs.length*100)}%;transition:width .3s"></div>
-        </div>
+        </div>`:''}
         <div style="display:flex;gap:8px">
-          ${!allConf?`<button class="btn sm" style="flex:1" onclick="confirmAllOnDate('${showDate}')">✓ CONFIRM ALL</button>`:''}
+          ${dayJobs.length&&!allConf?`<button class="btn sm" style="flex:1" onclick="confirmAllOnDate('${showDate}')">✓ CONFIRM ALL</button>`:''}
           ${mUrl?`<a href="${mUrl}" target="_blank" class="btn sm" style="text-decoration:none;flex:1;text-align:center">🗺️ ROUTE IN MAPS</a>`:''}
           <button class="btn sm" style="flex:1" onclick="go('route')">📋 ROUTE TAB</button>
         </div>
       </div>`;
-      html+=dayJobs.map(rTodayCard).join('');
+      html+=dayPickups.map(j=>rTodayCard(j,'pickup')).join('');
+      html+=dayJobs.map(j=>rTodayCard(j,(j.pickDate&&j.pickDate===j.dueDate)?'both':'deliver')).join('');
     } else if(S.calSelected){
       html+=`<div style="text-align:center;padding:24px;color:var(--gb2);font-size:10px">NO JOBS ON<br>${fmtD(showDate).toUpperCase()}</div>`;
     }
@@ -1781,8 +1816,19 @@ function getDayJobs(dateKey){
   return S.jobs.filter(j=>j.status!=='done'&&getDayKey(j)===dateKey)
     .sort((a,b)=>(a.routeOrder??999)-(b.routeOrder??999)||(a.agreedTime||'').localeCompare(b.agreedTime||''));
 }
+function getPickupJobs(dateKey){
+  return S.jobs.filter(j=>j.status!=='done'&&j.pickDate===dateKey&&j.pickDate!==j.dueDate);
+}
+function markPickedUp(jobId){
+  const j=S.jobs.find(j=>j.id===jobId);
+  if(j){j.pickedUp=true;save();render();}
+}
 function getRouteDays(){
-  const keys=new Set(S.jobs.filter(j=>j.status!=='done').map(getDayKey));
+  const keys=new Set();
+  S.jobs.filter(j=>j.status!=='done').forEach(j=>{
+    keys.add(getDayKey(j));
+    if(j.pickDate&&j.pickDate!==j.dueDate)keys.add(j.pickDate);
+  });
   return [...keys].sort((a,b)=>{
     if(a==='no-date')return 1;if(b==='no-date')return -1;
     return a>b?1:-1;
@@ -1884,28 +1930,52 @@ async function calcLeaveBy(dateKey){
   }
 }
 
+function rRoutePickupStop(job){
+  const pickAddr=jobAddr(job,'pick')||job.pickPost||'?';
+  const navUrl='https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(pickAddr)+'&travelmode=driving';
+  return`<div class="rc">
+    <div class="rc-top">
+      <div style="display:flex;align-items:center;justify-content:center;width:40px;font-size:18px;color:var(--gb2)">↑</div>
+      <div class="rc-body">
+        <div class="rc-num">↑ COLLECT ${job.icon||'📦'}</div>
+        <div class="rc-name">${esc(job.name)} <span style="font-size:8px;color:var(--gb2)">· ${esc(clientName(job.clientId))}</span></div>
+        <div class="rc-addr">↑ ${esc(pickAddr)}</div>
+        <div style="font-size:8px;color:var(--gb2)">↓ DELIVER: ${fmtD(job.dueDate||'')}</div>
+      </div>
+    </div>
+    <div class="rc-acts">
+      <a href="${navUrl}" target="_blank" class="btn sm" style="text-decoration:none">📍 NAV</a>
+      ${job.pickedUp
+        ?'<button class="btn sm" style="opacity:.6" disabled>✓ COLLECTED</button>'
+        :`<button class="btn sm dn" onclick="markPickedUp('${job.id}')">✓ MARK COLLECTED</button>`}
+    </div>
+  </div>`;
+}
 function rRouteDaySection(dateKey){
   const jobs=getDayJobs(dateKey);
-  if(!jobs.length)return'';
+  const pickupJobs=getPickupJobs(dateKey);
+  if(!jobs.length&&!pickupJobs.length)return'';
   const mapsUrl=dayMapsUrl(dateKey);
   const label=dateKey==='no-date'?'📦 NO DATE SET':
     dateKey===today()?'📅 TODAY — '+fmtD(dateKey).toUpperCase():
     daysUntil(dateKey)<0?'⚠️ OVERDUE — '+fmtD(dateKey).toUpperCase():
     '📆 '+fmtD(dateKey).toUpperCase();
   const firstWithTime=jobs.find(j=>j.agreedTime);
-  // Trigger async leave-by calc after render
-  setTimeout(()=>calcLeaveBy(dateKey),60);
+  if(jobs.length)setTimeout(()=>calcLeaveBy(dateKey),60);
+  const totalStops=jobs.length+pickupJobs.length;
   return`<div class="rday">
     <div class="rday-hdr">
       <div style="flex:1">
         <div class="rday-date">${label}</div>
-        <div class="rday-count">${jobs.length} STOP${jobs.length!==1?'S':''} · USE ▲▼ TO REORDER</div>
+        <div class="rday-count">${totalStops} STOP${totalStops!==1?'S':''}${jobs.length?' · USE ▲▼ TO REORDER':''}</div>
       </div>
     </div>
-    <div class="leave-by-box" id="${_lbId(dateKey)}">
+    ${jobs.length?`<div class="leave-by-box" id="${_lbId(dateKey)}">
       <span class="leave-by-label">${firstWithTime?'CALCULATING...':'SET AGREED TIMES TO SEE WHEN TO LEAVE'}</span>
-    </div>
+    </div>`:''}
     ${mapsUrl?`<a href="${mapsUrl}" target="_blank" class="btn big" style="display:block;text-decoration:none;margin-bottom:10px;text-align:center">🗺️ OPEN FULL DAY ROUTE IN MAPS</a>`:''}
+    ${pickupJobs.length?`<div style="font-size:9px;color:var(--gb2);padding:4px 0 8px 0">↑ COLLECTIONS</div>${pickupJobs.map(rRoutePickupStop).join('')}`:''}
+    ${jobs.length&&pickupJobs.length?`<div style="font-size:9px;color:var(--gb2);padding:8px 0;border-top:1px solid var(--gb1)">↓ DELIVERIES</div>`:''}
     ${jobs.map((job,i)=>rRouteStop(job,i,jobs)).join('')}
   </div>`;
 }
@@ -2203,7 +2273,7 @@ function delClient(id){
 // ADD JOB MODAL
 // ═══════════════════════════════════
 function openAddJob(pre){
-  FD=pre||{icon:ICONS[0],name:'',notes:'',pickDate:'',pickPost:'',pickStreet:'',pickNum:'',delPost:'',delStreet:'',delNum:'',dueDate:'',agreedTime:'',price:'',clientId:'',pm:false,dm:false};
+  FD=pre||{icon:ICONS[0],name:'',notes:'',pickDate:'',pickPost:'',pickStreet:'',pickNum:'',delPost:'',delStreet:'',delNum:'',dueDate:'',agreedTime:'',price:'',clientId:'',pm:false,dm:false,pickedUp:false};
   showMod(rAddJobModal());
 }
 function rAddJobModal(){
