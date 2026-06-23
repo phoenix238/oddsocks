@@ -1181,6 +1181,26 @@ async function finishDone(){
   }else{
     closeModal();render();
   }
+  if(job.price)setTimeout(()=>promptInvoiceAfterDone(job),200);
+}
+function promptInvoiceAfterDone(job){
+  const client=job.clientId?getClient(job.clientId):null;
+  if(!job.clientId){
+    showMod(`<div class="m-title">📄 INVOICE THIS JOB?</div>
+      <div style="font-size:11px;color:var(--gb4);margin-bottom:4px">${esc(job.name)}</div>
+      <div style="font-size:16px;color:var(--gb3);margin-bottom:16px;font-family:var(--px)">${fmtCur(parseFloat(job.price)||0)}</div>
+      <button class="btn big" style="width:100%;margin-bottom:8px" onclick="closeModal();openCustomInvoice('','${job.id}')">📄 CREATE INVOICE NOW</button>
+      <button class="btn big sec" style="width:100%" onclick="closeModal()">SKIP FOR NOW</button>`);
+  } else if(client){
+    const uninv=S.jobs.filter(j=>j.status==='done'&&!j.invoiceId&&j.clientId===job.clientId);
+    const total=uninv.reduce((s,j)=>s+(parseFloat(j.price)||0),0);
+    const n=uninv.length;
+    showMod(`<div class="m-title">📄 INVOICE ${esc(client.name).toUpperCase()}?</div>
+      <div style="font-size:9px;color:var(--gb2);margin-bottom:12px">${n} UNINVOICED JOB${n!==1?'S':''} · ${fmtCur(total)} READY TO SEND</div>
+      <button class="btn big" style="width:100%;margin-bottom:8px" onclick="closeModal();openSendInvoice('${job.clientId}','${job.id}')">📄 INVOICE NOW</button>
+      <button class="btn big sec" style="width:100%;margin-bottom:8px" onclick="closeModal()">📦 BATCH — INVOICE LATER</button>
+      <button class="btn" style="width:100%" onclick="closeModal()">✕ SKIP</button>`);
+  }
 }
 async function handlePODFile(file){
   DF.pod=await compressImg(file,1000);
@@ -1491,6 +1511,32 @@ const ACHIEVEMENTS=[
   {id:'k2',ic:'🎯',name:'£2K MONTH',check:()=>bestMonth()>=2000},
 ];
 function progColor(pct){return pct>=1?'green':pct>=0.5?'green':'yellow'}
+function rReadyToInvoice(){
+  const groups={};
+  S.jobs.filter(j=>j.status==='done'&&!j.invoiceId).forEach(j=>{
+    const key=j.clientId||'__oneoff';
+    if(!groups[key])groups[key]={clientId:j.clientId||'',name:j.clientId?clientName(j.clientId):'One-off jobs',jobs:[],total:0,scheduleDay:0};
+    groups[key].jobs.push(j);
+    groups[key].total+=parseFloat(j.price)||0;
+  });
+  S.clients.forEach(c=>{if(c.invoiceDay&&groups[c.id])groups[c.id].scheduleDay=c.invoiceDay;});
+  const rows=Object.values(groups);
+  if(!rows.length)return'';
+  const todayDay=new Date().getDate();
+  return`<div style="background:var(--gb1);border:2px solid var(--yellow);padding:10px 12px;margin-bottom:12px">
+    <div style="font-size:11px;color:var(--yellow);margin-bottom:8px">📄 READY TO INVOICE</div>
+    ${rows.map(g=>{
+      const scheduled=g.scheduleDay&&todayDay>=g.scheduleDay;
+      return`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--gb0)">
+        <div style="flex:1">
+          <div style="font-size:10px;color:var(--gb4)">${scheduled?'🔔 ':''} ${esc(g.name)}</div>
+          <div style="font-size:8px;color:var(--gb2)">${g.jobs.length} JOB${g.jobs.length!==1?'S':''} · ${fmtCur(g.total)}${scheduled?` · SCHEDULED DAY ${g.scheduleDay}`:''}</div>
+        </div>
+        <button class="btn sm dn" onclick="${g.clientId?`openSendInvoice('${g.clientId}')`:` openCustomInvoice('')`}">INVOICE →</button>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
 function rMoney(){
   const pl=getPL(S.moneyPeriod);
   const allInvs=S.invoices.slice().sort((a,b)=>b.issueDate>a.issueDate?1:-1);
@@ -1508,6 +1554,7 @@ function rMoney(){
   return`
     <!-- SYNC BADGE -->
     <div id="sync-badge">${rSyncBadge()}</div>
+    ${rReadyToInvoice()}
     <!-- HERO -->
     <div class="hero-box">
       <div class="hero-net">
@@ -2216,6 +2263,7 @@ function rClientForm(fd,title){
       <div class="field"><label>DEFAULT RATE (£)</label><input type="number" id="cf-rate" value="${fd.defaultRate||''}" placeholder="${S.settings.defaultRate||0}" min="0"></div>
       <div class="field"><label>PAYMENT TERMS (DAYS)</label><input type="number" id="cf-terms" value="${fd.paymentTerms||S.settings.paymentTerms||14}" min="1" max="90"></div>
     </div>
+    <div class="field"><label>MONTHLY INVOICE DAY (1–31, blank = manual)</label><input type="number" id="cf-invday" value="${fd.invoiceDay||''}" min="1" max="31" placeholder="e.g. 1 = invoice on 1st each month"></div>
     <div class="field"><label>NOTES</label><textarea id="cf-notes" placeholder="Notes about this client...">${esc(fd.notes||'')}</textarea></div>
     <div class="section-title" style="margin:10px 0 6px">📍 SAVED PICKUP LOCATIONS</div>
     <div id="cf-locs">${rLocList(locs)}</div>
@@ -2254,6 +2302,7 @@ function submitClient(editId){
     addr:[document.getElementById('cf-anum').value.trim(),document.getElementById('cf-astreet').value.trim(),post].filter(Boolean).join(', '),
     defaultRate:parseFloat(document.getElementById('cf-rate').value)||0,
     paymentTerms:parseInt(document.getElementById('cf-terms').value)||14,
+    invoiceDay:parseInt(document.getElementById('cf-invday').value)||0,
     notes:document.getElementById('cf-notes').value.trim(),
     locations:_editLocs.filter(l=>l.name||l.post)
   };
