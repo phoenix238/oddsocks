@@ -997,7 +997,7 @@ function openEditJob(id){
     price:j.price||'',notes:j.notes||'',
     pickDate:j.pickDate||'',pickPost:j.pickPost||'',pickNum:j.pickNum||'',pickStreet:j.pickStreet||'',
     delPost:j.delPost||'',delNum:j.delNum||'',delStreet:j.delStreet||'',
-    dueDate:j.dueDate||'',
+    dueDate:j.dueDate||'',agreedTime:j.agreedTime||'',
     pm:!!(j.pickStreet||j.pickNum),dm:!!(j.delStreet||j.delNum),
     editId:id
   };
@@ -1005,7 +1005,7 @@ function openEditJob(id){
 }
 function rEditJobModal(){
   const clients=S.clients;
-  return`<div class="m-title">✏️ EDIT JOB</div>
+  const html=`<div class="m-title">✏️ EDIT JOB</div>
     <div class="field"><label>CLIENT</label>
       <select id="jf-client" onchange="updateJobPrice()">
         <option value="">— One-off (no client) —</option>
@@ -1014,6 +1014,8 @@ function rEditJobModal(){
     </div>
     <div id="mc">${rManualJobForm(FD)}</div>
     <button class="btn" style="width:100%;margin-top:6px" onclick="closeModal()">✕ CANCEL</button>`;
+  if(FD.dueDate)setTimeout(()=>checkDaySlots(FD.dueDate,FD.editId),80);
+  return html;
 }
 function submitEditJob(){
   const fd=rjf();
@@ -1032,7 +1034,7 @@ function openEditJob(id){
     price:j.price||'',notes:j.notes||'',
     pickDate:j.pickDate||'',pickPost:j.pickPost||'',pickNum:j.pickNum||'',pickStreet:j.pickStreet||'',
     delPost:j.delPost||'',delNum:j.delNum||'',delStreet:j.delStreet||'',
-    dueDate:j.dueDate||'',
+    dueDate:j.dueDate||'',agreedTime:j.agreedTime||'',
     pm:!!(j.pickStreet||j.pickNum),dm:!!(j.delStreet||j.delNum),
     editId:id
   };
@@ -1040,7 +1042,7 @@ function openEditJob(id){
 }
 function rEditJobModal(){
   const clients=S.clients;
-  return`<div class="m-title">✏️ EDIT JOB</div>
+  const html=`<div class="m-title">✏️ EDIT JOB</div>
     <div class="field"><label>CLIENT</label>
       <select id="jf-client" onchange="updateJobPrice()">
         <option value="">— One-off (no client) —</option>
@@ -1049,6 +1051,8 @@ function rEditJobModal(){
     </div>
     <div id="mc">${rManualJobForm(FD)}</div>
     <button class="btn" style="width:100%;margin-top:6px" onclick="closeModal()">✕ CANCEL</button>`;
+  if(FD.dueDate)setTimeout(()=>checkDaySlots(FD.dueDate,FD.editId),80);
+  return html;
 }
 function submitEditJob(){
   const fd=rjf();
@@ -2199,7 +2203,7 @@ function delClient(id){
 // ADD JOB MODAL
 // ═══════════════════════════════════
 function openAddJob(pre){
-  FD=pre||{icon:ICONS[0],name:'',notes:'',pickDate:'',pickPost:'',pickStreet:'',pickNum:'',delPost:'',delStreet:'',delNum:'',dueDate:'',price:'',clientId:'',pm:false,dm:false};
+  FD=pre||{icon:ICONS[0],name:'',notes:'',pickDate:'',pickPost:'',pickStreet:'',pickNum:'',delPost:'',delStreet:'',delNum:'',dueDate:'',agreedTime:'',price:'',clientId:'',pm:false,dm:false};
   showMod(rAddJobModal());
 }
 function rAddJobModal(){
@@ -2295,6 +2299,7 @@ function showManual(){
   const c=getClient(cid);
   FD={...FD,clientId:cid,price:FD.price||(c?.defaultRate||'')};
   document.getElementById('mc').innerHTML=rManualJobForm(FD);
+  if(FD.dueDate)setTimeout(()=>checkDaySlots(FD.dueDate,FD.editId),80);
 }
 function rManualJobForm(fd){
   return`<div style="margin-bottom:8px">
@@ -2320,7 +2325,11 @@ function rManualJobForm(fd){
   </div>
   <div class="ab">
     <div class="ab-lbl">▾ DELIVERY</div>
-    <div class="field"><label>DELIVERY DATE</label><input type="date" id="jf-due" value="${esc(fd.dueDate||'')}" min="${today()}"></div>
+    <div class="frow">
+      <div class="field"><label>DELIVERY DATE</label><input type="date" id="jf-due" value="${esc(fd.dueDate||'')}" min="${today()}" onchange="checkDaySlots(this.value)"></div>
+      <div class="field" style="flex:0 0 120px"><label>TIME</label><input type="time" id="jf-time" value="${esc(fd.agreedTime||'')}" placeholder="--:--"></div>
+    </div>
+    <div id="jf-slot-panel"></div>
     <div class="field"><label>POSTCODE</label><input id="jf-dp" value="${esc(fd.delPost||'')}" placeholder="OX1 1DP"></div>
     <button class="see-more" onclick="togDel()">▾ add house no / street</button>
     <div id="jf-dm" style="display:${fd.dm?'block':'none'}">
@@ -2335,6 +2344,97 @@ function rManualJobForm(fd){
 function setIc(ic){FD=rjf();FD.icon=ic;document.getElementById('mc').innerHTML=rManualJobForm(FD)}
 function togPick(){FD=rjf();FD.pm=!FD.pm;const e=document.getElementById('jf-pm');if(e)e.style.display=FD.pm?'block':'none'}
 function togDel(){FD=rjf();FD.dm=!FD.dm;const e=document.getElementById('jf-dm');if(e)e.style.display=FD.dm?'block':'none'}
+
+// ─── Smart Slot Suggestions ───────────────────────────────────
+function _t2m(t){const[h,m]=t.split(':').map(Number);return h*60+m;}
+function _m2t(m){const h=Math.max(0,Math.floor(m/60));const mn=Math.max(0,m%60);return String(h).padStart(2,'0')+':'+String(mn).padStart(2,'0');}
+
+function calcSlotSuggestions(dateStr, excludeJobId){
+  const jobs=getDayJobs(dateStr).filter(j=>j.id!==excludeJobId);
+  const timed=jobs.filter(j=>j.agreedTime).sort((a,b)=>_t2m(a.agreedTime)-_t2m(b.agreedTime));
+  const JOB_SLOT=90; // mins assumed per stop including travel
+  const DAY_START=8*60, DAY_END=18*60;
+  const slots=[];
+
+  if(!timed.length){
+    // Jobs exist but none have times set
+    return[{time:'09:00',label:'Morning (no times set yet)'},{time:'12:00',label:'Midday'},{time:'14:30',label:'Afternoon'}];
+  }
+  // Slot before first job
+  const firstMins=_t2m(timed[0].agreedTime);
+  if(firstMins-JOB_SLOT>=DAY_START){
+    slots.push({time:_m2t(Math.max(DAY_START,firstMins-JOB_SLOT)),label:`Before ${timed[0].agreedTime}`});
+  }
+  // Gaps between jobs
+  for(let i=0;i<timed.length-1;i++){
+    const gapStart=_t2m(timed[i].agreedTime)+JOB_SLOT;
+    const gapEnd=_t2m(timed[i+1].agreedTime);
+    if(gapEnd-gapStart>=JOB_SLOT){
+      slots.push({time:_m2t(gapStart+15),label:`Gap between ${timed[i].agreedTime} and ${timed[i+1].agreedTime}`});
+    }
+  }
+  // After last job
+  const lastEnd=_t2m(timed[timed.length-1].agreedTime)+JOB_SLOT;
+  if(lastEnd+15<=DAY_END){
+    slots.push({time:_m2t(lastEnd+15),label:`After ${timed[timed.length-1].agreedTime} job`});
+  }
+  return slots;
+}
+
+function checkDaySlots(dateStr, excludeJobId=''){
+  const el=document.getElementById('jf-slot-panel');
+  if(!el)return;
+  if(!dateStr){el.innerHTML='';return;}
+  const existing=getDayJobs(dateStr).filter(j=>j.id!==excludeJobId);
+  if(!existing.length){el.innerHTML='';return;}
+
+  const timed=existing.filter(j=>j.agreedTime);
+  const slots=calcSlotSuggestions(dateStr,excludeJobId);
+  const clientName_val=document.getElementById('jf-client')?.selectedOptions?.[0]?.text||'';
+  const dateLabel=fmtD(dateStr);
+
+  el.innerHTML=`<div style="background:var(--gb0);border:2px solid var(--yellow);padding:10px;margin:8px 0">
+    <div style="font-size:10px;color:var(--yellow);margin-bottom:6px">⚠️ ${existing.length} JOB${existing.length!==1?'S':''} ALREADY ON ${dateLabel.toUpperCase()}</div>
+    ${timed.length?`<div style="font-size:9px;color:var(--gb2);margin-bottom:8px">${timed.map(j=>`⏰ ${j.agreedTime} — ${esc(j.name)}`).join('<br>')}</div>`:''}
+    ${slots.length?`<div style="font-size:9px;color:var(--gb4);margin-bottom:6px">AVAILABLE SLOTS:</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+      ${slots.map(s=>`<button class="btn sm dn" onclick="applySlot('${s.time}')" title="${s.label}">⏰ ${s.time}</button>`).join('')}
+    </div>
+    <button class="btn sm" style="width:100%" onclick="openClientSlotMsg('${dateStr}','${excludeJobId}')">📱 WHAT DO I TELL MY CLIENT?</button>`
+    :'<div style="font-size:9px;color:var(--red)">⚠️ DAY LOOKS FULLY BOOKED</div>'}
+  </div>`;
+}
+
+function applySlot(time){
+  const el=document.getElementById('jf-time');
+  if(el){el.value=time;el.dispatchEvent(new Event('change'));}
+  FD.agreedTime=time;
+}
+
+function openClientSlotMsg(dateStr,excludeJobId){
+  const slots=calcSlotSuggestions(dateStr,excludeJobId);
+  const dateLabel=fmtD(dateStr);
+  const bizName=S.settings.bizName||'we';
+  if(!slots.length){
+    showMod(`<div class="m-title">📱 TELL YOUR CLIENT</div>
+      <div style="font-size:10px;color:var(--red);margin-bottom:12px">⚠️ NO CLEAR SLOTS ON ${dateLabel.toUpperCase()}</div>
+      <div style="font-size:9px;color:var(--gb2);margin-bottom:12px">Consider a different day or contact existing clients to rearrange.</div>
+      <button class="btn big sec" onclick="closeModal()">✕ CLOSE</button>`);
+    return;
+  }
+  const slotList=slots.map(s=>s.time).join(', ');
+  const firstSlot=slots[0].time;
+  const msg=`Hi! I can deliver on ${dateLabel} at approximately ${firstSlot}. I also have ${slots.length>1?'slots at '+slots.slice(1).map(s=>s.time).join(' or '):'that as my only slot'} that day. Does ${firstSlot} work for you? — ${bizName}`;
+  showMod(`<div class="m-title">📱 TELL YOUR CLIENT</div>
+    <div style="font-size:10px;color:var(--gb4);margin-bottom:4px">AVAILABLE ON ${dateLabel.toUpperCase()}:</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
+      ${slots.map(s=>`<span style="background:var(--gb1);border:2px solid var(--gb3);padding:6px 10px;font-size:10px;color:var(--gb4)">⏰ ${s.time}<br><span style="font-size:8px;color:var(--gb2)">${s.label}</span></span>`).join('')}
+    </div>
+    <div style="font-size:9px;color:var(--gb2);margin-bottom:6px">SUGGESTED MESSAGE:</div>
+    <div style="background:var(--gb1);border:2px solid var(--gb2);padding:10px;font-size:10px;color:var(--gb3);line-height:1.8;margin-bottom:10px" id="slot-msg">${esc(msg)}</div>
+    <button class="btn big" onclick="navigator.clipboard?.writeText(document.getElementById('slot-msg').textContent);this.textContent='✓ COPIED!'">📋 COPY MESSAGE</button>
+    <button class="btn big sec" onclick="closeModal()">✕ CLOSE</button>`);
+}
 function rjf(){
   return{
     icon:FD.icon||ICONS[0],
@@ -2350,6 +2450,7 @@ function rjf(){
     delNum:(document.getElementById('jf-dn')||{}).value||FD.delNum||'',
     delStreet:(document.getElementById('jf-ds')||{}).value||FD.delStreet||'',
     dueDate:(document.getElementById('jf-due')||{}).value||FD.dueDate||'',
+    agreedTime:(document.getElementById('jf-time')||{}).value||FD.agreedTime||'',
     pm:FD.pm,dm:FD.dm
   };
 }
