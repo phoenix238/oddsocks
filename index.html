@@ -37,17 +37,17 @@ body.clean .hdr-info p{color:#6a6258}
 body.clean .hdr-socks{animation:none}
 body.clean .hdr-badge{background:#1e1e2c;border-color:#b8943f;color:#f0ece4}
 body.clean .tabs{background:#0e0e1a;border-bottom:1px solid #b8943f;top:52px}
-body.clean .tab{font-size:9px;color:#6a6258;padding:10px 1px}
+body.clean .tab{font-size:11px;color:#6a6258;padding:10px 1px}
 body.clean .tab.on{color:#f0ece4;background:#1e1e2c}
 body.clean .card,.clean .cc,.clean .inv-item{border-radius:10px;border-width:1px}
 body.clean .btn{border-radius:6px;font-size:15px;padding:12px 18px}
 body.clean .btn.big{border-radius:8px;font-size:17px;padding:16px 18px}
-body.clean .field input,.clean .field textarea,.clean .field select{border-radius:6px;font-size:13px;border-width:1px;color-scheme:dark}
+body.clean .field input,.clean .field textarea,.clean .field select{border-radius:6px;font-size:14px;border-width:1px;color-scheme:dark}
 body.clean .modal{border-radius:14px 14px 0 0;border-width:1px}
-body.clean .m-title{font-size:14px}
-body.clean .c-name{font-size:12px}
-body.clean .c-addr,.clean .c-client,.clean .c-notes,.clean .c-due{font-size:10px}
-body.clean .c-price{font-size:13px}
+body.clean .m-title{font-size:17px}
+body.clean .c-name{font-size:15px}
+body.clean .c-addr,.clean .c-client,.clean .c-notes,.clean .c-due{font-size:13px}
+body.clean .c-price{font-size:16px}
 body.clean .hdr-info h1::after{content:' ✦';font-size:10px;opacity:.5}
 body.clean .theme-btn{background:#1e1e2c!important;color:#6a6258!important}
 
@@ -56,12 +56,12 @@ body.clean .theme-btn{background:#1e1e2c!important;color:#6a6258!important}
 .hdr-socks{font-size:22px;cursor:pointer;animation:wob 3s ease-in-out infinite;user-select:none;-webkit-user-select:none}
 @keyframes wob{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
 .hdr-info h1{font-size:11px;color:var(--gb4);letter-spacing:1px;text-shadow:2px 2px 0 var(--gb0)}
-.hdr-info p{font-size:6px;color:var(--gb2);margin-top:3px}
-.hdr-badge{margin-left:auto;background:var(--gb0);color:var(--gb3);padding:5px 9px;font-size:6px;border:2px solid var(--gb2);white-space:nowrap}
+.hdr-info p{font-size:9px;color:var(--gb2);margin-top:3px}
+.hdr-badge{margin-left:auto;background:var(--gb0);color:var(--gb3);padding:5px 9px;font-size:9px;border:2px solid var(--gb2);white-space:nowrap}
 
 /* TABS */
 .tabs{display:grid;grid-template-columns:repeat(6,1fr);background:var(--gb0);border-bottom:4px solid var(--gb1);position:sticky;top:57px;z-index:99;isolation:isolate}
-.tab{padding:10px 1px;text-align:center;font-size:7px;color:var(--gb2);cursor:pointer;border:none;background:none;font-family:var(--px);border-right:2px solid var(--gb1);line-height:1.6}
+.tab{padding:10px 1px;text-align:center;font-size:10px;color:var(--gb2);cursor:pointer;border:none;background:none;font-family:var(--px);border-right:2px solid var(--gb1);line-height:1.6}
 .tab:last-child{border-right:none}
 .tab.on{color:var(--gb4);background:var(--gb1)}
 .tab-ic{font-size:18px;display:block;margin-bottom:4px}
@@ -73,32 +73,33 @@ body.clean .theme-btn{background:#1e1e2c!important;color:#6a6258!important}
 .fab{position:fixed;bottom:calc(22px + env(safe-area-inset-bottom,0px));right:20px;width:50px;height:50px;background:var(--gb3);border:3px solid var(--gb4);color:var(--gb0);font-size:24px;font-family:var(--px);cursor:pointer;z-index:200;display:flex;align-items:center;justify-content:center;box-shadow:4px 4px 0 var(--gb1)}
 .fab:active{box-shadow:2px 2px 0 var(--gb1);transform:translate(2px,2px)}
 .job-bar{position:fixed;bottom:env(safe-area-inset-bottom,0px);left:50%;transform:translateX(-50%);width:100%;max-width:480px;display:grid;grid-template-columns:1fr 1fr;background:var(--gb0);border-top:4px solid var(--gb2);z-index:201}
-.job-bar-btn{background:var(--gb1);color:var(--gb4);font-family:var(--px);font-size:6px;border:none;border-right:2px solid var(--gb2);padding:12px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px}
+.job-bar-btn{background:var(--gb1);color:var(--gb4);font-family:var(--px);font-size:9px;border:none;border-right:2px solid var(--gb2);padding:12px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px}
 .job-bar-btn:last-child{border-right:none}
 .job-bar-btn:active{background:var(--gb2);color:var(--gb0)}
 .job-bar-ic{font-size:18px}
 
 /* CARDS */
 .card{background:var(--gb1);border:3px solid var(--gb2);margin-bottom:12px;padding:12px;position:relative}
-.card.urg{border-color:var(--red);border-style:solid}
-.card.warn{border-color:var(--yellow);border-style:dashed}
-.card.ok{border-style:dotted}
+.card.urg{border-color:var(--red);border-style:solid;background:rgba(208,48,48,0.2)}
+.card.warn{border-color:var(--yellow);border-style:dashed;background:rgba(196,144,0,0.18)}
+.card.ok{border-style:dotted;background:var(--gb1)}
+.card.collect-ph{border-color:var(--yellow);border-style:dashed;background:rgba(196,144,0,0.18)}
 .card.collected{opacity:.6;border-style:dashed}
 .card.done-card{opacity:.5}
 .ci{display:flex;align-items:flex-start;gap:10px;margin-bottom:6px}
 .c-icon{font-size:20px;flex-shrink:0}
 .c-meta{flex:1;min-width:0}
-.c-name{font-size:11px;color:var(--gb4);line-height:1.4;word-break:break-word}
-.c-client{font-size:9px;color:var(--gb2);margin-top:2px}
+.c-name{font-size:14px;color:var(--gb4);line-height:1.4;word-break:break-word}
+.c-client{font-size:12px;color:var(--gb2);margin-top:2px}
 .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:4px}
 .dot.r{background:var(--red);box-shadow:0 0 5px var(--red)}
 .dot.y{background:var(--yellow);box-shadow:0 0 5px var(--yellow)}
 .dot.g{background:var(--gb3)}
-.c-addr{font-size:9px;color:var(--gb2);line-height:2;margin-bottom:5px}
+.c-addr{font-size:12px;color:var(--gb2);line-height:2;margin-bottom:5px}
 .c-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
-.c-due{font-size:9px;color:var(--gb4)}
-.c-price{font-size:11px;color:var(--gb3);font-weight:bold}
-.c-notes{font-size:9px;color:var(--gb2);font-style:italic;margin-bottom:7px;line-height:1.8}
+.c-due{font-size:12px;color:var(--gb4)}
+.c-price{font-size:14px;color:var(--gb3);font-weight:bold}
+.c-notes{font-size:12px;color:var(--gb2);font-style:italic;margin-bottom:7px;line-height:1.8}
 .c-acts{display:flex;gap:5px;flex-wrap:wrap}
 
 /* CLIENT CARDS */
@@ -107,36 +108,36 @@ body.clean .theme-btn{background:#1e1e2c!important;color:#6a6258!important}
 .cc-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
 .cc-icon{font-size:22px}
 .cc-info{flex:1}
-.cc-name{font-size:9px;color:var(--gb4);margin-bottom:3px}
-.cc-sub{font-size:6px;color:var(--gb2);line-height:1.9}
+.cc-name{font-size:12px;color:var(--gb4);margin-bottom:3px}
+.cc-sub{font-size:10px;color:var(--gb2);line-height:1.9}
 .cc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
 .cc-stat{background:var(--gb0);border:2px solid var(--gb1);padding:5px 4px;text-align:center}
-.cc-stat-num{font-size:8px;color:var(--gb4);display:block}
-.cc-stat-lbl{font-size:4px;color:var(--gb2);display:block;margin-top:1px}
+.cc-stat-num{font-size:11px;color:var(--gb4);display:block}
+.cc-stat-lbl{font-size:8px;color:var(--gb2);display:block;margin-top:1px}
 .cc-acts{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
 
 /* CLIENT PROFILE */
 .profile-hdr{background:var(--gb1);border:3px solid var(--gb2);padding:12px;margin-bottom:10px}
 .profile-name{font-size:10px;color:var(--gb4);margin-bottom:8px;line-height:1.4}
-.profile-contact{font-size:6px;color:var(--gb2);line-height:2.2;margin-bottom:8px}
+.profile-contact{font-size:10px;color:var(--gb2);line-height:2.2;margin-bottom:8px}
 .profile-acts{display:flex;gap:5px;flex-wrap:wrap}
 .section{margin-bottom:14px}
-.section-title{font-size:7px;color:var(--gb4);border-bottom:2px solid var(--gb1);padding-bottom:5px;margin-bottom:8px}
+.section-title{font-size:11px;color:var(--gb4);border-bottom:2px solid var(--gb1);padding-bottom:5px;margin-bottom:8px}
 .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:10px}
 .stat-box{background:var(--gb1);border:3px solid var(--gb2);padding:10px;text-align:center}
-.stat-num{font-size:11px;color:var(--gb4);display:block;margin-bottom:4px}
-.stat-lbl{font-size:5px;color:var(--gb2)}
+.stat-num{font-size:14px;color:var(--gb4);display:block;margin-bottom:4px}
+.stat-lbl{font-size:9px;color:var(--gb2)}
 .stat-box.highlight{border-color:var(--gb3)}
 .stat-box.danger{border-color:var(--red)}
 
 /* MONEY TAB */
 .pl-box{background:var(--gb1);border:3px solid var(--gb2);padding:12px;margin-bottom:10px}
 .pl-toggle{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-bottom:10px;border:2px solid var(--gb2)}
-.pl-btn{background:var(--gb0);color:var(--gb2);font-family:var(--px);font-size:6px;padding:7px;border:none;cursor:pointer;text-align:center}
+.pl-btn{background:var(--gb0);color:var(--gb2);font-family:var(--px);font-size:10px;padding:7px;border:none;cursor:pointer;text-align:center}
 .pl-btn.on{background:var(--gb2);color:var(--gb0)}
-.pl-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--gb1);font-size:6px}
+.pl-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--gb1);font-size:10px}
 .pl-row:last-child{border-bottom:none}
-.pl-row.total{font-size:8px;color:var(--gb4);padding-top:8px;border-bottom:none}
+.pl-row.total{font-size:12px;color:var(--gb4);padding-top:8px;border-bottom:none}
 .pl-row.total.pos{color:var(--gb3)}
 .pl-row.total.neg{color:var(--red)}
 .pl-label{color:var(--gb2)}
@@ -146,28 +147,28 @@ body.clean .theme-btn{background:#1e1e2c!important;color:#6a6258!important}
 
 /* EXPENSE CATS */
 .exp-cats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px}
-.exp-cat{background:var(--gb1);border:2px solid var(--gb2);color:var(--gb3);font-family:var(--px);font-size:5px;padding:10px 4px;cursor:pointer;text-align:center;line-height:2}
+.exp-cat{background:var(--gb1);border:2px solid var(--gb2);color:var(--gb3);font-family:var(--px);font-size:9px;padding:10px 4px;cursor:pointer;text-align:center;line-height:2}
 .exp-cat .ec-ic{font-size:16px;display:block;margin-bottom:3px}
 .exp-cat:active{background:var(--gb2);color:var(--gb0)}
 .exp-cat.on{background:var(--gb2);color:var(--gb0);border-color:var(--gb4)}
 
 /* EXPENSE ITEMS */
 .exp-item{background:var(--gb1);border:2px solid var(--gb2);padding:9px;margin-bottom:7px;display:flex;align-items:center;gap:9px}
-.exp-badge{background:var(--gb0);border:2px solid var(--gb2);font-size:5px;color:var(--gb2);padding:3px 5px;white-space:nowrap}
-.exp-desc{flex:1;font-size:6px;color:var(--gb3);line-height:1.8}
-.exp-amt{font-size:8px;color:var(--gb4);white-space:nowrap}
-.exp-date{font-size:5px;color:var(--gb2)}
+.exp-badge{background:var(--gb0);border:2px solid var(--gb2);font-size:9px;color:var(--gb2);padding:3px 5px;white-space:nowrap}
+.exp-desc{flex:1;font-size:10px;color:var(--gb3);line-height:1.8}
+.exp-amt{font-size:12px;color:var(--gb4);white-space:nowrap}
+.exp-date{font-size:9px;color:var(--gb2)}
 
 /* INVOICE ITEMS */
 .inv-item{background:var(--gb1);border:3px solid var(--gb2);padding:10px;margin-bottom:8px}
 .inv-item.paid{border-color:var(--gb3);opacity:.7}
 .inv-item.overdue{border-color:var(--red)}
 .inv-top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.inv-num{font-size:8px;color:var(--gb4);flex-shrink:0}
-.inv-client{font-size:6px;color:var(--gb3);flex:1}
-.inv-total{font-size:9px;color:var(--gb4)}
-.inv-meta{font-size:5px;color:var(--gb2);line-height:2;margin-bottom:6px}
-.status-badge{display:inline-block;font-size:5px;padding:2px 6px;border:2px solid;margin-bottom:6px}
+.inv-num{font-size:12px;color:var(--gb4);flex-shrink:0}
+.inv-client{font-size:10px;color:var(--gb3);flex:1}
+.inv-total{font-size:13px;color:var(--gb4)}
+.inv-meta{font-size:9px;color:var(--gb2);line-height:2;margin-bottom:6px}
+.status-badge{display:inline-block;font-size:9px;padding:2px 6px;border:2px solid;margin-bottom:6px}
 .status-draft{color:var(--gb2);border-color:var(--gb2)}
 .status-sent{color:var(--yellow);border-color:var(--yellow)}
 .status-paid{color:var(--gb3);border-color:var(--gb3)}
@@ -175,28 +176,28 @@ body.clean .theme-btn{background:#1e1e2c!important;color:#6a6258!important}
 .inv-acts{display:flex;gap:5px;flex-wrap:wrap}
 
 /* BUTTONS */
-.btn{background:var(--gb0);color:var(--gb3);border:2px solid var(--gb2);padding:11px 13px;font-size:9px;font-family:var(--px);cursor:pointer;white-space:nowrap}
+.btn{background:var(--gb0);color:var(--gb3);border:2px solid var(--gb2);padding:11px 13px;font-size:11px;font-family:var(--px);cursor:pointer;white-space:nowrap}
 .btn:active{background:var(--gb2);color:var(--gb0)}
 .btn.ld{background:var(--gb2);color:var(--gb0)}
 .btn.dn{background:var(--gb3);color:var(--gb0);border-color:var(--gb3)}
 .btn.dl{border-color:var(--red);color:var(--red)}
-.btn.big{background:var(--gb2);color:var(--gb0);padding:14px 12px;font-size:10px;width:100%;margin-top:6px;border:2px solid var(--gb4);display:block;text-align:center;cursor:pointer;font-family:var(--px)}
+.btn.big{background:var(--gb2);color:var(--gb0);padding:14px 12px;font-size:13px;width:100%;margin-top:6px;border:2px solid var(--gb4);display:block;text-align:center;cursor:pointer;font-family:var(--px)}
 .btn.big:active{background:var(--gb4)}
 .btn.big.sec{background:var(--gb1);color:var(--gb4);border-color:var(--gb2)}
 .btn.big.dl{background:var(--gb0);color:var(--red);border-color:var(--red)}
-.btn.sm{padding:10px 12px;font-size:9px}
+.btn.sm{padding:10px 12px;font-size:11px}
 .back-btn{background:var(--gb0);color:var(--gb2);border:2px solid var(--gb1);padding:10px 12px;font-size:9px;font-family:var(--px);cursor:pointer;margin-bottom:10px}
 
 /* MODAL */
 .ov{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.88);z-index:500;display:flex;align-items:flex-end;justify-content:center}
 .modal{background:var(--gb0);border:4px solid var(--gb2);border-bottom:none;width:100%;max-width:480px;max-height:93vh;overflow-y:auto;padding:16px}
-.m-title{font-size:9px;color:var(--gb4);margin-bottom:14px}
-.m-sub{font-size:6px;color:var(--gb2);margin-bottom:12px;line-height:1.9}
+.m-title{font-size:13px;color:var(--gb4);margin-bottom:14px}
+.m-sub{font-size:10px;color:var(--gb2);margin-bottom:12px;line-height:1.9}
 
 /* FORMS */
 .field{margin-bottom:10px}
-.field label{display:block;font-size:6px;color:var(--gb2);margin-bottom:4px}
-.field input,.field textarea,.field select{width:100%;background:var(--gb1);border:2px solid var(--gb2);color:var(--gb4);font-family:var(--px);font-size:8px;padding:8px;outline:none}
+.field label{display:block;font-size:10px;color:var(--gb2);margin-bottom:4px}
+.field input,.field textarea,.field select{width:100%;background:var(--gb1);border:2px solid var(--gb2);color:var(--gb4);font-family:var(--px);font-size:12px;padding:8px;outline:none}
 .field input:focus,.field textarea:focus,.field select:focus{border-color:var(--gb4)}
 .field textarea{min-height:60px;resize:vertical;line-height:1.7}
 .field input[type=date]{color-scheme:dark}
@@ -207,21 +208,21 @@ body.clean .theme-btn{background:#1e1e2c!important;color:#6a6258!important}
 .ic-opt{font-size:18px;cursor:pointer;padding:4px;border:2px solid transparent}
 .ic-opt.sel{border-color:var(--gb4);background:var(--gb1)}
 .modes{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:12px}
-.mode{background:var(--gb1);border:2px solid var(--gb2);color:var(--gb3);font-family:var(--px);font-size:5px;padding:10px 4px;cursor:pointer;text-align:center;line-height:2}
+.mode{background:var(--gb1);border:2px solid var(--gb2);color:var(--gb3);font-family:var(--px);font-size:9px;padding:10px 4px;cursor:pointer;text-align:center;line-height:2}
 .mode .mi{font-size:16px;display:block;margin-bottom:3px}
 .mode:active,.mode.on{background:var(--gb2);color:var(--gb0);border-color:var(--gb4)}
 .ab{background:var(--gb0);border:2px solid var(--gb1);padding:10px;margin-bottom:10px}
-.ab-lbl{font-size:6px;color:var(--gb4);margin-bottom:7px}
-.see-more{background:none;border:none;color:var(--gb2);font-family:var(--px);font-size:5px;cursor:pointer;margin-bottom:5px;padding:0}
+.ab-lbl{font-size:10px;color:var(--gb4);margin-bottom:7px}
+.see-more{background:none;border:none;color:var(--gb2);font-family:var(--px);font-size:9px;cursor:pointer;margin-bottom:5px;padding:0}
 
 /* LOADING / MESSAGES */
 .loading{text-align:center;padding:28px 10px}
-.loading p{font-size:7px;color:var(--gb3);animation:bl 1s step-end infinite;line-height:2}
+.loading p{font-size:11px;color:var(--gb3);animation:bl 1s step-end infinite;line-height:2}
 @keyframes bl{0%,100%{opacity:1}50%{opacity:0}}
-.ok-msg{font-size:6px;color:var(--gb3);margin-bottom:8px;padding:7px 10px;border-left:3px solid var(--gb3);line-height:1.9}
-.err-msg{font-size:6px;color:var(--red);margin-bottom:8px;padding:7px 10px;border-left:3px solid var(--red);line-height:1.9}
-.warn-bar{background:var(--gb1);border:2px solid var(--yellow);padding:8px 10px;margin-bottom:10px;font-size:6px;color:var(--yellow);line-height:2}
-.empty{text-align:center;padding:40px 16px;color:var(--gb2);font-size:7px;line-height:2.4}
+.ok-msg{font-size:10px;color:var(--gb3);margin-bottom:8px;padding:7px 10px;border-left:3px solid var(--gb3);line-height:1.9}
+.err-msg{font-size:10px;color:var(--red);margin-bottom:8px;padding:7px 10px;border-left:3px solid var(--red);line-height:1.9}
+.warn-bar{background:var(--gb1);border:2px solid var(--yellow);padding:8px 10px;margin-bottom:10px;font-size:10px;color:var(--yellow);line-height:2}
+.empty{text-align:center;padding:40px 16px;color:var(--gb2);font-size:11px;line-height:2.4}
 .empty-ic{font-size:32px;display:block;margin-bottom:12px}
 
 /* POD THUMB */
@@ -229,24 +230,24 @@ body.clean .theme-btn{background:#1e1e2c!important;color:#6a6258!important}
 
 /* LINE ITEM EDITOR */
 .li-row{display:flex;gap:5px;align-items:center;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--gb1)}
-.li-desc{flex:1;background:var(--gb1);border:2px solid var(--gb2);color:var(--gb4);font-family:var(--px);font-size:7px;padding:6px 7px}
-.li-amt{width:75px;background:var(--gb1);border:2px solid var(--gb2);color:var(--gb4);font-family:var(--px);font-size:7px;padding:6px 7px}
-.li-total{font-size:7px;color:var(--gb4);width:50px;text-align:right}
+.li-desc{flex:1;background:var(--gb1);border:2px solid var(--gb2);color:var(--gb4);font-family:var(--px);font-size:11px;padding:6px 7px}
+.li-amt{width:75px;background:var(--gb1);border:2px solid var(--gb2);color:var(--gb4);font-family:var(--px);font-size:11px;padding:6px 7px}
+.li-total{font-size:11px;color:var(--gb4);width:50px;text-align:right}
 
 /* ROUTE */
 .rc{background:var(--gb1);border:3px solid var(--gb2);padding:10px;margin-bottom:8px}
-.rc-num{font-size:10px;color:var(--gb4);margin-bottom:3px}
-.rc-name{font-size:7px;color:var(--gb3);margin-bottom:4px}
-.rc-addr{font-size:6px;color:var(--gb2);line-height:2}
+.rc-num{font-size:12px;color:var(--gb4);margin-bottom:3px}
+.rc-name{font-size:11px;color:var(--gb3);margin-bottom:4px}
+.rc-addr{font-size:10px;color:var(--gb2);line-height:2}
 
 /* SETTINGS */
 .set-s{margin-bottom:16px}
-.set-t{font-size:7px;color:var(--gb4);margin-bottom:10px;border-bottom:2px solid var(--gb1);padding-bottom:6px}
-.set-note{font-size:6px;color:var(--gb2);line-height:2;margin-bottom:8px}
+.set-t{font-size:11px;color:var(--gb4);margin-bottom:10px;border-bottom:2px solid var(--gb1);padding-bottom:6px}
+.set-note{font-size:10px;color:var(--gb2);line-height:2;margin-bottom:8px}
 
 /* WORLD OVERLAY (easter egg) */
 .world-ov{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--gb0);z-index:600;display:none;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:10px}
-.world-close{background:var(--gb1);border:2px solid var(--gb2);color:var(--gb2);font-family:var(--px);font-size:6px;padding:6px 12px;cursor:pointer;margin-bottom:8px}
+.world-close{background:var(--gb1);border:2px solid var(--gb2);color:var(--gb2);font-family:var(--px);font-size:10px;padding:6px 12px;cursor:pointer;margin-bottom:8px}
 .ww{display:flex;flex-direction:column;align-items:center}
 .wcanvas{border:4px solid var(--gb2);display:block;image-rendering:pixelated}
 .wcontrols{display:flex;align-items:center;gap:20px;margin-top:10px}
@@ -454,7 +455,8 @@ let S = {
     homePost:'',
     gcalClientId:'',gcalToken:'',gcalTokenExpiry:0,
     defaultRate:'',paymentTerms:14,mileageRate:0.45,invNum:1,taxYear:2025,
-    syncStatus:'idle',lastSync:null
+    syncStatus:'idle',lastSync:null,
+    mileageEnabled:true,pickupPODEnabled:true,deliveryPODEnabled:true
   },
   tab:'jobs', viewClient:null, moneyPeriod:'month',
   calMonth:null, calYear:null, calSelected:null
@@ -503,7 +505,7 @@ function load(){
   try{S.jobs=JSON.parse(localStorage.getItem('os3_jobs')||'[]')}catch(e){S.jobs=[]}
   try{S.invoices=JSON.parse(localStorage.getItem('os3_invoices')||'[]')}catch(e){S.invoices=[]}
   try{S.expenses=JSON.parse(localStorage.getItem('os3_expenses')||'[]')}catch(e){S.expenses=[]}
-  try{S.settings={invNum:1,paymentTerms:14,mileageRate:0.45,taxYear:2025,...JSON.parse(localStorage.getItem('os3_set')||'{}')}}catch(e){}
+  try{S.settings={invNum:1,paymentTerms:14,mileageRate:0.45,taxYear:2025,mileageEnabled:true,pickupPODEnabled:true,deliveryPODEnabled:true,...JSON.parse(localStorage.getItem('os3_set')||'{}')}}catch(e){}
 }
 function loadDemoData(){
   if(S.clients.find(c=>c.id==='demo_c1')){alert('Demo data is already loaded.');return;}
@@ -947,10 +949,44 @@ function confirmAllToday(){confirmAllOnDate(today());}
 // ═══════════════════════════════════
 // JOBS TAB
 // ═══════════════════════════════════
+let _showHistory=false,_historyLimit=10;
+function toggleHistory(){_showHistory=!_showHistory;render();}
+function showMoreHistory(){_historyLimit+=10;render();}
+function rJobHistory(){
+  const done=S.jobs.filter(j=>j.status==='done').sort((a,b)=>(b.completedDate||'').localeCompare(a.completedDate||''));
+  if(!done.length)return'';
+  const shown=done.slice(0,_historyLimit);
+  const rows=shown.map(j=>{
+    const cName=clientName(j.clientId);
+    return`<div class="card done-card" style="opacity:1;border-style:solid;border-color:var(--gb1)">
+      <div class="ci">
+        <span class="c-icon">${j.icon||'📦'}</span>
+        <div class="c-meta">
+          <div class="c-name">${esc(j.name)}</div>
+          ${cName?`<div class="c-client">👤 ${esc(cName)}</div>`:''}
+        </div>
+        ${j.price?`<div class="c-price">${fmtCur(j.price)}</div>`:''}
+      </div>
+      <div style="font-size:10px;color:var(--gb2);margin-bottom:6px;line-height:1.8">
+        ✓ ${fmtD(j.completedDate||'')}${j.miles?` · 🚐 ${j.miles}mi`:''}${j.pod?' · 📸 POD':''}${j.invoiceId?' · 🧾 INV':''}
+      </div>
+      <div class="c-acts">
+        ${j.pod?`<button class="btn sm" onclick="viewPOD('${j.id}')">📸 VIEW POD</button>`:''}
+        <button class="btn sm" onclick="openEditJob('${j.id}')">✏️ EDIT</button>
+        <button class="btn dl sm" onclick="delJob('${j.id}')">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+  const more=done.length>_historyLimit?`<button class="btn big sec" onclick="showMoreHistory()">SHOW MORE (${done.length-_historyLimit} MORE)</button>`:'';
+  return`<div class="section-title" style="cursor:pointer;margin-top:8px;user-select:none" onclick="toggleHistory()">
+    📋 COMPLETED JOBS (${done.length}) ${_showHistory?'▲':'▼'}
+  </div>
+  ${_showHistory?rows+more:''}`;
+}
 function rJobs(){
   const items=S.jobs.filter(j=>j.status!=='done').sort((a,b)=>daysUntil(a.dueDate)-daysUntil(b.dueDate));
-  if(!items.length)return`<div class="empty"><span class="empty-ic">📦</span>NO ACTIVE JOBS<br><br><button class="btn big" onclick="openAddJob()" style="margin:0 auto;display:block;max-width:200px">+ ADD FIRST JOB</button><br><button class="btn" onclick="go('clients')" style="margin:0 auto;display:block;font-size:5px">OR START FROM A CLIENT ▶</button><br><button class="btn sec" onclick="loadDemoData()" style="margin:0 auto;display:block;font-size:5px">OR LOAD DEMO DATA ▶</button></div>`;
-  return items.map(item=>{
+  if(!items.length)return`<div class="empty"><span class="empty-ic">📦</span>NO ACTIVE JOBS<br><br><button class="btn big" onclick="openAddJob()" style="margin:0 auto;display:block;max-width:200px">+ ADD FIRST JOB</button><br><button class="btn" onclick="go('clients')" style="margin:0 auto;display:block;font-size:9px">OR START FROM A CLIENT ▶</button><br><button class="btn sec" onclick="loadDemoData()" style="margin:0 auto;display:block;font-size:9px">OR LOAD DEMO DATA ▶</button></div>`+rJobHistory();
+  const cards=items.map(item=>{
     const u=urgency(item),cName=clientName(item.clientId);
     const isMultiDay=item.pickDate&&item.pickDate!==item.dueDate;
     const collectPhase=isMultiDay&&item.status==='active';
@@ -959,18 +995,18 @@ function rJobs(){
       const pickAddr=jobAddr(item,'pick')||'?';
       const dp=daysUntil(item.pickDate);
       const pickLabel=dp<0?`COLLECT OVERDUE ${Math.abs(dp)}D`:dp===0?'COLLECT TODAY':`COLLECT IN ${dp}D`;
-      return`<div class="card ${u==='r'?'urg':u==='y'?'warn':'ok'}" style="border-color:var(--yellow)">
+      return`<div class="card collect-ph">
         <div class="ci">
           <span class="c-icon">${item.icon||'📦'}</span>
           <div class="c-meta">
             <div class="c-name">${esc(item.name)}</div>
             <div class="c-client">👤 ${esc(cName)}</div>
           </div>
-          <span style="font-size:6px;background:var(--yellow);color:var(--gb0);padding:3px 6px;white-space:nowrap">STEP 1/2 ↑ COLLECT</span>
+          <span style="font-size:10px;background:var(--yellow);color:var(--gb0);padding:3px 6px;white-space:nowrap">STEP 1/2 ↑ COLLECT</span>
         </div>
         ${item.notes?`<div class="c-notes">${esc(item.notes)}</div>`:''}
         <div class="c-addr">↑ ${esc(pickAddr)}${item.pickTime?` · ⏰ ${item.pickTime}`:''}</div>
-        <div style="font-size:8px;color:var(--gb2);margin-bottom:6px;line-height:2">→ THEN DELIVER: ${fmtD(item.dueDate||'')}</div>
+        <div style="font-size:11px;color:var(--gb2);margin-bottom:6px;line-height:2">→ THEN DELIVER: ${fmtD(item.dueDate||'')}</div>
         <div class="c-row">
           <div class="c-due" style="color:var(--yellow)">${pickLabel}</div>
           ${item.price?`<div class="c-price">${fmtCur(item.price)}</div>`:''}
@@ -995,12 +1031,12 @@ function rJobs(){
           <div class="c-client">👤 ${esc(cName)}</div>
         </div>
         ${isMultiDay
-          ?`<span style="font-size:6px;background:var(--gb3);color:var(--gb0);padding:3px 6px;white-space:nowrap">STEP 2/2 ↓ DELIVER</span>`
+          ?`<span style="font-size:10px;background:var(--gb3);color:var(--gb0);padding:3px 6px;white-space:nowrap">STEP 2/2 ↓ DELIVER</span>`
           :`<span class="dot ${u}"></span>`}
       </div>
       ${item.notes?`<div class="c-notes">${esc(item.notes)}</div>`:''}
-      ${collected?`<div style="font-size:8px;color:var(--gb3);margin-bottom:4px">✓ COLLECTED${item.collectDate?' · '+fmtD(item.collectDate):''}</div>`:''}
-      ${item.pod?`<div style="font-size:5px;color:var(--gb3);margin-bottom:4px">📸 POD${item.podDriveUrl?' · ☁️ IN DRIVE':' SAVED'}</div>`:''}
+      ${collected?`<div style="font-size:11px;color:var(--gb3);margin-bottom:4px">✓ COLLECTED${item.collectDate?' · '+fmtD(item.collectDate):''}</div>`:''}
+      ${item.pod?`<div style="font-size:10px;color:var(--gb3);margin-bottom:4px">📸 POD${item.podDriveUrl?' · ☁️ IN DRIVE':' SAVED'}</div>`:''}
       <div class="c-addr">${isMultiDay?'':`▸ ${esc(jobAddr(item,'pick')||'?')}<br>`}▾ ${esc(delAddr)}${item.agreedTime?` · ⏰ ${item.agreedTime}`:''}</div>
       <div class="c-row">
         <div class="c-due">${dl}${item.dueDate?' · '+fmtD(item.dueDate):''}</div>
@@ -1016,6 +1052,7 @@ function rJobs(){
       </div>
     </div>`;
   }).join('');
+  return cards+rJobHistory();
 }
 
 function markCollected(id){
@@ -1153,7 +1190,9 @@ function submitEditJob(){
 // ═══════════════════════════════════
 function startDoneFlow(id){
   DF={jobId:id,step:1,pod:null,miles:''};
-  showMod(rDoneStep1());
+  if(S.settings.deliveryPODEnabled!==false){showMod(rDoneStep1());}
+  else if(S.settings.mileageEnabled!==false){showMod(rDoneStep2());}
+  else{finishDone();}
 }
 function rDoneStep1(){
   const driveOk=gasIsOk();
@@ -1164,7 +1203,10 @@ function rDoneStep1(){
     <button class="btn big sec" onclick="doneToMiles()">▶ ${DF.pod?'NEXT':'SKIP PHOTO'}</button>
     <button class="btn" style="width:100%;margin-top:6px" onclick="closeModal()">✕ CANCEL</button>`;
 }
-function doneToMiles(){DF.step=2;showMod(rDoneStep2())}
+function doneToMiles(){
+  if(S.settings.mileageEnabled!==false){DF.step=2;showMod(rDoneStep2());}
+  else{finishDone();}
+}
 function rDoneStep2(){
   const job=S.jobs.find(j=>j.id===DF.jobId);
   const pickPost=(job?.pickPost||'').trim();
@@ -1261,7 +1303,9 @@ async function handlePODFile(file){
 let CF={};
 function startCollectFlow(id){
   CF={jobId:id,step:1,pod:null,miles:''};
-  showMod(rCollectStep1());
+  if(S.settings.pickupPODEnabled!==false){showMod(rCollectStep1());}
+  else if(S.settings.mileageEnabled!==false){showMod(rCollectStep2());}
+  else{CF.miles=0;finishCollect();}
 }
 function rCollectStep1(){
   const driveOk=gasIsOk();
@@ -1276,7 +1320,10 @@ async function handleCollectPODFile(file){
   CF.pod=await compressImg(file,1000);
   showMod(rCollectStep1());
 }
-function collectToMiles(){CF.step=2;showMod(rCollectStep2());}
+function collectToMiles(){
+  if(S.settings.mileageEnabled!==false){CF.step=2;showMod(rCollectStep2());}
+  else{finishCollect();}
+}
 function rCollectStep2(){
   const job=S.jobs.find(j=>j.id===CF.jobId);
   const pickPost=(job?.pickPost||'').trim();
@@ -2242,6 +2289,33 @@ function rSettings(){
     <button class="btn big" onclick="saveSettings()">💾 SAVE DEFAULTS</button>
   </div>
   <div class="set-s">
+    <div class="set-t">📋 JOB COMPLETION</div>
+    <div class="set-note">CHOOSE WHAT STEPS APPEAR WHEN MARKING A JOB AS COLLECTED OR DONE.</div>
+    <div style="background:var(--gb0);border:2px solid var(--gb1);padding:10px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:11px;color:var(--gb4)">MILEAGE TRACKING</div>
+        <div style="font-size:9px;color:var(--gb2);margin-top:3px">ASK FOR MILES ON COLLECT + DONE</div>
+      </div>
+      <input type="checkbox" id="s-mileage-on" ${s.mileageEnabled!==false?'checked':''} style="width:22px;height:22px;cursor:pointer;accent-color:var(--gb3)">
+    </div>
+    <div style="background:var(--gb0);border:2px solid var(--gb1);padding:10px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:11px;color:var(--gb4)">PROOF OF PICKUP PHOTO</div>
+        <div style="font-size:9px;color:var(--gb2);margin-top:3px">CAMERA STEP WHEN MARKING COLLECTED</div>
+      </div>
+      <input type="checkbox" id="s-pickup-pod" ${s.pickupPODEnabled!==false?'checked':''} style="width:22px;height:22px;cursor:pointer;accent-color:var(--gb3)">
+    </div>
+    <div style="background:var(--gb0);border:2px solid var(--gb1);padding:10px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:11px;color:var(--gb4)">PROOF OF DELIVERY PHOTO</div>
+        <div style="font-size:9px;color:var(--gb2);margin-top:3px">CAMERA STEP WHEN MARKING DONE</div>
+      </div>
+      <input type="checkbox" id="s-delivery-pod" ${s.deliveryPODEnabled!==false?'checked':''} style="width:22px;height:22px;cursor:pointer;accent-color:var(--gb3)">
+    </div>
+    <div class="set-note">PROOF OF DELIVERY LINKS ARE ALWAYS ATTACHED TO PDF INVOICES WHEN AVAILABLE.</div>
+    <button class="btn big" onclick="saveSettings()">💾 SAVE</button>
+  </div>
+  <div class="set-s">
     <div class="set-t">🤖 AI FEATURES</div>
     <div class="set-note">PHOTO SCAN + TEXT PARSE USE ANTHROPIC API.<br>GET A KEY AT CONSOLE.ANTHROPIC.COM<br>KEY STAYS ON THIS DEVICE ONLY.</div>
     <div class="field"><label>ANTHROPIC API KEY</label><input type="password" id="s-apikey" value="${esc(s.apiKey)}" placeholder="sk-ant-..."></div>
@@ -2306,6 +2380,9 @@ function saveSettings(){
   const txEl=document.getElementById('s-taxpct');if(txEl)S.settings.taxStashPct=parseFloat(txEl.value)||25;
   const lfEl=document.getElementById('s-latefee');if(lfEl)S.settings.lateFee=lfEl.value;
   const gasEl=document.getElementById('s-gasurl');if(gasEl&&gasEl.value.trim())S.settings.gasUrl=gasEl.value.trim();
+  const meEl=document.getElementById('s-mileage-on');if(meEl)S.settings.mileageEnabled=meEl.checked;
+  const ppEl=document.getElementById('s-pickup-pod');if(ppEl)S.settings.pickupPODEnabled=ppEl.checked;
+  const dpEl=document.getElementById('s-delivery-pod');if(dpEl)S.settings.deliveryPODEnabled=dpEl.checked;
   const gcalEl=document.getElementById('s-gcalid');if(gcalEl)S.settings.gcalClientId=gcalEl.value.trim();
   save();render();
 }
@@ -3325,7 +3402,7 @@ function viewReceipt(expId){
 function viewPOD(jobId){
   const j=S.jobs.find(x=>x.id===jobId);if(!j||!j.pod)return;
   showMod(`<div class="m-title">📸 PROOF OF DELIVERY</div>
-    <div style="font-size:6px;color:var(--gb2);margin-bottom:8px">${esc(j.name)} · ${fmtDShort(j.completedDate)}</div>
+    <div style="font-size:10px;color:var(--gb2);margin-bottom:8px">${esc(j.name)} · ${fmtDShort(j.completedDate)}</div>
     <img src="${j.pod}" style="width:100%;border:3px solid var(--gb2)">
     <button class="btn big" onclick="sharePOD('${jobId}');closeModal()">↗ SEND POD</button>
     <button class="btn" style="width:100%;margin-top:6px" onclick="closeModal()">✕ CLOSE</button>`);
