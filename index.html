@@ -2363,20 +2363,21 @@ function calcSlotSuggestions(dateStr, excludeJobId){
   // Slot before first job
   const firstMins=_t2m(timed[0].agreedTime);
   if(firstMins-JOB_SLOT>=DAY_START){
-    slots.push({time:_m2t(Math.max(DAY_START,firstMins-JOB_SLOT)),label:`Before ${timed[0].agreedTime}`});
+    slots.push({time:_m2t(Math.max(DAY_START,firstMins-JOB_SLOT)),label:`free before your ${timed[0].agreedTime} job`});
   }
   // Gaps between jobs
   for(let i=0;i<timed.length-1;i++){
     const gapStart=_t2m(timed[i].agreedTime)+JOB_SLOT;
     const gapEnd=_t2m(timed[i+1].agreedTime);
-    if(gapEnd-gapStart>=JOB_SLOT){
-      slots.push({time:_m2t(gapStart+15),label:`Gap between ${timed[i].agreedTime} and ${timed[i+1].agreedTime}`});
+    const gapMins=gapEnd-gapStart;
+    if(gapMins>=JOB_SLOT){
+      slots.push({time:_m2t(gapStart+15),label:`free ~${gapMins} min gap after ${timed[i].agreedTime}`});
     }
   }
   // After last job
   const lastEnd=_t2m(timed[timed.length-1].agreedTime)+JOB_SLOT;
   if(lastEnd+15<=DAY_END){
-    slots.push({time:_m2t(lastEnd+15),label:`After ${timed[timed.length-1].agreedTime} job`});
+    slots.push({time:_m2t(lastEnd+15),label:`free from ~${_m2t(lastEnd)} onwards`});
   }
   return slots;
 }
@@ -2398,7 +2399,7 @@ function checkDaySlots(dateStr, excludeJobId=''){
     ${timed.length?`<div style="font-size:9px;color:var(--gb2);margin-bottom:8px">${timed.map(j=>`⏰ ${j.agreedTime} — ${esc(j.name)}`).join('<br>')}</div>`:''}
     ${slots.length?`<div style="font-size:9px;color:var(--gb4);margin-bottom:6px">AVAILABLE SLOTS:</div>
     <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
-      ${slots.map(s=>`<button class="btn sm dn" onclick="applySlot('${s.time}')" title="${s.label}">⏰ ${s.time}</button>`).join('')}
+      ${slots.map(s=>`<button class="btn sm dn" onclick="applySlot('${s.time}')" style="display:flex;flex-direction:column;align-items:center;height:auto;padding:8px 10px"><span style="font-size:12px">⏰ ${s.time}</span><span style="font-size:8px;color:var(--gb2);margin-top:2px;white-space:nowrap">${s.label}</span></button>`).join('')}
     </div>
     <button class="btn sm" style="width:100%" onclick="openClientSlotMsg('${dateStr}','${excludeJobId}')">📱 WHAT DO I TELL MY CLIENT?</button>`
     :'<div style="font-size:9px;color:var(--red)">⚠️ DAY LOOKS FULLY BOOKED</div>'}
