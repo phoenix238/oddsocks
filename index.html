@@ -286,9 +286,10 @@ body.clean .theme-btn{background:#1e1e2c!important;color:#6a6258!important}
 .tc-log-txt{flex:1;color:var(--gb3)}
 .tc-section{font-size:10px;color:var(--gb4);margin-bottom:10px;margin-top:6px;padding-bottom:6px;border-bottom:2px solid var(--gb1)}
 /* CALENDAR */
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
-.cal-day{text-align:center;padding:8px 2px;min-height:56px;border:2px solid transparent;cursor:default}
+.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}
+.cal-day{text-align:center;padding:8px 2px;min-height:56px;border:2px solid transparent;cursor:default;overflow:hidden;min-width:0}
 .cal-day.has-jobs{cursor:pointer}
+.cal-day.is-clickable{cursor:pointer}
 .cal-day.is-today{background:var(--gb1);border-color:var(--gb3)}
 .cal-day.is-selected{background:var(--gb2);border-color:var(--gb4)}
 .cal-day.is-past{opacity:0.4}
@@ -297,7 +298,7 @@ body.clean .theme-btn{background:#1e1e2c!important;color:#6a6258!important}
 .cal-day.is-selected .cal-day-num{color:var(--gb0)}
 .cal-day-count{font-size:8px;color:var(--gb2);margin-top:2px}
 .cal-day.is-selected .cal-day-count{color:var(--gb0)}
-.cal-dots{display:flex;justify-content:center;gap:3px;margin-top:3px}
+.cal-dots{display:flex;justify-content:center;gap:2px;margin-top:3px}
 
 /* ROUTE — DAY SECTIONS */
 .rday{margin-bottom:20px}
@@ -874,14 +875,15 @@ function rCalendar(){
     const isToday=ds===td, isPast=ds<td, isSel=ds===S.calSelected;
     const unconf=jobs.filter(j=>!j.commsStatus||j.commsStatus==='unconfirmed'||j.commsStatus==='rescheduled').length;
     const ok=jobs.filter(j=>j.commsStatus==='confirmed'||j.commsStatus==='eta_sent').length;
-    let cls='cal-day'+(totalCount?' has-jobs':'')+(isToday?' is-today':'')+(isSel?' is-selected':'')+(isPast&&!totalCount?' is-past':'');
-    cells+=`<div class="${cls}" onclick="${totalCount?`selectCalDay('${ds}')`:''}" >
+    const clickable=(!isPast||totalCount);
+    let cls='cal-day'+(totalCount?' has-jobs':'')+(isToday?' is-today':'')+(isSel?' is-selected':'')+(isPast&&!totalCount?' is-past':'')+(clickable&&!totalCount?' is-clickable':'');
+    cells+=`<div class="${cls}" onclick="${clickable?`selectCalDay('${ds}')`:''}" >
       <div class="cal-day-num">${d}</div>
       ${totalCount?`<div class="cal-day-count">${totalCount}</div>
       <div class="cal-dots">
-        ${pickups.length>0?`<div style="width:8px;height:8px;background:var(--gb2);border-radius:50%;border:1px solid var(--gb3)" title="collections"></div>`:''}
-        ${unconf>0?`<div style="width:8px;height:8px;background:var(--yellow);border-radius:50%"></div>`:''}
-        ${ok>0?`<div style="width:8px;height:8px;background:var(--gb3);border-radius:50%"></div>`:''}
+        ${pickups.length>0?`<div style="width:6px;height:6px;background:var(--gb2);border-radius:50%;border:1px solid var(--gb3)" title="collections"></div>`:''}
+        ${unconf>0?`<div style="width:6px;height:6px;background:var(--yellow);border-radius:50%"></div>`:''}
+        ${ok>0?`<div style="width:6px;height:6px;background:var(--gb3);border-radius:50%"></div>`:''}
       </div>`:''}
     </div>`;
   }
@@ -911,10 +913,10 @@ function rCalendar(){
         ${dayJobs.length?`<div style="background:var(--gb0);border:2px solid var(--gb2);height:10px;margin-bottom:10px">
           <div style="height:100%;background:${allConf?'var(--gb4)':'var(--gb3)'};width:${Math.round(confirmed/dayJobs.length*100)}%;transition:width .3s"></div>
         </div>`:''}
-        <div style="display:flex;gap:8px">
-          ${dayJobs.length&&!allConf?`<button class="btn sm" style="flex:1" onclick="confirmAllOnDate('${showDate}')">✓ CONFIRM ALL</button>`:''}
-          ${mUrl?`<a href="${mUrl}" target="_blank" class="btn sm" style="text-decoration:none;flex:1;text-align:center">🗺️ ROUTE IN MAPS</a>`:''}
-          <button class="btn sm" style="flex:1" onclick="go('route')">📋 ROUTE TAB</button>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          ${dayJobs.length&&!allConf?`<button class="btn sm" style="flex:1 1 120px" onclick="confirmAllOnDate('${showDate}')">✓ CONFIRM ALL</button>`:''}
+          ${mUrl?`<a href="${mUrl}" target="_blank" class="btn sm" style="text-decoration:none;flex:1 1 120px;text-align:center">🗺️ ROUTE IN MAPS</a>`:''}
+          <button class="btn sm" style="flex:1 1 120px" onclick="go('route')">📋 ROUTE TAB</button>
         </div>
       </div>`;
       html+=dayPickups.map(j=>rTodayCard(j,'pickup')).join('');
