@@ -479,6 +479,39 @@ function load(){
   try{S.expenses=JSON.parse(localStorage.getItem('os3_expenses')||'[]')}catch(e){S.expenses=[]}
   try{S.settings={invNum:1,paymentTerms:14,mileageRate:0.45,taxYear:2025,...JSON.parse(localStorage.getItem('os3_set')||'{}')}}catch(e){}
 }
+function loadDemoData(){
+  if(S.clients.find(c=>c.id==='demo_c1')){alert('Demo data is already loaded.');return;}
+  const t=today();
+  const clients=[
+    {id:'demo_c1',name:'Sarah Mitchell',phone:'07712 345678',email:'sarah@example.com',postcode:'W11 2LN',addrNum:'4',addrStreet:'Lansdowne Rd',addr:'4, Lansdowne Rd, W11 2LN',defaultRate:75,paymentTerms:14,notes:'Collects from Portobello market regularly',locations:[]},
+    {id:'demo_c2',name:'Portobello Antiques Ltd',phone:'020 7229 8765',email:'orders@portobelloantiques.co.uk',postcode:'W11 2DY',addrNum:'52',addrStreet:'Portobello Rd',addr:'52, Portobello Rd, W11 2DY',defaultRate:120,paymentTerms:30,notes:'Commercial account — invoice monthly',locations:[{id:'demo_l1',name:'Warehouse',post:'W10 5BU',street:'Ladbroke Grove',num:'88'}]},
+    {id:'demo_c3',name:'The Vintage Workshop',phone:'07834 567890',email:'info@vintageworkshop.co.uk',postcode:'SE1 3UD',addrNum:'18',addrStreet:'Bermondsey St',addr:'18, Bermondsey St, SE1 3UD',defaultRate:90,paymentTerms:14,notes:'SE London workshop — tricky parking on Bermondsey St',locations:[]}
+  ];
+  const jobs=[
+    {id:'demo_j1',icon:'🪞',name:'Victorian Walnut Wardrobe',notes:'Fragile — bevelled mirrors, wrap carefully',clientId:'demo_c1',price:120,pickDate:t,pickPost:'W11 2LN',pickNum:'4',pickStreet:'Lansdowne Rd',delPost:'OX1 3DP',delNum:'22',delStreet:'Walton St',dueDate:addDays(t,1),status:'active',pm:false,dm:false,loaded:false},
+    {id:'demo_j2',icon:'🏺',name:'Box of Ceramics',notes:'Packed and ready from back of shop',clientId:'demo_c2',price:45,pickDate:t,pickPost:'W11 2DY',pickNum:'52',pickStreet:'Portobello Rd',delPost:'EC1V 9HX',delNum:'7',delStreet:'Rosebery Ave',dueDate:t,status:'active',pm:false,dm:false,loaded:false},
+    {id:'demo_j3',icon:'🪑',name:'Antique Pine Writing Desk',notes:'One-off — no client account',clientId:'',price:85,pickDate:t,pickPost:'SW3 2JB',pickNum:'14',pickStreet:"King's Rd",delPost:'N1 9GU',delNum:'31',delStreet:'Essex Rd',dueDate:addDays(t,3),status:'active',pm:false,dm:false,loaded:false},
+    {id:'demo_j4',icon:'🛋️',name:'Chesterfield Sofa',notes:'Heavy — two person lift',clientId:'demo_c2',price:200,pickDate:addDays(t,-8),pickPost:'W11 2DY',pickNum:'52',pickStreet:'Portobello Rd',delPost:'TW1 3DG',delNum:'9',delStreet:'Richmond Rd',dueDate:addDays(t,-7),status:'done',completedDate:addDays(t,-7),miles:18,pod:null,invoiceId:'demo_i1',pm:false,dm:false,loaded:true},
+    {id:'demo_j5',icon:'🪑',name:'Set of 6 Dining Chairs',notes:'All bubble-wrapped by seller',clientId:'demo_c3',price:160,pickDate:addDays(t,-31),pickPost:'SE1 3UD',pickNum:'18',pickStreet:'Bermondsey St',delPost:'BR1 1LH',delNum:'3',delStreet:'High St',dueDate:addDays(t,-30),status:'done',completedDate:addDays(t,-30),miles:24,pod:null,invoiceId:'demo_i2',pm:false,dm:false,loaded:true},
+    {id:'demo_j6',icon:'🖼️',name:'Framed Oil Painting',notes:'Large gilt frame, very delicate',clientId:'demo_c1',price:75,pickDate:addDays(t,-15),pickPost:'W11 2LN',pickNum:'4',pickStreet:'Lansdowne Rd',delPost:'SW7 3RL',delNum:'41',delStreet:'Onslow Sq',dueDate:addDays(t,-14),status:'done',completedDate:addDays(t,-14),miles:7,pod:null,invoiceId:'demo_i3',pm:false,dm:false,loaded:true}
+  ];
+  const invoices=[
+    {id:'demo_i1',number:'INV-001',type:'immediate',clientId:'demo_c2',clientName:'Portobello Antiques Ltd',clientEmail:'orders@portobelloantiques.co.uk',clientAddr:'52, Portobello Rd, W11 2DY',jobIds:['demo_j4'],lineItems:[{description:'Chesterfield Sofa',date:addDays(t,-7),amount:200}],issueDate:addDays(t,-6),dueDate:addDays(t,24),total:200,status:'sent',paidDate:null,payMethod:null,notes:'',docUrl:null},
+    {id:'demo_i2',number:'INV-002',type:'immediate',clientId:'demo_c3',clientName:'The Vintage Workshop',clientEmail:'info@vintageworkshop.co.uk',clientAddr:'18, Bermondsey St, SE1 3UD',jobIds:['demo_j5'],lineItems:[{description:'Set of 6 Dining Chairs',date:addDays(t,-30),amount:160}],issueDate:addDays(t,-29),dueDate:addDays(t,-15),total:160,status:'paid',paidDate:addDays(t,-10),payMethod:'BACS',notes:'',docUrl:null},
+    {id:'demo_i3',number:'INV-003',type:'immediate',clientId:'demo_c1',clientName:'Sarah Mitchell',clientEmail:'sarah@example.com',clientAddr:'4, Lansdowne Rd, W11 2LN',jobIds:['demo_j6'],lineItems:[{description:'Framed Oil Painting',date:addDays(t,-14),amount:75}],issueDate:addDays(t,-13),dueDate:addDays(t,1),total:75,status:'draft',paidDate:null,payMethod:null,notes:'',docUrl:null}
+  ];
+  const expenses=[
+    {id:'demo_e1',date:addDays(t,-2),category:'FUEL',amount:68.40,description:'BP - M40 northbound',receipt:null,receiptDriveUrl:null},
+    {id:'demo_e2',date:addDays(t,-7),category:'PARKING',amount:4.50,description:'NCP Bermondsey',receipt:null,receiptDriveUrl:null},
+    {id:'demo_e3',date:addDays(t,-14),category:'PACKING',amount:22.00,description:'Bubble wrap + boxes',receipt:null,receiptDriveUrl:null}
+  ];
+  S.clients=[...S.clients,...clients];
+  S.jobs=[...S.jobs,...jobs];
+  S.invoices=[...S.invoices,...invoices];
+  S.expenses=[...S.expenses,...expenses];
+  if((S.settings.invNum||1)<=3)S.settings.invNum=4;
+  save();render();
+}
 
 // ═══════════════════════════════════
 // UTILS
@@ -783,7 +816,7 @@ function rToday(){
 // ═══════════════════════════════════
 function rJobs(){
   const items=S.jobs.filter(j=>j.status!=='done').sort((a,b)=>daysUntil(a.dueDate)-daysUntil(b.dueDate));
-  if(!items.length)return`<div class="empty"><span class="empty-ic">📦</span>NO ACTIVE JOBS<br><br><button class="btn big" onclick="openAddJob()" style="margin:0 auto;display:block;max-width:200px">+ ADD FIRST JOB</button><br><button class="btn" onclick="go('clients')" style="margin:0 auto;display:block;font-size:5px">OR START FROM A CLIENT ▶</button></div>`;
+  if(!items.length)return`<div class="empty"><span class="empty-ic">📦</span>NO ACTIVE JOBS<br><br><button class="btn big" onclick="openAddJob()" style="margin:0 auto;display:block;max-width:200px">+ ADD FIRST JOB</button><br><button class="btn" onclick="go('clients')" style="margin:0 auto;display:block;font-size:5px">OR START FROM A CLIENT ▶</button><br><button class="btn sec" onclick="loadDemoData()" style="margin:0 auto;display:block;font-size:5px">OR LOAD DEMO DATA ▶</button></div>`;
   return items.map(item=>{
     const u=urgency(item),d=daysUntil(item.dueDate);
     const dl=d<0?`OVERDUE ${Math.abs(d)}D`:d===0?'DUE TODAY':`${d}D LEFT`;
@@ -1799,6 +1832,11 @@ function rSettings(){
     </div>
     <div id="g-status" style="font-size:5px;color:var(--gb2);margin-top:6px"></div>
     ${s.gasUrl?`<div style="margin-top:8px;font-size:5px;color:var(--gb3)">✓ APPS SCRIPT URL SAVED · DATA SYNCS AUTOMATICALLY</div>`:''}
+  </div>
+  <div class="set-s">
+    <div class="set-t">🧪 DEMO DATA</div>
+    <div class="set-note">LOADS SAMPLE CLIENTS, JOBS, INVOICES AND EXPENSES SO YOU CAN EXPLORE THE APP WITHOUT ENTERING YOUR OWN DATA.</div>
+    <button class="btn big sec" onclick="loadDemoData()">▶ LOAD DEMO DATA</button>
   </div>
   <div class="set-s">
     <div class="set-t">⚠️ DANGER ZONE</div>
