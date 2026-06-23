@@ -11,44 +11,45 @@
 <meta name="apple-mobile-web-app-title" content="Odd Socks">
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;image-rendering:pixelated}
 :root{
   --gb0:#0f380f;--gb1:#306230;--gb2:#8bac0f;--gb3:#9bbc0f;--gb4:#c4d96b;--gb5:#e8f0c8;
   --red:#d03030;--yellow:#c49000;--px:'Press Start 2P',monospace
 }
-body{background:var(--gb0);font-family:var(--px);color:var(--gb3);font-size:10px;line-height:1.5;overflow-x:hidden}
+body{background:var(--gb0);font-family:var(--px);color:var(--gb3);font-size:12px;line-height:1.5;overflow-x:hidden}
 .app{max-width:480px;margin:0 auto;min-height:100vh;background:var(--gb0);border-left:4px solid var(--gb1);border-right:4px solid var(--gb1);position:relative}
 .app::after{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.04) 2px,rgba(0,0,0,0.04) 4px);pointer-events:none;z-index:998}
 
-/* ═══ CLEAN MODE ═══ */
+/* ═══ CLEAN MODE — MIDNIGHT GOLD ═══ */
 body.clean{
-  --gb0:#f8fafc;--gb1:#ffffff;--gb2:#94a3b8;--gb3:#334155;--gb4:#0f172a;--gb5:#f1f5f9;
-  --red:#dc2626;--yellow:#d97706;--px:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-serif;
-  font-size:14px;background:#f8fafc;
+  --gb0:#0c0c14;--gb1:#161622;--gb2:#b8943f;--gb3:#c8c0b5;--gb4:#f0ece4;--gb5:#1e1e2c;
+  --red:#e05252;--yellow:#d4a843;--px:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  font-size:14px;background:#0c0c14;
 }
 body.clean *{image-rendering:auto;letter-spacing:0}
-body.clean .app{border:none;background:#f8fafc}
+body.clean .app{border:none;background:#0c0c14}
 body.clean .app::after{display:none}
-body.clean .hdr{background:#1e293b;border-bottom:2px solid #334155}
-body.clean .hdr-info h1{text-shadow:none;font-size:13px;letter-spacing:0}
-body.clean .hdr-info p{color:#94a3b8}
+body.clean .hdr{background:#0e0e1a;border-bottom:1px solid #b8943f}
+body.clean .hdr-info h1{text-shadow:none;font-size:13px;letter-spacing:0.5px}
+body.clean .hdr-info p{color:#6a6258}
 body.clean .hdr-socks{animation:none}
-body.clean .hdr-badge{background:#334155;border-color:#475569;color:#f1f5f9}
-body.clean .tabs{background:#f1f5f9;border-bottom:2px solid #e2e8f0;top:52px}
-body.clean .tab{font-size:9px;color:#64748b;padding:10px 1px}
-body.clean .tab.on{color:#0f172a;background:#e2e8f0}
-body.clean .card,.clean .cc,.clean .inv-item{border-radius:8px;border-width:1px}
-body.clean .btn{border-radius:5px;font-size:11px}
-body.clean .btn.big{border-radius:6px;font-size:12px}
-body.clean .field input,.clean .field textarea,.clean .field select{border-radius:5px;font-size:13px;border-width:1px}
-body.clean .modal{border-radius:12px 12px 0 0;border-width:1px}
+body.clean .hdr-badge{background:#1e1e2c;border-color:#b8943f;color:#f0ece4}
+body.clean .tabs{background:#0e0e1a;border-bottom:1px solid #b8943f;top:52px}
+body.clean .tab{font-size:9px;color:#6a6258;padding:10px 1px}
+body.clean .tab.on{color:#f0ece4;background:#1e1e2c}
+body.clean .card,.clean .cc,.clean .inv-item{border-radius:10px;border-width:1px}
+body.clean .btn{border-radius:6px;font-size:15px;padding:12px 18px}
+body.clean .btn.big{border-radius:8px;font-size:17px;padding:16px 18px}
+body.clean .field input,.clean .field textarea,.clean .field select{border-radius:6px;font-size:13px;border-width:1px;color-scheme:dark}
+body.clean .modal{border-radius:14px 14px 0 0;border-width:1px}
 body.clean .m-title{font-size:14px}
 body.clean .c-name{font-size:12px}
 body.clean .c-addr,.clean .c-client,.clean .c-notes,.clean .c-due{font-size:10px}
 body.clean .c-price{font-size:13px}
-body.clean .hdr-info h1::after{content:' 🎮';font-size:10px;opacity:.5}
-body.clean .theme-btn{background:#334155!important;color:#94a3b8!important}
+body.clean .hdr-info h1::after{content:' ✦';font-size:10px;opacity:.5}
+body.clean .theme-btn{background:#1e1e2c!important;color:#6a6258!important}
 
 /* HEADER */
 .hdr{background:var(--gb1);border-bottom:4px solid var(--gb2);padding:12px 16px 10px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;isolation:isolate}
@@ -60,10 +61,10 @@ body.clean .theme-btn{background:#334155!important;color:#94a3b8!important}
 
 /* TABS */
 .tabs{display:grid;grid-template-columns:repeat(6,1fr);background:var(--gb0);border-bottom:4px solid var(--gb1);position:sticky;top:57px;z-index:99;isolation:isolate}
-.tab{padding:8px 1px;text-align:center;font-size:4.5px;color:var(--gb2);cursor:pointer;border:none;background:none;font-family:var(--px);border-right:2px solid var(--gb1);line-height:1.6}
+.tab{padding:10px 1px;text-align:center;font-size:7px;color:var(--gb2);cursor:pointer;border:none;background:none;font-family:var(--px);border-right:2px solid var(--gb1);line-height:1.6}
 .tab:last-child{border-right:none}
 .tab.on{color:var(--gb4);background:var(--gb1)}
-.tab-ic{font-size:13px;display:block;margin-bottom:3px}
+.tab-ic{font-size:18px;display:block;margin-bottom:4px}
 
 /* CONTENT */
 .content{padding:12px;padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))}
@@ -87,17 +88,17 @@ body.clean .theme-btn{background:#334155!important;color:#94a3b8!important}
 .ci{display:flex;align-items:flex-start;gap:10px;margin-bottom:6px}
 .c-icon{font-size:20px;flex-shrink:0}
 .c-meta{flex:1;min-width:0}
-.c-name{font-size:8px;color:var(--gb4);line-height:1.4;word-break:break-word}
-.c-client{font-size:6px;color:var(--gb2);margin-top:2px}
+.c-name{font-size:11px;color:var(--gb4);line-height:1.4;word-break:break-word}
+.c-client{font-size:9px;color:var(--gb2);margin-top:2px}
 .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:4px}
 .dot.r{background:var(--red);box-shadow:0 0 5px var(--red)}
 .dot.y{background:var(--yellow);box-shadow:0 0 5px var(--yellow)}
 .dot.g{background:var(--gb3)}
-.c-addr{font-size:6px;color:var(--gb2);line-height:2;margin-bottom:5px}
+.c-addr{font-size:9px;color:var(--gb2);line-height:2;margin-bottom:5px}
 .c-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
-.c-due{font-size:6px;color:var(--gb4)}
-.c-price{font-size:8px;color:var(--gb3);font-weight:bold}
-.c-notes{font-size:6px;color:var(--gb2);font-style:italic;margin-bottom:7px;line-height:1.8}
+.c-due{font-size:9px;color:var(--gb4)}
+.c-price{font-size:11px;color:var(--gb3);font-weight:bold}
+.c-notes{font-size:9px;color:var(--gb2);font-style:italic;margin-bottom:7px;line-height:1.8}
 .c-acts{display:flex;gap:5px;flex-wrap:wrap}
 
 /* CLIENT CARDS */
@@ -174,17 +175,17 @@ body.clean .theme-btn{background:#334155!important;color:#94a3b8!important}
 .inv-acts{display:flex;gap:5px;flex-wrap:wrap}
 
 /* BUTTONS */
-.btn{background:var(--gb0);color:var(--gb3);border:2px solid var(--gb2);padding:7px 9px;font-size:6px;font-family:var(--px);cursor:pointer;white-space:nowrap}
+.btn{background:var(--gb0);color:var(--gb3);border:2px solid var(--gb2);padding:11px 13px;font-size:9px;font-family:var(--px);cursor:pointer;white-space:nowrap}
 .btn:active{background:var(--gb2);color:var(--gb0)}
 .btn.ld{background:var(--gb2);color:var(--gb0)}
 .btn.dn{background:var(--gb3);color:var(--gb0);border-color:var(--gb3)}
 .btn.dl{border-color:var(--red);color:var(--red)}
-.btn.big{background:var(--gb2);color:var(--gb0);padding:11px 10px;font-size:7px;width:100%;margin-top:6px;border:2px solid var(--gb4);display:block;text-align:center;cursor:pointer;font-family:var(--px)}
+.btn.big{background:var(--gb2);color:var(--gb0);padding:14px 12px;font-size:10px;width:100%;margin-top:6px;border:2px solid var(--gb4);display:block;text-align:center;cursor:pointer;font-family:var(--px)}
 .btn.big:active{background:var(--gb4)}
 .btn.big.sec{background:var(--gb1);color:var(--gb4);border-color:var(--gb2)}
 .btn.big.dl{background:var(--gb0);color:var(--red);border-color:var(--red)}
-.btn.sm{padding:4px 6px;font-size:5px}
-.back-btn{background:var(--gb0);color:var(--gb2);border:2px solid var(--gb1);padding:7px 10px;font-size:6px;font-family:var(--px);cursor:pointer;margin-bottom:10px}
+.btn.sm{padding:10px 12px;font-size:9px}
+.back-btn{background:var(--gb0);color:var(--gb2);border:2px solid var(--gb1);padding:10px 12px;font-size:9px;font-family:var(--px);cursor:pointer;margin-bottom:10px}
 
 /* MODAL */
 .ov{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.88);z-index:500;display:flex;align-items:flex-end;justify-content:center}
@@ -258,48 +259,66 @@ body.clean .theme-btn{background:#334155!important;color:#94a3b8!important}
 
 
 
-/* TODAY TAB */
+/* TODAY/CALENDAR TAB */
 .tc{background:var(--gb1);border:3px solid var(--gb2);margin-bottom:12px;padding:12px}
 .tc.tc-confirmed{border-color:var(--gb3)}
 .tc.tc-rescheduled{border-color:var(--yellow);border-style:dashed}
 .tc.tc-eta_sent{border-color:var(--gb4)}
-.tc-hdr{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
-.tc-icon{font-size:20px;flex-shrink:0}
+.tc-hdr{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+.tc-icon{font-size:24px;flex-shrink:0}
 .tc-info{flex:1;min-width:0}
-.tc-name{font-size:8px;color:var(--gb4);line-height:1.4;word-break:break-word}
-.tc-client{font-size:6px;color:var(--gb2);margin-top:2px}
-.tc-badge{font-size:5px;padding:3px 6px;border:2px solid;white-space:nowrap;flex-shrink:0;margin-top:2px}
+.tc-name{font-size:12px;color:var(--gb4);line-height:1.4;word-break:break-word}
+.tc-client{font-size:10px;color:var(--gb2);margin-top:4px}
+.tc-badge{font-size:8px;padding:4px 8px;border:2px solid;white-space:nowrap;align-self:flex-start;margin-top:2px}
 .tc-badge.unconfirmed{color:var(--yellow);border-color:var(--yellow)}
 .tc-badge.confirmed{color:var(--gb3);border-color:var(--gb3)}
 .tc-badge.rescheduled{color:var(--yellow);border-color:var(--yellow)}
 .tc-badge.eta_sent{color:var(--gb4);border-color:var(--gb4)}
-.tc-time-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-.tc-time{background:var(--gb0);border:2px solid var(--gb2);color:var(--gb4);font-family:var(--px);font-size:8px;padding:5px 7px;width:90px}
-.tc-addr{font-size:6px;color:var(--gb2);flex:1}
-.tc-acts{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+.tc-time-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.tc-time{background:var(--gb0);border:2px solid var(--gb2);color:var(--gb4);font-family:var(--px);font-size:14px;padding:8px 10px;width:110px}
+.tc-addr{font-size:9px;color:var(--gb2);flex:1;line-height:1.9}
+.tc-acts{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.tc-acts-row{display:flex;gap:6px;margin-bottom:8px}
 .tc-log{border-top:1px solid var(--gb0);padding-top:7px;margin-top:4px}
-.tc-log-entry{display:flex;gap:8px;font-size:5px;color:var(--gb2);margin-bottom:4px;line-height:1.8}
-.tc-log-ts{color:var(--gb1);flex-shrink:0;min-width:35px;font-size:4.5px}
+.tc-log-entry{display:flex;gap:8px;font-size:8px;color:var(--gb2);margin-bottom:4px;line-height:1.8}
+.tc-log-ts{color:var(--gb1);flex-shrink:0;min-width:40px}
 .tc-log-txt{flex:1;color:var(--gb3)}
-.tc-section{font-size:7px;color:var(--gb4);margin-bottom:8px;margin-top:4px;padding-bottom:4px;border-bottom:2px solid var(--gb1)}
+.tc-section{font-size:10px;color:var(--gb4);margin-bottom:10px;margin-top:6px;padding-bottom:6px;border-bottom:2px solid var(--gb1)}
+/* CALENDAR */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-day{text-align:center;padding:8px 2px;min-height:56px;border:2px solid transparent;cursor:default}
+.cal-day.has-jobs{cursor:pointer}
+.cal-day.is-today{background:var(--gb1);border-color:var(--gb3)}
+.cal-day.is-selected{background:var(--gb2);border-color:var(--gb4)}
+.cal-day.is-past{opacity:0.4}
+.cal-day-num{font-size:12px;color:var(--gb3)}
+.cal-day.is-today .cal-day-num{font-size:14px;color:var(--gb4)}
+.cal-day.is-selected .cal-day-num{color:var(--gb0)}
+.cal-day-count{font-size:8px;color:var(--gb2);margin-top:2px}
+.cal-day.is-selected .cal-day-count{color:var(--gb0)}
+.cal-dots{display:flex;justify-content:center;gap:3px;margin-top:3px}
 
 /* ROUTE — DAY SECTIONS */
-.rday{margin-bottom:18px}
-.rday-hdr{background:var(--gb1);border:3px solid var(--gb2);padding:10px 12px;margin-bottom:6px;display:flex;align-items:center;gap:10px}
-.rday-date{font-size:7px;color:var(--gb4);flex:1}
-.rday-count{font-size:5px;color:var(--gb2)}
-.rc{background:var(--gb1);border:3px solid var(--gb2);padding:10px;margin-bottom:6px}
-.rc-top{display:flex;align-items:flex-start;gap:8px}
-.rc-order{display:flex;flex-direction:column;gap:3px;flex-shrink:0}
-.rc-ord-btn{background:var(--gb0);border:2px solid var(--gb2);color:var(--gb3);font-family:var(--px);font-size:8px;width:24px;height:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.rday{margin-bottom:20px}
+.rday-hdr{background:var(--gb1);border:3px solid var(--gb2);padding:12px 14px;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+.rday-date{font-size:11px;color:var(--gb4);flex:1}
+.rday-count{font-size:9px;color:var(--gb2)}
+.leave-by-box{background:var(--gb0);border:3px solid var(--gb3);padding:12px 14px;margin-bottom:8px;text-align:center}
+.leave-by-label{font-size:10px;color:var(--gb2);letter-spacing:1px;margin-bottom:6px}
+.leave-by-time{font-size:30px;color:var(--gb4);display:block;text-shadow:3px 3px 0 var(--gb0);letter-spacing:2px;margin-bottom:4px}
+.leave-by-sub{font-size:8px;color:var(--gb2)}
+.rc{background:var(--gb1);border:3px solid var(--gb2);padding:12px;margin-bottom:8px}
+.rc-top{display:flex;align-items:flex-start;gap:10px}
+.rc-order{display:flex;flex-direction:column;gap:4px;flex-shrink:0}
+.rc-ord-btn{background:var(--gb0);border:2px solid var(--gb2);color:var(--gb3);font-family:var(--px);font-size:14px;width:36px;height:36px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
 .rc-ord-btn:active{background:var(--gb2);color:var(--gb0)}
 .rc-ord-btn:disabled{opacity:.25;cursor:default}
 .rc-body{flex:1;min-width:0}
-.rc-num{font-size:10px;color:var(--gb4);margin-bottom:3px}
-.rc-name{font-size:7px;color:var(--gb3);margin-bottom:4px}
-.rc-addr{font-size:6px;color:var(--gb2);line-height:2}
-.rc-acts{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}
-.eta-sent-badge{font-size:5px;color:var(--gb3);padding:2px 6px;border:1px solid var(--gb3)}
+.rc-num{font-size:13px;color:var(--gb4);margin-bottom:4px}
+.rc-name{font-size:11px;color:var(--gb3);margin-bottom:5px}
+.rc-addr{font-size:9px;color:var(--gb2);line-height:2}
+.rc-acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.eta-sent-badge{font-size:8px;color:var(--gb3);padding:4px 8px;border:2px solid var(--gb3)}
 /* MONEY GAMIFICATION */
 .hero-box{background:var(--gb1);border:3px solid var(--gb2);padding:14px 12px;margin-bottom:10px}
 .hero-net{text-align:center;padding:10px 0 14px;border-bottom:2px solid var(--gb2);margin-bottom:12px}
@@ -406,7 +425,7 @@ body.clean .theme-btn{background:#334155!important;color:#94a3b8!important}
 const ICONS = ['🛋️','🪑','🪞','🖼️','🏺','🕰️','📦','🪔','🗝️','🧸','🐶','🪆','🏮','🧲','🪟','🚪','🪴','🛁'];
 const TABS = [
   {id:'jobs',lb:'JOBS',ic:'📋'},
-  {id:'today',lb:'TODAY',ic:'📅'},
+  {id:'cal',lb:'CAL',ic:'📅'},
   {id:'clients',lb:'CLIENTS',ic:'👥'},
   {id:'money',lb:'MONEY',ic:'💷'},
   {id:'route',lb:'ROUTE',ic:'🗺️'},
@@ -430,10 +449,13 @@ let S = {
   settings:{
     apiKey:'',gasUrl:'',
     bizName:'',bizAddr:'',bizPhone:'',bizEmail:'',bizBank:'',
+    homePost:'',
+    gcalClientId:'',gcalToken:'',gcalTokenExpiry:0,
     defaultRate:'',paymentTerms:14,mileageRate:0.45,invNum:1,taxYear:2025,
     syncStatus:'idle',lastSync:null
   },
-  tab:'jobs', viewClient:null, moneyPeriod:'month'
+  tab:'jobs', viewClient:null, moneyPeriod:'month',
+  calMonth:null, calYear:null, calSelected:null
 };
 
 // Done-flow state
@@ -447,6 +469,8 @@ let FD = {};
 let EXP_CAT = '';
 // Sock tap counter
 let sockN = 0, sockT = null;
+// Leave-by time cache (cleared on save)
+let _leaveByCache = {};
 
 // ═══════════════════════════════════
 // STORAGE
@@ -478,6 +502,39 @@ function load(){
   try{S.invoices=JSON.parse(localStorage.getItem('os3_invoices')||'[]')}catch(e){S.invoices=[]}
   try{S.expenses=JSON.parse(localStorage.getItem('os3_expenses')||'[]')}catch(e){S.expenses=[]}
   try{S.settings={invNum:1,paymentTerms:14,mileageRate:0.45,taxYear:2025,...JSON.parse(localStorage.getItem('os3_set')||'{}')}}catch(e){}
+}
+function loadDemoData(){
+  if(S.clients.find(c=>c.id==='demo_c1')){alert('Demo data is already loaded.');return;}
+  const t=today();
+  const clients=[
+    {id:'demo_c1',name:'Sarah Mitchell',phone:'07712 345678',email:'sarah@example.com',postcode:'W11 2LN',addrNum:'4',addrStreet:'Lansdowne Rd',addr:'4, Lansdowne Rd, W11 2LN',defaultRate:75,paymentTerms:14,notes:'Collects from Portobello market regularly',locations:[]},
+    {id:'demo_c2',name:'Portobello Antiques Ltd',phone:'020 7229 8765',email:'orders@portobelloantiques.co.uk',postcode:'W11 2DY',addrNum:'52',addrStreet:'Portobello Rd',addr:'52, Portobello Rd, W11 2DY',defaultRate:120,paymentTerms:30,notes:'Commercial account — invoice monthly',locations:[{id:'demo_l1',name:'Warehouse',post:'W10 5BU',street:'Ladbroke Grove',num:'88'}]},
+    {id:'demo_c3',name:'The Vintage Workshop',phone:'07834 567890',email:'info@vintageworkshop.co.uk',postcode:'SE1 3UD',addrNum:'18',addrStreet:'Bermondsey St',addr:'18, Bermondsey St, SE1 3UD',defaultRate:90,paymentTerms:14,notes:'SE London workshop — tricky parking on Bermondsey St',locations:[]}
+  ];
+  const jobs=[
+    {id:'demo_j1',icon:'🪞',name:'Victorian Walnut Wardrobe',notes:'Fragile — bevelled mirrors, wrap carefully',clientId:'demo_c1',price:120,pickDate:t,pickPost:'W11 2LN',pickNum:'4',pickStreet:'Lansdowne Rd',delPost:'OX1 3DP',delNum:'22',delStreet:'Walton St',dueDate:addDays(t,1),status:'active',pm:false,dm:false,loaded:false},
+    {id:'demo_j2',icon:'🏺',name:'Box of Ceramics',notes:'Packed and ready from back of shop',clientId:'demo_c2',price:45,pickDate:t,pickPost:'W11 2DY',pickNum:'52',pickStreet:'Portobello Rd',delPost:'EC1V 9HX',delNum:'7',delStreet:'Rosebery Ave',dueDate:t,status:'active',pm:false,dm:false,loaded:false},
+    {id:'demo_j3',icon:'🪑',name:'Antique Pine Writing Desk',notes:'One-off — no client account',clientId:'',price:85,pickDate:t,pickPost:'SW3 2JB',pickNum:'14',pickStreet:"King's Rd",delPost:'N1 9GU',delNum:'31',delStreet:'Essex Rd',dueDate:addDays(t,3),status:'active',pm:false,dm:false,loaded:false},
+    {id:'demo_j4',icon:'🛋️',name:'Chesterfield Sofa',notes:'Heavy — two person lift',clientId:'demo_c2',price:200,pickDate:addDays(t,-8),pickPost:'W11 2DY',pickNum:'52',pickStreet:'Portobello Rd',delPost:'TW1 3DG',delNum:'9',delStreet:'Richmond Rd',dueDate:addDays(t,-7),status:'done',completedDate:addDays(t,-7),miles:18,pod:null,invoiceId:'demo_i1',pm:false,dm:false,loaded:true},
+    {id:'demo_j5',icon:'🪑',name:'Set of 6 Dining Chairs',notes:'All bubble-wrapped by seller',clientId:'demo_c3',price:160,pickDate:addDays(t,-31),pickPost:'SE1 3UD',pickNum:'18',pickStreet:'Bermondsey St',delPost:'BR1 1LH',delNum:'3',delStreet:'High St',dueDate:addDays(t,-30),status:'done',completedDate:addDays(t,-30),miles:24,pod:null,invoiceId:'demo_i2',pm:false,dm:false,loaded:true},
+    {id:'demo_j6',icon:'🖼️',name:'Framed Oil Painting',notes:'Large gilt frame, very delicate',clientId:'demo_c1',price:75,pickDate:addDays(t,-15),pickPost:'W11 2LN',pickNum:'4',pickStreet:'Lansdowne Rd',delPost:'SW7 3RL',delNum:'41',delStreet:'Onslow Sq',dueDate:addDays(t,-14),status:'done',completedDate:addDays(t,-14),miles:7,pod:null,invoiceId:'demo_i3',pm:false,dm:false,loaded:true}
+  ];
+  const invoices=[
+    {id:'demo_i1',number:'INV-001',type:'immediate',clientId:'demo_c2',clientName:'Portobello Antiques Ltd',clientEmail:'orders@portobelloantiques.co.uk',clientAddr:'52, Portobello Rd, W11 2DY',jobIds:['demo_j4'],lineItems:[{description:'Chesterfield Sofa',date:addDays(t,-7),amount:200}],issueDate:addDays(t,-6),dueDate:addDays(t,24),total:200,status:'sent',paidDate:null,payMethod:null,notes:'',docUrl:null},
+    {id:'demo_i2',number:'INV-002',type:'immediate',clientId:'demo_c3',clientName:'The Vintage Workshop',clientEmail:'info@vintageworkshop.co.uk',clientAddr:'18, Bermondsey St, SE1 3UD',jobIds:['demo_j5'],lineItems:[{description:'Set of 6 Dining Chairs',date:addDays(t,-30),amount:160}],issueDate:addDays(t,-29),dueDate:addDays(t,-15),total:160,status:'paid',paidDate:addDays(t,-10),payMethod:'BACS',notes:'',docUrl:null},
+    {id:'demo_i3',number:'INV-003',type:'immediate',clientId:'demo_c1',clientName:'Sarah Mitchell',clientEmail:'sarah@example.com',clientAddr:'4, Lansdowne Rd, W11 2LN',jobIds:['demo_j6'],lineItems:[{description:'Framed Oil Painting',date:addDays(t,-14),amount:75}],issueDate:addDays(t,-13),dueDate:addDays(t,1),total:75,status:'draft',paidDate:null,payMethod:null,notes:'',docUrl:null}
+  ];
+  const expenses=[
+    {id:'demo_e1',date:addDays(t,-2),category:'FUEL',amount:68.40,description:'BP - M40 northbound',receipt:null,receiptDriveUrl:null},
+    {id:'demo_e2',date:addDays(t,-7),category:'PARKING',amount:4.50,description:'NCP Bermondsey',receipt:null,receiptDriveUrl:null},
+    {id:'demo_e3',date:addDays(t,-14),category:'PACKING',amount:22.00,description:'Bubble wrap + boxes',receipt:null,receiptDriveUrl:null}
+  ];
+  S.clients=[...S.clients,...clients];
+  S.jobs=[...S.jobs,...jobs];
+  S.invoices=[...S.invoices,...invoices];
+  S.expenses=[...S.expenses,...expenses];
+  if((S.settings.invNum||1)<=3)S.settings.invNum=4;
+  save();render();
 }
 
 // ═══════════════════════════════════
@@ -559,8 +616,8 @@ function render(){
   // Sock pair
   document.getElementById('hdr-sock').textContent=SOCK_PAIRS[new Date().getDate()%SOCK_PAIRS.length];
   // Tabs
-  const unconf=S.jobs.filter(j=>j.status!=='done'&&(!j.commsStatus||j.commsStatus==='unconfirmed')).length;
-  document.getElementById('tabs').innerHTML=TABS.map(t=>`<button class="tab${S.tab===t.id?' on':''}" onclick="go('${t.id}')"><span class="tab-ic">${t.ic}</span>${t.lb==='TODAY'&&unconf?`TODAY<span style="background:var(--red);color:#fff;font-size:4px;padding:1px 3px;margin-left:2px">${unconf}</span>`:t.lb}</button>`).join('');
+  const unconf=S.jobs.filter(j=>j.status!=='done'&&(!j.dueDate||j.dueDate<=today())&&(!j.commsStatus||j.commsStatus==='unconfirmed')).length;
+  document.getElementById('tabs').innerHTML=TABS.map(t=>`<button class="tab${S.tab===t.id?' on':''}" onclick="go('${t.id}')"><span class="tab-ic">${t.ic}</span>${t.lb==='CAL'&&unconf?`CAL<span style="background:var(--red);color:#fff;font-size:6px;padding:1px 4px;margin-left:2px">${unconf}</span>`:t.lb}</button>`).join('');
   // Badge
   const n=S.jobs.filter(j=>j.status!=='done').length;
   document.getElementById('hdr-badge').textContent=n+(n===1?' JOB':' JOBS');
@@ -581,7 +638,7 @@ function render(){
   // Content
   const el=document.getElementById('content');
   if(S.tab==='jobs')el.innerHTML=rJobs();
-  else if(S.tab==='today')el.innerHTML=rToday();
+  else if(S.tab==='cal')el.innerHTML=rCalendar();
   else if(S.tab==='clients')el.innerHTML=S.viewClient?rClientProfile(S.viewClient):rClients();
   else if(S.tab==='money')el.innerHTML=rMoney();
   else if(S.tab==='route')el.innerHTML=rRoute();
@@ -723,8 +780,7 @@ function rTodayCard(item){
     </div>
     <div class="tc-time-row">
       <input class="tc-time" type="time" value="${esc(item.agreedTime||'')}" placeholder="--:--" onchange="setAgreedTime('${item.id}',this.value)" title="Agreed time">
-      <div class="tc-addr">▸ ${esc(pickPost)}${item.pickDate?' · '+fmtD(item.pickDate):''} → ▾ ${esc(delPost)}${item.dueDate?` · ${fmtD(item.dueDate)}`:''}
-        ${item.price?`<br>${fmtCur(item.price)}`:''}
+      <div class="tc-addr">▸ ${esc(pickPost)}${item.pickDate?' · '+fmtD(item.pickDate):''}<br>▾ ${esc(delPost)}${item.dueDate?` · ${fmtD(item.dueDate)}`:''}${item.price?` · ${fmtCur(item.price)}`:''}
       </div>
     </div>
     <div class="tc-acts">
@@ -733,57 +789,120 @@ function rTodayCard(item){
       <button class="btn sm" onclick="openReschedule('${item.id}')">⏰ RESCHEDULE</button>
       <button class="btn sm" onclick="openCommsNote('${item.id}')">📝 NOTE</button>
     </div>
-    <div class="tc-acts">
+    <div class="tc-acts-row">
       ${item.agreedTime||phone?`
-        <button class="btn sm${etaSent?' ld':''}" onclick="sendETA('${item.id}',${etaSent})" style="${etaSent?'opacity:.7':''}">
-          📱 ${etaSent?'ETA SENT ✓ (RESEND)':'SEND ETA'}
+        <button class="btn sm${etaSent?' ld':''}" style="flex:1${etaSent?';opacity:.8':''}" onclick="sendETA('${item.id}',${etaSent})">
+          📱 ${etaSent?'ETA SENT ✓':'SEND ETA'}
         </button>
-      `:'<span style="font-size:5px;color:var(--gb2)">SET TIME + PHONE TO SEND ETA</span>'}
-      <button class="btn sm dn" onclick="startDoneFlow('${item.id}')">DONE ✓</button>
+      `:'<span style="font-size:8px;color:var(--gb2);flex:1">SET TIME + PHONE FOR ETA</span>'}
+      <button class="btn sm dn" style="flex:1" onclick="startDoneFlow('${item.id}')">✓ DONE</button>
     </div>
+    ${!S.settings.gcalClientId?`<div class="tc-acts-row"><button class="btn sm" style="flex:1" onclick="addToGCal('${item.id}')">📅 ADD TO GCAL</button></div>`:`<div style="font-size:8px;color:var(--gb2);margin-bottom:6px">${item.gcalEventId?'📅 SYNCED TO GOOGLE CALENDAR ✓':'📅 GCAL SYNC ACTIVE'}</div>`}
     ${rCommsLog(item)}
   </div>`;
 }
 
-function rToday(){
-  const active=S.jobs.filter(j=>j.status!=='done');
-  if(!active.length)return`<div class="empty"><span class="empty-ic">📅</span>NO ACTIVE JOBS<br>ADD JOBS IN THE JOBS TAB</div>`;
+// ─── CALENDAR TAB ────────────────────────────────────────────
+function rCalendar(){
+  const now=new Date();
+  if(S.calMonth===null||S.calMonth===undefined){S.calMonth=now.getMonth();S.calYear=now.getFullYear();}
+  const vy=S.calYear,vm=S.calMonth;
+  const firstDay=new Date(vy,vm,1);
+  const lastDay=new Date(vy,vm+1,0);
+  const startDow=(firstDay.getDay()+6)%7; // 0=Mon
 
-  // Split into today/overdue/upcoming
-  const overdue=active.filter(j=>j.dueDate&&j.dueDate<today()).sort((a,b)=>a.dueDate>b.dueDate?1:-1);
-  const dueToday=active.filter(j=>!j.dueDate||j.dueDate===today()).sort((a,b)=>(a.agreedTime||'23:59').localeCompare(b.agreedTime||'23:59'));
-  const upcoming=active.filter(j=>j.dueDate&&j.dueDate>today()).sort((a,b)=>a.dueDate>b.dueDate?1:-1);
+  const jobsByDate={};
+  S.jobs.filter(j=>j.status!=='done').forEach(j=>{
+    if(j.dueDate){if(!jobsByDate[j.dueDate])jobsByDate[j.dueDate]=[];jobsByDate[j.dueDate].push(j);}
+  });
 
-  const confirmed=dueToday.filter(j=>j.commsStatus==='confirmed').length;
-  const total=dueToday.length;
+  const td=today();
+  const MONTHS=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  const DAYS=['MO','TU','WE','TH','FR','SA','SU'];
 
-  const todayMapsUrl=dayMapsUrl(today());
-  const allConfirmed=total>0&&confirmed===total;
-  return`
-    <div style="background:var(--gb1);border:3px solid var(--gb2);padding:10px 12px;margin-bottom:12px">
-      <div style="font-size:8px;color:var(--gb4)">${new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'}).toUpperCase()}</div>
-      <div style="font-size:6px;color:var(--gb2);margin-top:4px">${total} JOB${total!==1?'S':''} TODAY · ${confirmed}/${total} CONFIRMED${allConfirmed?' ✓ ALL SET!':''}</div>
-      <div style="margin-top:6px;background:var(--gb0);border:2px solid var(--gb2);height:8px;margin-bottom:8px">
-        <div style="height:100%;background:${allConfirmed?'var(--gb4)':'var(--gb3)'};width:${total?Math.round(confirmed/total*100):0}%;transition:width .3s"></div>
+  let cells=DAYS.map(d=>`<div style="text-align:center;font-size:9px;color:var(--gb2);padding:5px 0">${d}</div>`).join('');
+  for(let i=0;i<startDow;i++)cells+='<div></div>';
+
+  for(let d=1;d<=lastDay.getDate();d++){
+    const ds=`${vy}-${String(vm+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const jobs=jobsByDate[ds]||[];
+    const isToday=ds===td, isPast=ds<td, isSel=ds===S.calSelected;
+    const unconf=jobs.filter(j=>!j.commsStatus||j.commsStatus==='unconfirmed'||j.commsStatus==='rescheduled').length;
+    const ok=jobs.filter(j=>j.commsStatus==='confirmed'||j.commsStatus==='eta_sent').length;
+    let cls='cal-day'+(jobs.length?' has-jobs':'')+(isToday?' is-today':'')+(isSel?' is-selected':'')+(isPast&&!jobs.length?' is-past':'');
+    cells+=`<div class="${cls}" onclick="${jobs.length?`selectCalDay('${ds}')`:''}" >
+      <div class="cal-day-num">${d}</div>
+      ${jobs.length?`<div class="cal-day-count">${jobs.length}</div>
+      <div class="cal-dots">
+        ${unconf>0?`<div style="width:8px;height:8px;background:var(--yellow);border-radius:50%"></div>`:''}
+        ${ok>0?`<div style="width:8px;height:8px;background:var(--gb3);border-radius:50%"></div>`:''}
+      </div>`:''}
+    </div>`;
+  }
+
+  let html=`
+    <div style="background:var(--gb1);border:3px solid var(--gb2);padding:12px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <button class="btn sm" onclick="navCalMonth(-1)" style="padding:10px 16px;font-size:16px">◀</button>
+        <div style="flex:1;text-align:center;font-size:14px;color:var(--gb4)">${MONTHS[vm]} ${vy}</div>
+        <button class="btn sm" onclick="navCalMonth(1)" style="padding:10px 16px;font-size:16px">▶</button>
       </div>
-      <div style="display:flex;gap:6px">
-        ${!allConfirmed&&total>0?`<button class="btn sm" style="flex:1" onclick="confirmAllToday()">✓ CONFIRM ALL</button>`:''}
-        ${todayMapsUrl?`<a href="${todayMapsUrl}" target="_blank" class="btn sm" style="text-decoration:none;flex:1;text-align:center">🗺️ TODAY'S ROUTE</a>`:''}
-        <button class="btn sm" style="flex:1" onclick="go('route')">📋 FULL ROUTE</button>
-      </div>
-    </div>
+      <div class="cal-grid">${cells}</div>
+    </div>`;
 
-    ${overdue.length?`<div class="tc-section">⚠️ OVERDUE (${overdue.length})</div>${overdue.map(rTodayCard).join('')}`:''}
-    ${dueToday.length?`<div class="tc-section">📅 TODAY (${dueToday.length})</div>${dueToday.map(rTodayCard).join('')}`:''}
-    ${upcoming.length?`<div class="tc-section">📆 UPCOMING (${upcoming.length})</div>${upcoming.map(rTodayCard).join('')}`:''}
-  `;
+  const showDate=S.calSelected||(jobsByDate[td]?td:null);
+  if(showDate){
+    const dayJobs=(jobsByDate[showDate]||[]).sort((a,b)=>(a.agreedTime||'23:59').localeCompare(b.agreedTime||'23:59'));
+    if(dayJobs.length){
+      const confirmed=dayJobs.filter(j=>j.commsStatus==='confirmed'||j.commsStatus==='eta_sent').length;
+      const allConf=confirmed===dayJobs.length;
+      const mUrl=dayMapsUrl(showDate);
+      html+=`<div style="background:var(--gb1);border:3px solid var(--gb2);padding:12px;margin-bottom:12px">
+        <div style="font-size:14px;color:var(--gb4);margin-bottom:6px">${fmtD(showDate).toUpperCase()}</div>
+        <div style="font-size:10px;color:var(--gb2);margin-bottom:10px">${dayJobs.length} JOB${dayJobs.length!==1?'S':''} · ${confirmed}/${dayJobs.length} CONFIRMED${allConf?' ✓':''}</div>
+        <div style="background:var(--gb0);border:2px solid var(--gb2);height:10px;margin-bottom:10px">
+          <div style="height:100%;background:${allConf?'var(--gb4)':'var(--gb3)'};width:${Math.round(confirmed/dayJobs.length*100)}%;transition:width .3s"></div>
+        </div>
+        <div style="display:flex;gap:8px">
+          ${!allConf?`<button class="btn sm" style="flex:1" onclick="confirmAllOnDate('${showDate}')">✓ CONFIRM ALL</button>`:''}
+          ${mUrl?`<a href="${mUrl}" target="_blank" class="btn sm" style="text-decoration:none;flex:1;text-align:center">🗺️ ROUTE IN MAPS</a>`:''}
+          <button class="btn sm" style="flex:1" onclick="go('route')">📋 ROUTE TAB</button>
+        </div>
+      </div>`;
+      html+=dayJobs.map(rTodayCard).join('');
+    } else if(S.calSelected){
+      html+=`<div style="text-align:center;padding:24px;color:var(--gb2);font-size:10px">NO JOBS ON<br>${fmtD(showDate).toUpperCase()}</div>`;
+    }
+  } else {
+    html+=`<div class="empty"><span class="empty-ic">📅</span>NO JOBS TODAY<br><span style="font-size:9px">TAP A DAY TO SEE JOBS<br>ADD JOBS IN THE JOBS TAB</span></div>`;
+  }
+  return html;
 }
+function navCalMonth(dir){
+  if(S.calMonth===null||S.calMonth===undefined){const n=new Date();S.calMonth=n.getMonth();S.calYear=n.getFullYear();}
+  S.calMonth+=dir;
+  if(S.calMonth>11){S.calMonth=0;S.calYear++;}
+  if(S.calMonth<0){S.calMonth=11;S.calYear--;}
+  S.calSelected=null;render();
+}
+function selectCalDay(ds){S.calSelected=(S.calSelected===ds?null:ds);render();}
+function confirmAllOnDate(dateStr){
+  S.jobs.filter(j=>j.status!=='done'&&j.dueDate===dateStr).forEach(j=>{
+    if(j.commsStatus!=='confirmed'){
+      j.commsStatus='confirmed';
+      if(!j.commsLog)j.commsLog=[];
+      j.commsLog.push({ts:tsStr(),type:'confirmed',note:'Bulk confirmed',date:today()});
+    }
+  });
+  save();render();
+}
+function confirmAllToday(){confirmAllOnDate(today());}
 // ═══════════════════════════════════
 // JOBS TAB
 // ═══════════════════════════════════
 function rJobs(){
   const items=S.jobs.filter(j=>j.status!=='done').sort((a,b)=>daysUntil(a.dueDate)-daysUntil(b.dueDate));
-  if(!items.length)return`<div class="empty"><span class="empty-ic">📦</span>NO ACTIVE JOBS<br><br><button class="btn big" onclick="openAddJob()" style="margin:0 auto;display:block;max-width:200px">+ ADD FIRST JOB</button><br><button class="btn" onclick="go('clients')" style="margin:0 auto;display:block;font-size:5px">OR START FROM A CLIENT ▶</button></div>`;
+  if(!items.length)return`<div class="empty"><span class="empty-ic">📦</span>NO ACTIVE JOBS<br><br><button class="btn big" onclick="openAddJob()" style="margin:0 auto;display:block;max-width:200px">+ ADD FIRST JOB</button><br><button class="btn" onclick="go('clients')" style="margin:0 auto;display:block;font-size:5px">OR START FROM A CLIENT ▶</button><br><button class="btn sec" onclick="loadDemoData()" style="margin:0 auto;display:block;font-size:5px">OR LOAD DEMO DATA ▶</button></div>`;
   return items.map(item=>{
     const u=urgency(item),d=daysUntil(item.dueDate);
     const dl=d<0?`OVERDUE ${Math.abs(d)}D`:d===0?'DUE TODAY':`${d}D LEFT`;
@@ -819,7 +938,13 @@ function toggleLoad(id){
   const j=S.jobs.find(x=>x.id===id);
   if(j){j.status=j.status==='loaded'?'active':'loaded';save();render()}
 }
-function delJob(id){if(confirm('Delete this job?')){S.jobs=S.jobs.filter(x=>x.id!==id);save();render()}}
+function delJob(id){
+  if(confirm('Delete this job?')){
+    const j=S.jobs.find(x=>x.id===id);
+    if(j&&S.settings.gcalClientId)gcalSync(j,true).catch(()=>{});
+    S.jobs=S.jobs.filter(x=>x.id!==id);save();render();
+  }
+}
 
 let _qpodJobId=null;
 function startQuickPOD(jobId){
@@ -897,6 +1022,7 @@ function submitEditJob(){
   if(!j)return;
   Object.assign(j,{...fd,price:parseFloat(fd.price)||0});
   save();closeModal();render();
+  if(S.settings.gcalClientId){gcalSync(j).catch(()=>{});}
 }
 
 function openEditJob(id){
@@ -931,6 +1057,7 @@ function submitEditJob(){
   if(!j)return;
   Object.assign(j,{...fd,price:parseFloat(fd.price)||0});
   save();closeModal();render();
+  if(S.settings.gcalClientId){gcalSync(j).catch(()=>{});}
 }
 
 // ═══════════════════════════════════
@@ -1001,6 +1128,8 @@ async function finishDone(){
   job.miles=DF.miles||0;
   job.podDriveUrl=null;
   save();
+  // Remove from Google Calendar when job is done
+  if(S.settings.gcalClientId)gcalSync(job,true).catch(()=>{});
   // Upload POD to Drive via GAS in background
   if(job.pod&&gasIsOk()){
     showMod(`<div class="m-title">☁️ UPLOADING TO DRIVE...</div><div class="loading"><p>▌ SAVING POD PHOTO</p></div>`);
@@ -1666,24 +1795,24 @@ function moveJobInRoute(jobId,dir){
   const tmp=dayJobs[idx].routeOrder;
   dayJobs[idx].routeOrder=dayJobs[swapIdx].routeOrder;
   dayJobs[swapIdx].routeOrder=tmp;
-  save();render();
+  _leaveByCache={};save();render();
 }
 function dayMapsUrl(dateKey){
   const jobs=getDayJobs(dateKey);
   const stops=jobs.map(j=>encodeURIComponent(jobAddr(j,'del')||'')).filter(Boolean);
   if(!stops.length)return null;
-  const picks=jobs.map(j=>encodeURIComponent(jobAddr(j,'pick')||'')).filter(Boolean);
-  const origin=picks[0]||stops[0];
   const dest=stops[stops.length-1];
   const mid=stops.slice(0,-1);
-  return'https://www.google.com/maps/dir/?api=1&origin='+origin+'&destination='+dest+(mid.length?'&waypoints='+mid.join('|'):'')+'&travelmode=driving';
+  // No origin = Google Maps uses current GPS location automatically on mobile
+  return'https://www.google.com/maps/dir/?api=1&destination='+dest+(mid.length?'&waypoints='+mid.join('|'):'')+'&travelmode=driving';
 }
 function rRouteStop(job,idx,dayJobs){
   const isFirst=idx===0,isLast=idx===dayJobs.length-1;
   const client=getClient(job.clientId);
   const phone=(client?.phone||'').replace(/[^0-9+]/g,'');
   const etaSent=etaSentToday(job);
-  const navUrl='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(jobAddr(job,'del')||'');
+  // GPS navigation — no origin means Maps uses current location
+  const navUrl='https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(jobAddr(job,'del')||'')+'&travelmode=driving';
   return`<div class="rc">
     <div class="rc-top">
       <div class="rc-order">
@@ -1692,23 +1821,65 @@ function rRouteStop(job,idx,dayJobs){
       </div>
       <div class="rc-body">
         <div class="rc-num">#${idx+1} ${job.icon||'📦'}</div>
-        <div class="rc-name">${esc(job.name)} <span style="font-size:5px;color:var(--gb2)">· ${esc(clientName(job.clientId))}</span></div>
-        ${job.agreedTime?`<div style="font-size:6px;color:var(--gb4)">⏰ ${job.agreedTime}</div>`:''}
+        <div class="rc-name">${esc(job.name)} <span style="font-size:8px;color:var(--gb2)">· ${esc(clientName(job.clientId))}</span></div>
+        ${job.agreedTime?`<div style="font-size:12px;color:var(--gb4);margin-bottom:4px">⏰ ${job.agreedTime}</div>`:''}
         <div class="rc-addr">▸ ${esc(jobAddr(job,'pick')||'?')}<br>▾ ${esc(jobAddr(job,'del')||'?')}</div>
       </div>
     </div>
     <div class="rc-acts">
       <a href="${navUrl}" target="_blank" class="btn sm" style="text-decoration:none">📍 NAV</a>
-      ${phone||job.agreedTime?`
-        <button class="btn sm${etaSent?' ld':''}" onclick="sendETA('${job.id}',${etaSent})">
-          📱 ${etaSent?'ETA SENT ✓':'SEND ETA'}
-        </button>
-      `:''}
-      ${etaSent?`<span class="eta-sent-badge">SENT TODAY</span>`:''}
-      <button class="btn sm dn" onclick="startDoneFlow('${job.id}')">DONE ✓</button>
+      ${phone||job.agreedTime?`<button class="btn sm${etaSent?' ld':''}" onclick="sendETA('${job.id}',${etaSent})">📱 ${etaSent?'ETA ✓':'ETA'}</button>`:''}
+      <button class="btn sm dn" onclick="startDoneFlow('${job.id}')">✓ DONE</button>
     </div>
   </div>`;
 }
+// ─── Leave-By Calculator ──────────────────────────────────────
+function _lbId(dk){return'lby-'+dk.replace(/[^a-z0-9]/gi,'_');}
+async function calcLeaveBy(dateKey){
+  const el=document.getElementById(_lbId(dateKey));if(!el)return;
+  const jobs=getDayJobs(dateKey);
+  const firstJob=jobs.find(j=>j.agreedTime);
+  if(!firstJob){
+    el.innerHTML=`<span class="leave-by-label">SET AGREED TIMES ON JOBS TO SEE WHEN TO LEAVE</span>`;return;
+  }
+  const homePost=S.settings.homePost;
+  if(!homePost){
+    el.innerHTML=`<span class="leave-by-label">FIRST JOB ⏰ ${firstJob.agreedTime}</span><br>
+      <button class="btn sm" style="margin-top:8px" onclick="go('set')">🏠 SET HOME POSTCODE FOR LEAVE TIME</button>`;return;
+  }
+  const destPost=firstJob.pickPost||firstJob.delPost;
+  if(!destPost){
+    el.innerHTML=`<span class="leave-by-label">FIRST JOB ⏰ ${firstJob.agreedTime} · NO POSTCODE SET ON JOB</span>`;return;
+  }
+  el.innerHTML=`<span class="leave-by-label">CALCULATING...</span>`;
+  try{
+    const[r1,r2]=await Promise.all([
+      fetch('https://api.postcodes.io/postcodes/'+encodeURIComponent(homePost.replace(/\s/g,''))),
+      fetch('https://api.postcodes.io/postcodes/'+encodeURIComponent(destPost.replace(/\s/g,'')))
+    ]);
+    const[d1,d2]=await Promise.all([r1.json(),r2.json()]);
+    if(d1.status!==200||d2.status!==200){
+      el.innerHTML=`<span class="leave-by-label">FIRST JOB ⏰ ${firstJob.agreedTime} · POSTCODE NOT FOUND</span>`;return;
+    }
+    const lat1=d1.result.latitude,lon1=d1.result.longitude;
+    const lat2=d2.result.latitude,lon2=d2.result.longitude;
+    const R=3958.8,dLat=(lat2-lat1)*Math.PI/180,dLon=(lon2-lon1)*Math.PI/180;
+    const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+    const miles=R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))*1.28;
+    const driveMins=Math.round(miles/30*60);
+    const bufferMins=15;
+    const[h,m]=firstJob.agreedTime.split(':').map(Number);
+    const leaveMins=(h*60+m)-(driveMins+bufferMins);
+    const lh=Math.max(0,Math.floor(leaveMins/60)),lm=Math.max(0,leaveMins%60);
+    const leaveStr=String(lh).padStart(2,'0')+':'+String(lm).padStart(2,'0');
+    el.innerHTML=`<div class="leave-by-label">🏠 LEAVE HOME BY</div>
+      <span class="leave-by-time">${leaveStr}</span>
+      <div class="leave-by-sub">FIRST JOB ${firstJob.agreedTime} · ${Math.round(miles)} MI · ~${driveMins} MIN DRIVE + ${bufferMins} MIN PREP</div>`;
+  }catch(e){
+    el.innerHTML=`<span class="leave-by-label">FIRST JOB ⏰ ${firstJob.agreedTime} · COULD NOT CALC DRIVE TIME</span>`;
+  }
+}
+
 function rRouteDaySection(dateKey){
   const jobs=getDayJobs(dateKey);
   if(!jobs.length)return'';
@@ -1717,21 +1888,31 @@ function rRouteDaySection(dateKey){
     dateKey===today()?'📅 TODAY — '+fmtD(dateKey).toUpperCase():
     daysUntil(dateKey)<0?'⚠️ OVERDUE — '+fmtD(dateKey).toUpperCase():
     '📆 '+fmtD(dateKey).toUpperCase();
+  const firstWithTime=jobs.find(j=>j.agreedTime);
+  // Trigger async leave-by calc after render
+  setTimeout(()=>calcLeaveBy(dateKey),60);
   return`<div class="rday">
     <div class="rday-hdr">
-      <div class="rc-addr" style="flex:1">
+      <div style="flex:1">
         <div class="rday-date">${label}</div>
-        <div class="rday-count">${jobs.length} JOB${jobs.length!==1?'S':''} · DRAG TO REORDER</div>
+        <div class="rday-count">${jobs.length} STOP${jobs.length!==1?'S':''} · USE ▲▼ TO REORDER</div>
       </div>
     </div>
-    ${mapsUrl?`<a href="${mapsUrl}" target="_blank" class="btn big sec" style="display:block;text-decoration:none;margin-bottom:6px">🗺️ OPEN THIS DAY IN MAPS</a>`:''}
+    <div class="leave-by-box" id="${_lbId(dateKey)}">
+      <span class="leave-by-label">${firstWithTime?'CALCULATING...':'SET AGREED TIMES TO SEE WHEN TO LEAVE'}</span>
+    </div>
+    ${mapsUrl?`<a href="${mapsUrl}" target="_blank" class="btn big" style="display:block;text-decoration:none;margin-bottom:10px;text-align:center">🗺️ OPEN FULL DAY ROUTE IN MAPS</a>`:''}
     ${jobs.map((job,i)=>rRouteStop(job,i,jobs)).join('')}
   </div>`;
 }
 function rRoute(){
   const days=getRouteDays();
   if(!days.length)return`<div class="empty"><span class="empty-ic">🗺️</span>NO ACTIVE JOBS<br>ADD JOBS FIRST</div>`;
-  return days.map(rRouteDaySection).join('');
+  return`<div style="background:var(--gb1);border:3px solid var(--gb2);padding:10px 12px;margin-bottom:14px">
+    <div style="font-size:12px;color:var(--gb4);margin-bottom:4px">🗺️ ROUTE PLANNER</div>
+    <div style="font-size:9px;color:var(--gb2)">REORDER STOPS · CHECK LEAVE TIME · NAVIGATE FROM YOUR LOCATION</div>
+  </div>
+  ${days.map(rRouteDaySection).join('')}`;
 }
 
 // ═══════════════════════════════════
@@ -1749,6 +1930,36 @@ function rSettings(){
     </div>
     <div class="field"><label>BANK / PAYMENT DETAILS (PRINTED ON INVOICES)</label><textarea id="s-bbank" rows="2" placeholder="Sort: 12-34-56 · Acc: 12345678">${esc(s.bizBank)}</textarea></div>
     <button class="btn big" onclick="saveSettings()">💾 SAVE BUSINESS DETAILS</button>
+  </div>
+  <div class="set-s">
+    <div class="set-t">🏠 ROUTE PLANNER</div>
+    <div class="set-note">YOUR HOME POSTCODE IS USED TO CALCULATE LEAVE TIMES IN THE ROUTE TAB.</div>
+    <div class="field"><label>HOME POSTCODE</label><input id="s-homepost" value="${esc(s.homePost||'')}" placeholder="e.g. SW1A 1AA"></div>
+    <button class="btn big" onclick="saveSettings()">💾 SAVE HOME POSTCODE</button>
+  </div>
+  <div class="set-s">
+    <div class="set-t">📅 GOOGLE CALENDAR AUTO-SYNC</div>
+    <div class="set-note" style="line-height:2.2">JOBS ARE AUTOMATICALLY ADDED, UPDATED AND<br>REMOVED FROM YOUR GOOGLE CALENDAR.<br><br>
+      <b style="color:var(--gb4)">ONE-TIME SETUP (3 MINUTES):</b><br>
+      1. Go to console.cloud.google.com<br>
+      2. New project → Enable "Google Calendar API"<br>
+      3. APIs &amp; Services → Credentials<br>
+      4. Create → OAuth Client ID → Web Application<br>
+      5. Add your app URL to Authorised JS Origins<br>
+      6. Copy the Client ID and paste below<br>
+      7. Tap SAVE then CONNECT
+    </div>
+    <div class="field"><label>GOOGLE OAUTH CLIENT ID</label>
+      <input id="s-gcalid" value="${esc(s.gcalClientId||'')}" placeholder="XXXXXXXXXX.apps.googleusercontent.com">
+    </div>
+    <div id="gcal-status" style="font-size:9px;margin-bottom:8px;color:${s.gcalToken&&s.gcalTokenExpiry>Date.now()?'var(--gb3)':'var(--gb2)'}">
+      ${s.gcalToken&&s.gcalTokenExpiry>Date.now()?'✓ CONNECTED — JOBS SYNC AUTOMATICALLY':'NOT CONNECTED'}
+    </div>
+    <div style="display:flex;gap:6px">
+      <button class="btn big" style="flex:1" onclick="saveGCalSettings()">💾 SAVE</button>
+      <button class="btn big sec" style="flex:1" onclick="gcalConnect()">${s.gcalToken&&s.gcalTokenExpiry>Date.now()?'🔄 RECONNECT':'🔗 CONNECT'}</button>
+      ${s.gcalToken?`<button class="btn big dl" style="flex:1" onclick="gcalDisconnect()">✕ DISCONNECT</button>`:''}
+    </div>
   </div>
   <div class="set-s">
     <div class="set-t">⚙️ DEFAULTS</div>
@@ -1801,6 +2012,11 @@ function rSettings(){
     ${s.gasUrl?`<div style="margin-top:8px;font-size:5px;color:var(--gb3)">✓ APPS SCRIPT URL SAVED · DATA SYNCS AUTOMATICALLY</div>`:''}
   </div>
   <div class="set-s">
+    <div class="set-t">🧪 DEMO DATA</div>
+    <div class="set-note">LOADS SAMPLE CLIENTS, JOBS, INVOICES AND EXPENSES SO YOU CAN EXPLORE THE APP WITHOUT ENTERING YOUR OWN DATA.</div>
+    <button class="btn big sec" onclick="loadDemoData()">▶ LOAD DEMO DATA</button>
+  </div>
+  <div class="set-s">
     <div class="set-t">⚠️ DANGER ZONE</div>
     <button class="btn dl" style="width:100%;padding:10px" onclick="clearAllData()">DELETE ALL DATA</button>
   </div>`;
@@ -1812,6 +2028,8 @@ function saveSettings(){
   S.settings.bizEmail=document.getElementById('s-bemail')?.value||S.settings.bizEmail;
   S.settings.bizBank=document.getElementById('s-bbank')?.value||S.settings.bizBank;
   S.settings.apiKey=document.getElementById('s-apikey')?.value||S.settings.apiKey;
+  const hpEl=document.getElementById('s-homepost');if(hpEl)S.settings.homePost=hpEl.value.trim().toUpperCase();
+  _leaveByCache={};
   S.settings.defaultRate=parseFloat(document.getElementById('s-rate')?.value)||S.settings.defaultRate;
   S.settings.paymentTerms=parseInt(document.getElementById('s-terms')?.value)||S.settings.paymentTerms;
   S.settings.mileageRate=parseFloat(document.getElementById('s-mrate')?.value)||S.settings.mileageRate;
@@ -1820,7 +2038,33 @@ function saveSettings(){
   const txEl=document.getElementById('s-taxpct');if(txEl)S.settings.taxStashPct=parseFloat(txEl.value)||25;
   const lfEl=document.getElementById('s-latefee');if(lfEl)S.settings.lateFee=lfEl.value;
   const gasEl=document.getElementById('s-gasurl');if(gasEl&&gasEl.value.trim())S.settings.gasUrl=gasEl.value.trim();
+  const gcalEl=document.getElementById('s-gcalid');if(gcalEl)S.settings.gcalClientId=gcalEl.value.trim();
   save();render();
+}
+function saveGCalSettings(){
+  const el=document.getElementById('s-gcalid');
+  if(el)S.settings.gcalClientId=el.value.trim();
+  saveOnly();
+  const st=document.getElementById('gcal-status');
+  if(st){st.textContent='Client ID saved — tap CONNECT to authorise';st.style.color='var(--gb2)';}
+}
+async function gcalConnect(){
+  const el=document.getElementById('s-gcalid');
+  if(el&&el.value.trim())S.settings.gcalClientId=el.value.trim();
+  saveOnly();
+  const st=document.getElementById('gcal-status');
+  if(!S.settings.gcalClientId){
+    if(st){st.textContent='Paste your Client ID first then tap CONNECT';st.style.color='var(--red)';}
+    return;
+  }
+  if(st){st.textContent='Connecting...';st.style.color='var(--gb2)';}
+  try{
+    await gcalRequestToken();
+    if(st){st.textContent='✓ Connected — jobs will sync automatically';st.style.color='var(--gb3)';}
+    render();
+  }catch(e){
+    if(st){st.textContent='Connection failed: '+e.message;st.style.color='var(--red)';}
+  }
 }
 
 async function testGAS(){
@@ -2112,8 +2356,131 @@ function rjf(){
 function submitJob(){
   const fd=rjf();
   if(!fd.name.trim()){alert('Item name is required');return}
-  S.jobs.push({id:uid(),...fd,price:parseFloat(fd.price)||0,status:'active',loaded:false,done:false});
+  const job={id:uid(),...fd,price:parseFloat(fd.price)||0,status:'active',loaded:false,done:false};
+  S.jobs.push(job);
   save();closeModal();render();
+  // Auto-sync to Google Calendar silently if connected, else offer manual link
+  if(S.settings.gcalClientId){
+    gcalSync(job).catch(()=>{});
+  }
+}
+// ─── Google Calendar Integration ─────────────────────────────
+function buildGCalUrl(job){
+  if(!job.dueDate)return null;
+  const title=encodeURIComponent(job.name+(job.clientId?' · '+clientName(job.clientId):''));
+  const location=encodeURIComponent(jobAddr(job,'del')||'');
+  const details=encodeURIComponent([
+    job.notes||'',
+    'Pickup: '+(jobAddr(job,'pick')||'?'),
+    'Delivery: '+(jobAddr(job,'del')||'?'),
+    job.price?'Price: £'+job.price:''
+  ].filter(Boolean).join('\n'));
+  let dates;
+  if(job.agreedTime){
+    const[h,m]=job.agreedTime.split(':').map(Number);
+    const sd=job.dueDate.replace(/-/g,'');
+    const st=String(h).padStart(2,'0')+String(m).padStart(2,'0')+'00';
+    const eh=Math.min(h+1,23);
+    const et=String(eh).padStart(2,'0')+String(m).padStart(2,'0')+'00';
+    dates=`${sd}T${st}/${sd}T${et}`;
+  } else {
+    const sd=job.dueDate.replace(/-/g,'');
+    const ed=addDays(job.dueDate,1).replace(/-/g,'');
+    dates=`${sd}/${ed}`;
+  }
+  return`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dates}&details=${details}&location=${location}`;
+}
+function addToGCal(jobId){
+  const job=S.jobs.find(j=>j.id===jobId);if(!job)return;
+  const url=buildGCalUrl(job);
+  if(url)window.open(url,'_blank');
+  else alert('Set a due date on this job first to add it to Google Calendar.');
+}
+
+// ═══════════════════════════════════
+// GOOGLE CALENDAR AUTO-SYNC
+// ═══════════════════════════════════
+const GCAL_API='https://www.googleapis.com/calendar/v3/calendars/primary/events';
+const GCAL_SCOPE='https://www.googleapis.com/auth/calendar.events';
+
+function gcalConnected(){return !!(S.settings.gcalClientId&&S.settings.gcalToken&&S.settings.gcalTokenExpiry>Date.now()+30000);}
+
+function gcalRequestToken(){
+  return new Promise((resolve,reject)=>{
+    if(!S.settings.gcalClientId){reject(new Error('No client ID'));return;}
+    if(typeof google==='undefined'||!google?.accounts?.oauth2){reject(new Error('GIS not loaded'));return;}
+    const tc=google.accounts.oauth2.initTokenClient({
+      client_id:S.settings.gcalClientId,
+      scope:GCAL_SCOPE,
+      callback:(r)=>{
+        if(r.error){reject(new Error(r.error));return;}
+        S.settings.gcalToken=r.access_token;
+        S.settings.gcalTokenExpiry=Date.now()+(r.expires_in||3600)*1000;
+        saveOnly();
+        const el=document.getElementById('gcal-status');
+        if(el){el.textContent='✓ Connected to Google Calendar';el.style.color='var(--gb3)';}
+        resolve(r.access_token);
+      }
+    });
+    tc.requestAccessToken({prompt:''});
+  });
+}
+
+async function gcalToken(){
+  if(gcalConnected())return S.settings.gcalToken;
+  return gcalRequestToken();
+}
+
+function buildGCalBody(job){
+  if(!job.dueDate)return null;
+  const title=job.name+(job.clientId?' · '+clientName(job.clientId):'');
+  const location=jobAddr(job,'del')||'';
+  const description=['Pickup: '+(jobAddr(job,'pick')||'?'),'Delivery: '+(jobAddr(job,'del')||'?'),job.notes||'',job.price?'Price: £'+job.price:''].filter(Boolean).join('\n');
+  const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
+  if(job.agreedTime){
+    const[h,m]=job.agreedTime.split(':').map(Number);
+    const pad=n=>String(n).padStart(2,'0');
+    const start=`${job.dueDate}T${pad(h)}:${pad(m)}:00`;
+    const end=`${job.dueDate}T${pad(Math.min(h+1,23))}:${pad(m)}:00`;
+    return{summary:title,location,description,start:{dateTime:start,timeZone:tz},end:{dateTime:end,timeZone:tz}};
+  }
+  return{summary:title,location,description,start:{date:job.dueDate},end:{date:addDays(job.dueDate,1)}};
+}
+
+async function gcalSync(job,del=false){
+  if(!S.settings.gcalClientId)return; // not configured
+  if(!job.dueDate&&!del)return;        // no date = nothing to sync
+  try{
+    const tok=await gcalToken();
+    if(del&&job.gcalEventId){
+      await fetch(`${GCAL_API}/${job.gcalEventId}`,{method:'DELETE',headers:{Authorization:'Bearer '+tok}});
+      job.gcalEventId=null;saveOnly();return;
+    }
+    const body=buildGCalBody(job);if(!body)return;
+    let res;
+    if(job.gcalEventId){
+      res=await fetch(`${GCAL_API}/${job.gcalEventId}`,{method:'PUT',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    }else{
+      res=await fetch(GCAL_API,{method:'POST',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    }
+    if(res.status===401||res.status===403){
+      // Token expired — clear and retry once
+      S.settings.gcalToken='';S.settings.gcalTokenExpiry=0;saveOnly();
+      const tok2=await gcalRequestToken();
+      res=job.gcalEventId
+        ?await fetch(`${GCAL_API}/${job.gcalEventId}`,{method:'PUT',headers:{Authorization:'Bearer '+tok2,'Content-Type':'application/json'},body:JSON.stringify(body)})
+        :await fetch(GCAL_API,{method:'POST',headers:{Authorization:'Bearer '+tok2,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    }
+    if(res.ok){const d=await res.json();if(d.id){job.gcalEventId=d.id;saveOnly();}}
+  }catch(e){console.warn('GCal sync:',e);}
+}
+
+function gcalDisconnect(){
+  if(S.settings.gcalToken&&typeof google!=='undefined'&&google?.accounts?.oauth2){
+    google.accounts.oauth2.revoke(S.settings.gcalToken,()=>{});
+  }
+  S.settings.gcalToken='';S.settings.gcalTokenExpiry=0;
+  saveOnly();render();
 }
 
 // ═══════════════════════════════════
