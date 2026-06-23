@@ -11,6 +11,7 @@
 <meta name="apple-mobile-web-app-title" content="Odd Socks">
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;image-rendering:pixelated}
 :root{
@@ -449,6 +450,7 @@ let S = {
     apiKey:'',gasUrl:'',
     bizName:'',bizAddr:'',bizPhone:'',bizEmail:'',bizBank:'',
     homePost:'',
+    gcalClientId:'',gcalToken:'',gcalTokenExpiry:0,
     defaultRate:'',paymentTerms:14,mileageRate:0.45,invNum:1,taxYear:2025,
     syncStatus:'idle',lastSync:null
   },
@@ -795,9 +797,7 @@ function rTodayCard(item){
       `:'<span style="font-size:8px;color:var(--gb2);flex:1">SET TIME + PHONE FOR ETA</span>'}
       <button class="btn sm dn" style="flex:1" onclick="startDoneFlow('${item.id}')">✓ DONE</button>
     </div>
-    <div class="tc-acts-row">
-      <button class="btn sm" style="flex:1" onclick="addToGCal('${item.id}')">📅 ADD TO GCAL</button>
-    </div>
+    ${!S.settings.gcalClientId?`<div class="tc-acts-row"><button class="btn sm" style="flex:1" onclick="addToGCal('${item.id}')">📅 ADD TO GCAL</button></div>`:`<div style="font-size:8px;color:var(--gb2);margin-bottom:6px">${item.gcalEventId?'📅 SYNCED TO GOOGLE CALENDAR ✓':'📅 GCAL SYNC ACTIVE'}</div>`}
     ${rCommsLog(item)}
   </div>`;
 }
@@ -938,7 +938,13 @@ function toggleLoad(id){
   const j=S.jobs.find(x=>x.id===id);
   if(j){j.status=j.status==='loaded'?'active':'loaded';save();render()}
 }
-function delJob(id){if(confirm('Delete this job?')){S.jobs=S.jobs.filter(x=>x.id!==id);save();render()}}
+function delJob(id){
+  if(confirm('Delete this job?')){
+    const j=S.jobs.find(x=>x.id===id);
+    if(j&&S.settings.gcalClientId)gcalSync(j,true).catch(()=>{});
+    S.jobs=S.jobs.filter(x=>x.id!==id);save();render();
+  }
+}
 
 let _qpodJobId=null;
 function startQuickPOD(jobId){
@@ -1015,16 +1021,8 @@ function submitEditJob(){
   const j=S.jobs.find(x=>x.id===FD.editId);
   if(!j)return;
   Object.assign(j,{...fd,price:parseFloat(fd.price)||0});
-  save();
-  const gcalUrl=buildGCalUrl(j);
-  if(gcalUrl){
-    showMod(`<div class="m-title">✓ JOB UPDATED</div>
-      <div style="font-size:10px;color:var(--gb4);margin-bottom:12px">${esc(j.name)}</div>
-      <a href="${gcalUrl}" target="_blank" class="btn big" style="text-decoration:none;text-align:center;display:block">📅 UPDATE IN GOOGLE CALENDAR</a>
-      <button class="btn big sec" onclick="closeModal();render()">✓ DONE</button>`);
-  } else {
-    closeModal();render();
-  }
+  save();closeModal();render();
+  if(S.settings.gcalClientId){gcalSync(j).catch(()=>{});}
 }
 
 function openEditJob(id){
@@ -1058,16 +1056,8 @@ function submitEditJob(){
   const j=S.jobs.find(x=>x.id===FD.editId);
   if(!j)return;
   Object.assign(j,{...fd,price:parseFloat(fd.price)||0});
-  save();
-  const gcalUrl=buildGCalUrl(j);
-  if(gcalUrl){
-    showMod(`<div class="m-title">✓ JOB UPDATED</div>
-      <div style="font-size:10px;color:var(--gb4);margin-bottom:12px">${esc(j.name)}</div>
-      <a href="${gcalUrl}" target="_blank" class="btn big" style="text-decoration:none;text-align:center;display:block">📅 UPDATE IN GOOGLE CALENDAR</a>
-      <button class="btn big sec" onclick="closeModal();render()">✓ DONE</button>`);
-  } else {
-    closeModal();render();
-  }
+  save();closeModal();render();
+  if(S.settings.gcalClientId){gcalSync(j).catch(()=>{});}
 }
 
 // ═══════════════════════════════════
@@ -1138,6 +1128,8 @@ async function finishDone(){
   job.miles=DF.miles||0;
   job.podDriveUrl=null;
   save();
+  // Remove from Google Calendar when job is done
+  if(S.settings.gcalClientId)gcalSync(job,true).catch(()=>{});
   // Upload POD to Drive via GAS in background
   if(job.pod&&gasIsOk()){
     showMod(`<div class="m-title">☁️ UPLOADING TO DRIVE...</div><div class="loading"><p>▌ SAVING POD PHOTO</p></div>`);
@@ -1946,6 +1938,30 @@ function rSettings(){
     <button class="btn big" onclick="saveSettings()">💾 SAVE HOME POSTCODE</button>
   </div>
   <div class="set-s">
+    <div class="set-t">📅 GOOGLE CALENDAR AUTO-SYNC</div>
+    <div class="set-note" style="line-height:2.2">JOBS ARE AUTOMATICALLY ADDED, UPDATED AND<br>REMOVED FROM YOUR GOOGLE CALENDAR.<br><br>
+      <b style="color:var(--gb4)">ONE-TIME SETUP (3 MINUTES):</b><br>
+      1. Go to console.cloud.google.com<br>
+      2. New project → Enable "Google Calendar API"<br>
+      3. APIs &amp; Services → Credentials<br>
+      4. Create → OAuth Client ID → Web Application<br>
+      5. Add your app URL to Authorised JS Origins<br>
+      6. Copy the Client ID and paste below<br>
+      7. Tap SAVE then CONNECT
+    </div>
+    <div class="field"><label>GOOGLE OAUTH CLIENT ID</label>
+      <input id="s-gcalid" value="${esc(s.gcalClientId||'')}" placeholder="XXXXXXXXXX.apps.googleusercontent.com">
+    </div>
+    <div id="gcal-status" style="font-size:9px;margin-bottom:8px;color:${s.gcalToken&&s.gcalTokenExpiry>Date.now()?'var(--gb3)':'var(--gb2)'}">
+      ${s.gcalToken&&s.gcalTokenExpiry>Date.now()?'✓ CONNECTED — JOBS SYNC AUTOMATICALLY':'NOT CONNECTED'}
+    </div>
+    <div style="display:flex;gap:6px">
+      <button class="btn big" style="flex:1" onclick="saveGCalSettings()">💾 SAVE</button>
+      <button class="btn big sec" style="flex:1" onclick="gcalConnect()">${s.gcalToken&&s.gcalTokenExpiry>Date.now()?'🔄 RECONNECT':'🔗 CONNECT'}</button>
+      ${s.gcalToken?`<button class="btn big dl" style="flex:1" onclick="gcalDisconnect()">✕ DISCONNECT</button>`:''}
+    </div>
+  </div>
+  <div class="set-s">
     <div class="set-t">⚙️ DEFAULTS</div>
     <div class="frow">
       <div class="field"><label>DEFAULT RATE (£)</label><input type="number" id="s-rate" value="${s.defaultRate||''}" placeholder="0" min="0"></div>
@@ -2022,7 +2038,33 @@ function saveSettings(){
   const txEl=document.getElementById('s-taxpct');if(txEl)S.settings.taxStashPct=parseFloat(txEl.value)||25;
   const lfEl=document.getElementById('s-latefee');if(lfEl)S.settings.lateFee=lfEl.value;
   const gasEl=document.getElementById('s-gasurl');if(gasEl&&gasEl.value.trim())S.settings.gasUrl=gasEl.value.trim();
+  const gcalEl=document.getElementById('s-gcalid');if(gcalEl)S.settings.gcalClientId=gcalEl.value.trim();
   save();render();
+}
+function saveGCalSettings(){
+  const el=document.getElementById('s-gcalid');
+  if(el)S.settings.gcalClientId=el.value.trim();
+  saveOnly();
+  const st=document.getElementById('gcal-status');
+  if(st){st.textContent='Client ID saved — tap CONNECT to authorise';st.style.color='var(--gb2)';}
+}
+async function gcalConnect(){
+  const el=document.getElementById('s-gcalid');
+  if(el&&el.value.trim())S.settings.gcalClientId=el.value.trim();
+  saveOnly();
+  const st=document.getElementById('gcal-status');
+  if(!S.settings.gcalClientId){
+    if(st){st.textContent='Paste your Client ID first then tap CONNECT';st.style.color='var(--red)';}
+    return;
+  }
+  if(st){st.textContent='Connecting...';st.style.color='var(--gb2)';}
+  try{
+    await gcalRequestToken();
+    if(st){st.textContent='✓ Connected — jobs will sync automatically';st.style.color='var(--gb3)';}
+    render();
+  }catch(e){
+    if(st){st.textContent='Connection failed: '+e.message;st.style.color='var(--red)';}
+  }
 }
 
 async function testGAS(){
@@ -2316,14 +2358,11 @@ function submitJob(){
   if(!fd.name.trim()){alert('Item name is required');return}
   const job={id:uid(),...fd,price:parseFloat(fd.price)||0,status:'active',loaded:false,done:false};
   S.jobs.push(job);
-  save();
-  // Offer Google Calendar add
-  const gcalUrl=buildGCalUrl(job);
-  showMod(`<div class="m-title">✓ JOB SAVED</div>
-    <div style="font-size:10px;color:var(--gb4);margin-bottom:4px">${esc(job.name)}</div>
-    ${job.dueDate?`<div style="font-size:9px;color:var(--gb2);margin-bottom:12px">${fmtD(job.dueDate)}${job.agreedTime?' · '+job.agreedTime:''}</div>`:''}
-    ${gcalUrl?`<a href="${gcalUrl}" target="_blank" class="btn big" style="text-decoration:none;text-align:center;display:block">📅 ADD TO GOOGLE CALENDAR</a>`:''}
-    <button class="btn big sec" onclick="closeModal();render()">✓ DONE</button>`);
+  save();closeModal();render();
+  // Auto-sync to Google Calendar silently if connected, else offer manual link
+  if(S.settings.gcalClientId){
+    gcalSync(job).catch(()=>{});
+  }
 }
 // ─── Google Calendar Integration ─────────────────────────────
 function buildGCalUrl(job){
@@ -2356,6 +2395,92 @@ function addToGCal(jobId){
   const url=buildGCalUrl(job);
   if(url)window.open(url,'_blank');
   else alert('Set a due date on this job first to add it to Google Calendar.');
+}
+
+// ═══════════════════════════════════
+// GOOGLE CALENDAR AUTO-SYNC
+// ═══════════════════════════════════
+const GCAL_API='https://www.googleapis.com/calendar/v3/calendars/primary/events';
+const GCAL_SCOPE='https://www.googleapis.com/auth/calendar.events';
+
+function gcalConnected(){return !!(S.settings.gcalClientId&&S.settings.gcalToken&&S.settings.gcalTokenExpiry>Date.now()+30000);}
+
+function gcalRequestToken(){
+  return new Promise((resolve,reject)=>{
+    if(!S.settings.gcalClientId){reject(new Error('No client ID'));return;}
+    if(typeof google==='undefined'||!google?.accounts?.oauth2){reject(new Error('GIS not loaded'));return;}
+    const tc=google.accounts.oauth2.initTokenClient({
+      client_id:S.settings.gcalClientId,
+      scope:GCAL_SCOPE,
+      callback:(r)=>{
+        if(r.error){reject(new Error(r.error));return;}
+        S.settings.gcalToken=r.access_token;
+        S.settings.gcalTokenExpiry=Date.now()+(r.expires_in||3600)*1000;
+        saveOnly();
+        const el=document.getElementById('gcal-status');
+        if(el){el.textContent='✓ Connected to Google Calendar';el.style.color='var(--gb3)';}
+        resolve(r.access_token);
+      }
+    });
+    tc.requestAccessToken({prompt:''});
+  });
+}
+
+async function gcalToken(){
+  if(gcalConnected())return S.settings.gcalToken;
+  return gcalRequestToken();
+}
+
+function buildGCalBody(job){
+  if(!job.dueDate)return null;
+  const title=job.name+(job.clientId?' · '+clientName(job.clientId):'');
+  const location=jobAddr(job,'del')||'';
+  const description=['Pickup: '+(jobAddr(job,'pick')||'?'),'Delivery: '+(jobAddr(job,'del')||'?'),job.notes||'',job.price?'Price: £'+job.price:''].filter(Boolean).join('\n');
+  const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
+  if(job.agreedTime){
+    const[h,m]=job.agreedTime.split(':').map(Number);
+    const pad=n=>String(n).padStart(2,'0');
+    const start=`${job.dueDate}T${pad(h)}:${pad(m)}:00`;
+    const end=`${job.dueDate}T${pad(Math.min(h+1,23))}:${pad(m)}:00`;
+    return{summary:title,location,description,start:{dateTime:start,timeZone:tz},end:{dateTime:end,timeZone:tz}};
+  }
+  return{summary:title,location,description,start:{date:job.dueDate},end:{date:addDays(job.dueDate,1)}};
+}
+
+async function gcalSync(job,del=false){
+  if(!S.settings.gcalClientId)return; // not configured
+  if(!job.dueDate&&!del)return;        // no date = nothing to sync
+  try{
+    const tok=await gcalToken();
+    if(del&&job.gcalEventId){
+      await fetch(`${GCAL_API}/${job.gcalEventId}`,{method:'DELETE',headers:{Authorization:'Bearer '+tok}});
+      job.gcalEventId=null;saveOnly();return;
+    }
+    const body=buildGCalBody(job);if(!body)return;
+    let res;
+    if(job.gcalEventId){
+      res=await fetch(`${GCAL_API}/${job.gcalEventId}`,{method:'PUT',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    }else{
+      res=await fetch(GCAL_API,{method:'POST',headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    }
+    if(res.status===401||res.status===403){
+      // Token expired — clear and retry once
+      S.settings.gcalToken='';S.settings.gcalTokenExpiry=0;saveOnly();
+      const tok2=await gcalRequestToken();
+      res=job.gcalEventId
+        ?await fetch(`${GCAL_API}/${job.gcalEventId}`,{method:'PUT',headers:{Authorization:'Bearer '+tok2,'Content-Type':'application/json'},body:JSON.stringify(body)})
+        :await fetch(GCAL_API,{method:'POST',headers:{Authorization:'Bearer '+tok2,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    }
+    if(res.ok){const d=await res.json();if(d.id){job.gcalEventId=d.id;saveOnly();}}
+  }catch(e){console.warn('GCal sync:',e);}
+}
+
+function gcalDisconnect(){
+  if(S.settings.gcalToken&&typeof google!=='undefined'&&google?.accounts?.oauth2){
+    google.accounts.oauth2.revoke(S.settings.gcalToken,()=>{});
+  }
+  S.settings.gcalToken='';S.settings.gcalTokenExpiry=0;
+  saveOnly();render();
 }
 
 // ═══════════════════════════════════
