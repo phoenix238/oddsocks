@@ -416,6 +416,7 @@ body.clean .theme-btn{background:#1e1e2c!important;color:#6a6258!important}
 <input type="file" id="rcpt-input" accept="image/*" capture="environment" style="display:none">
 <input type="file" id="rcpt-gallery" accept="image/*" style="display:none">
 <input type="file" id="quick-pod-input" accept="image/*" capture="environment" style="display:none">
+<input type="file" id="collect-pod-input" accept="image/*" capture="environment" style="display:none">
 <input type="file" id="expense-scan-input" accept="image/*" capture="environment" style="display:none">
 
 <script>
@@ -776,12 +777,15 @@ function rTodayCard(item, mode='deliver'){
         <span class="tc-badge" style="background:var(--gb2);color:var(--gb0)">↑ COLLECT</span>
       </div>
       <div class="tc-time-row">
+        ${item.pickTime?`<input class="tc-time" type="time" value="${esc(item.pickTime)}" readonly title="Collect time">`:''}
         <div class="tc-addr" style="flex:1">↑ FROM: ${esc(pickAddr)}<br><span style="color:var(--gb2)">↓ DELIVER: ${fmtD(item.dueDate||'')}</span></div>
       </div>
       <div class="tc-acts-row">
-        ${(item.status==='collected'||item.status==='done')
+        ${item.status==='done'
           ?'<button class="btn sm" style="flex:1;opacity:.6" disabled>✓ COLLECTED</button>'
-          :`<button class="btn sm dn" style="flex:1" onclick="markPickedUp('${item.id}')">✓ MARK COLLECTED</button>`}
+          :item.status==='collected'
+            ?`<button class="btn sm ld" style="flex:1" onclick="markPickedUp('${item.id}')">✓ COLLECTED</button>`
+            :`<button class="btn sm dn" style="flex:1" onclick="markPickedUp('${item.id}')">✓ MARK COLLECTED</button>`}
       </div>
       ${rCommsLog(item)}
     </div>`;
@@ -1205,6 +1209,84 @@ function promptInvoiceAfterDone(job){
 async function handlePODFile(file){
   DF.pod=await compressImg(file,1000);
   showMod(rDoneStep1());
+}
+
+// ═══════════════════════════════════
+// COLLECT FLOW (multi-step modal — mirrors done flow)
+// ═══════════════════════════════════
+let CF={};
+function startCollectFlow(id){
+  CF={jobId:id,step:1,pod:null,miles:''};
+  showMod(rCollectStep1());
+}
+function rCollectStep1(){
+  const driveOk=gasIsOk();
+  return`<div class="m-title">📸 PROOF OF COLLECTION</div>
+    <div class="m-sub">OPTIONAL — PHOTO SAVED ${driveOk?'TO GOOGLE DRIVE':'ON DEVICE'}</div>
+    ${CF.pod?`<img class="pod-thumb" src="${CF.pod}"><div class="ok-msg">✓ PHOTO READY${driveOk?' · WILL UPLOAD TO DRIVE':''}</div>`:''}
+    <button class="btn big" onclick="document.getElementById('collect-pod-input').click()">📸 ${CF.pod?'RETAKE':'TAKE'} PHOTO</button>
+    <button class="btn big sec" onclick="collectToMiles()">▶ ${CF.pod?'NEXT':'SKIP PHOTO'}</button>
+    <button class="btn" style="width:100%;margin-top:6px" onclick="closeModal()">✕ CANCEL</button>`;
+}
+async function handleCollectPODFile(file){
+  CF.pod=await compressImg(file,1000);
+  showMod(rCollectStep1());
+}
+function collectToMiles(){CF.step=2;showMod(rCollectStep2());}
+function rCollectStep2(){
+  const job=S.jobs.find(j=>j.id===CF.jobId);
+  const pickPost=(job?.pickPost||'').trim();
+  const homePost=(S.settings.homePost||'').trim();
+  const canAuto=homePost&&pickPost;
+  return`<div class="m-title">🚐 MILES TO COLLECTION</div>
+    <div class="m-sub">HMRC RATE: ${fmtCur(S.settings.mileageRate||0.45)}/MILE</div>
+    ${canAuto?`<button class="btn big sec" onclick="calcCollectMilesAuto()" style="margin-bottom:8px">📍 ESTIMATE FROM POSTCODES</button>`:''}
+    <div class="field"><label>MILES FOR THIS COLLECTION</label>
+      <input type="number" id="cf-miles" value="${CF.miles||''}" placeholder="0" min="0" step="1" inputmode="numeric">
+    </div>
+    <div id="collect-miles-est" style="font-size:5px;color:var(--gb2);margin-bottom:6px"></div>
+    <button class="btn big" onclick="finishCollect()">✓ MARK AS COLLECTED</button>
+    <button class="btn big sec" onclick="CF.miles=0;finishCollect()">SKIP MILEAGE · MARK COLLECTED</button>`;
+}
+async function calcCollectMilesAuto(){
+  const job=S.jobs.find(j=>j.id===CF.jobId);
+  if(!job)return;
+  const el=document.getElementById('collect-miles-est');
+  if(el)el.textContent='Calculating...';
+  const homePost=S.settings.homePost||'';
+  try{
+    const[r1,r2]=await Promise.all([
+      fetch('https://api.postcodes.io/postcodes/'+encodeURIComponent(homePost.replace(/\s/g,''))),
+      fetch('https://api.postcodes.io/postcodes/'+encodeURIComponent(job.pickPost.replace(/\s/g,'')))
+    ]);
+    const[d1,d2]=await Promise.all([r1.json(),r2.json()]);
+    if(d1.status!==200||d2.status!==200){if(el)el.textContent='Postcode not found';return;}
+    const lat1=d1.result.latitude,lon1=d1.result.longitude;
+    const lat2=d2.result.latitude,lon2=d2.result.longitude;
+    const R=3958.8,dLat=(lat2-lat1)*Math.PI/180,dLon=(lon2-lon1)*Math.PI/180;
+    const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+    const dist=R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+    const roadEst=Math.round(dist*1.28);
+    const mEl=document.getElementById('cf-miles');
+    if(mEl)mEl.value=roadEst;
+    CF.miles=roadEst;
+    if(el)el.textContent=`Estimated ${roadEst} miles (${dist.toFixed(1)} mi straight line × 1.28 road factor)`;
+  }catch(e){if(el)el.textContent='Could not estimate — enter manually';}
+}
+async function finishCollect(){
+  CF.miles=parseFloat(document.getElementById('cf-miles')?.value)||0;
+  const job=S.jobs.find(j=>j.id===CF.jobId);
+  if(!job)return;
+  job.status='collected';
+  job.collectDate=today();
+  job.collectMiles=CF.miles||0;
+  job.collectPod=CF.pod||null;
+  save();
+  if(job.collectPod&&gasIsOk()){
+    showMod(`<div class="m-title">☁️ UPLOADING TO DRIVE...</div><div class="loading"><p>▌ SAVING COLLECTION PHOTO</p></div>`);
+    try{await gUploadPOD(job);}catch(e){}
+  }
+  closeModal();render();
 }
 
 
@@ -1869,7 +1951,9 @@ function getPickupJobs(dateKey){
 }
 function markPickedUp(jobId){
   const j=S.jobs.find(j=>j.id===jobId);
-  if(j){j.status='collected';save();render();}
+  if(!j)return;
+  if(j.status==='collected'){j.status='active';save();render();}
+  else{startCollectFlow(jobId);}
 }
 function getRouteDays(){
   const keys=new Set();
@@ -1896,8 +1980,11 @@ function moveJobInRoute(jobId,dir){
   _leaveByCache={};save();render();
 }
 function dayMapsUrl(dateKey){
-  const jobs=getDayJobs(dateKey);
-  const stops=jobs.map(j=>encodeURIComponent(jobAddr(j,'del')||'')).filter(Boolean);
+  const pickupJobs=getPickupJobs(dateKey).filter(j=>j.status!=='collected'&&j.status!=='done');
+  const deliveryJobs=getDayJobs(dateKey);
+  const pickStops=pickupJobs.map(j=>encodeURIComponent(jobAddr(j,'pick')||'')).filter(Boolean);
+  const delStops=deliveryJobs.map(j=>encodeURIComponent(jobAddr(j,'del')||'')).filter(Boolean);
+  const stops=[...pickStops,...delStops];
   if(!stops.length)return null;
   const dest=stops[stops.length-1];
   const mid=stops.slice(0,-1);
@@ -1987,15 +2074,18 @@ function rRoutePickupStop(job){
       <div class="rc-body">
         <div class="rc-num">↑ COLLECT ${job.icon||'📦'}</div>
         <div class="rc-name">${esc(job.name)} <span style="font-size:8px;color:var(--gb2)">· ${esc(clientName(job.clientId))}</span></div>
+        ${job.pickTime?`<div style="font-size:12px;color:var(--gb4);margin-bottom:4px">⏰ ${job.pickTime}</div>`:''}
         <div class="rc-addr">↑ ${esc(pickAddr)}</div>
         <div style="font-size:8px;color:var(--gb2)">↓ DELIVER: ${fmtD(job.dueDate||'')}</div>
       </div>
     </div>
     <div class="rc-acts">
       <a href="${navUrl}" target="_blank" class="btn sm" style="text-decoration:none">📍 NAV</a>
-      ${(job.status==='collected'||job.status==='done')
+      ${job.status==='done'
         ?'<button class="btn sm" style="opacity:.6" disabled>✓ COLLECTED</button>'
-        :`<button class="btn sm dn" onclick="markPickedUp('${job.id}')">✓ MARK COLLECTED</button>`}
+        :job.status==='collected'
+          ?`<button class="btn sm ld" onclick="markPickedUp('${job.id}')">✓ COLLECTED</button>`
+          :`<button class="btn sm dn" onclick="markPickedUp('${job.id}')">✓ MARK COLLECTED</button>`}
     </div>
   </div>`;
 }
@@ -2433,7 +2523,10 @@ function rManualJobForm(fd){
   <div id="pickup-from-client" style="display:none"></div>
   <div class="ab">
     <div class="ab-lbl">▸ COLLECT</div>
-    <div class="field"><label>COLLECT DATE</label><input type="date" id="jf-pickdate" value="${esc(fd.pickDate||'')}" min="${today()}"></div>
+    <div class="frow">
+      <div class="field"><label>COLLECT DATE</label><input type="date" id="jf-pickdate" value="${esc(fd.pickDate||'')}" min="${today()}"></div>
+      <div class="field" style="flex:0 0 120px"><label>COLLECT TIME</label><input type="time" id="jf-picktime" value="${esc(fd.pickTime||'')}" placeholder="--:--"></div>
+    </div>
     <div class="field"><label>POSTCODE</label><input id="jf-pp" value="${esc(fd.pickPost||'')}" placeholder="W11 2ER"></div>
     <button class="see-more" onclick="togPick()">▾ add house no / street</button>
     <div id="jf-pm" style="display:${fd.pm?'block':'none'}">
@@ -2572,6 +2665,7 @@ function rjf(){
     delStreet:(document.getElementById('jf-ds')||{}).value||FD.delStreet||'',
     dueDate:(document.getElementById('jf-due')||{}).value||FD.dueDate||'',
     agreedTime:(document.getElementById('jf-time')||{}).value||FD.agreedTime||'',
+    pickTime:(document.getElementById('jf-picktime')||{}).value||FD.pickTime||'',
     pm:FD.pm,dm:FD.dm
   };
 }
@@ -3305,6 +3399,7 @@ document.getElementById('fab').addEventListener('click',()=>{
 });
 document.getElementById('cam').addEventListener('change',e=>{const f=e.target.files?.[0];if(f)handlePhoto(f);e.target.value=''});
 document.getElementById('pod-input').addEventListener('change',e=>{const f=e.target.files?.[0];if(f)handlePODFile(f);e.target.value=''});
+document.getElementById('collect-pod-input').addEventListener('change',e=>{const f=e.target.files?.[0];if(f)handleCollectPODFile(f);e.target.value=''});
 document.getElementById('rcpt-input').addEventListener('change',e=>{const f=e.target.files?.[0];if(f)handleReceiptFile(f);e.target.value=''});
 document.getElementById('rcpt-gallery').addEventListener('change',e=>{const f=e.target.files?.[0];if(f)handleReceiptFile(f);e.target.value=''});
 
