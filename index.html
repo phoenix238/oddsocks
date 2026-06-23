@@ -308,6 +308,7 @@ body.clean .theme-btn{background:#1e1e2c!important;color:#6a6258!important}
 .leave-by-time{font-size:30px;color:var(--gb4);display:block;text-shadow:3px 3px 0 var(--gb0);letter-spacing:2px;margin-bottom:4px}
 .leave-by-sub{font-size:8px;color:var(--gb2)}
 .rc{background:var(--gb1);border:3px solid var(--gb2);padding:12px;margin-bottom:8px}
+.rc.pick{border-color:var(--yellow)}
 .rc-top{display:flex;align-items:flex-start;gap:10px}
 .rc-order{display:flex;flex-direction:column;gap:4px;flex-shrink:0}
 .rc-ord-btn{background:var(--gb0);border:2px solid var(--gb2);color:var(--gb3);font-family:var(--px);font-size:14px;width:36px;height:36px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
@@ -1966,46 +1967,78 @@ function getRouteDays(){
     return a>b?1:-1;
   });
 }
-function moveJobInRoute(jobId,dir){
+function getAllStopsForDay(dateKey){
+  const picks=getPickupJobs(dateKey).map(j=>({job:j,type:'pick',order:j.pickRouteOrder??999,time:j.pickTime||'99:99'}));
+  const dels=getDayJobs(dateKey).map(j=>({job:j,type:'del',order:j.routeOrder??999,time:j.agreedTime||'99:99'}));
+  return[...picks,...dels].sort((a,b)=>a.order-b.order||a.time.localeCompare(b.time));
+}
+function moveStopInRoute(jobId,type,dir){
   const job=S.jobs.find(j=>j.id===jobId);if(!job)return;
-  const dayJobs=getDayJobs(getDayKey(job));
-  // Assign clean order if missing
-  dayJobs.forEach((j,i)=>{j.routeOrder=i;});
-  const idx=dayJobs.findIndex(j=>j.id===jobId);
+  const dateKey=type==='pick'?job.pickDate:getDayKey(job);
+  if(!dateKey)return;
+  const stops=getAllStopsForDay(dateKey);
+  stops.forEach((s,i)=>{if(s.type==='pick')s.job.pickRouteOrder=i;else s.job.routeOrder=i;});
+  const idx=stops.findIndex(s=>s.job.id===jobId&&s.type===type);
   const swapIdx=dir==='up'?idx-1:idx+1;
-  if(swapIdx<0||swapIdx>=dayJobs.length)return;
-  const tmp=dayJobs[idx].routeOrder;
-  dayJobs[idx].routeOrder=dayJobs[swapIdx].routeOrder;
-  dayJobs[swapIdx].routeOrder=tmp;
+  if(swapIdx<0||swapIdx>=stops.length)return;
+  const a=stops[idx],b=stops[swapIdx];
+  const aOrd=a.type==='pick'?a.job.pickRouteOrder:a.job.routeOrder;
+  const bOrd=b.type==='pick'?b.job.pickRouteOrder:b.job.routeOrder;
+  if(a.type==='pick')a.job.pickRouteOrder=bOrd;else a.job.routeOrder=bOrd;
+  if(b.type==='pick')b.job.pickRouteOrder=aOrd;else b.job.routeOrder=aOrd;
   _leaveByCache={};save();render();
 }
 function dayMapsUrl(dateKey){
-  const pickupJobs=getPickupJobs(dateKey).filter(j=>j.status!=='collected'&&j.status!=='done');
-  const deliveryJobs=getDayJobs(dateKey);
-  const pickStops=pickupJobs.map(j=>encodeURIComponent(jobAddr(j,'pick')||'')).filter(Boolean);
-  const delStops=deliveryJobs.map(j=>encodeURIComponent(jobAddr(j,'del')||'')).filter(Boolean);
-  const stops=[...pickStops,...delStops];
-  if(!stops.length)return null;
-  const dest=stops[stops.length-1];
-  const mid=stops.slice(0,-1);
-  // No origin = Google Maps uses current GPS location automatically on mobile
+  const addrs=getAllStopsForDay(dateKey)
+    .filter(s=>!(s.type==='pick'&&(s.job.status==='collected'||s.job.status==='done')))
+    .map(s=>encodeURIComponent(s.type==='pick'?(jobAddr(s.job,'pick')||''):(jobAddr(s.job,'del')||'')))
+    .filter(Boolean);
+  if(!addrs.length)return null;
+  const dest=addrs[addrs.length-1];
+  const mid=addrs.slice(0,-1);
   return'https://www.google.com/maps/dir/?api=1&destination='+dest+(mid.length?'&waypoints='+mid.join('|'):'')+'&travelmode=driving';
 }
-function rRouteStop(job,idx,dayJobs){
-  const isFirst=idx===0,isLast=idx===dayJobs.length-1;
+function rUnifiedStop(stop,idx,allStops){
+  const{job,type}=stop;
+  const isFirst=idx===0,isLast=idx===allStops.length-1;
   const client=getClient(job.clientId);
   const phone=(client?.phone||'').replace(/[^0-9+]/g,'');
+  if(type==='pick'){
+    const pickAddr=jobAddr(job,'pick')||job.pickPost||'?';
+    const navUrl='https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(pickAddr)+'&travelmode=driving';
+    return`<div class="rc pick">
+      <div class="rc-top">
+        <div class="rc-order">
+          <button class="rc-ord-btn" onclick="moveStopInRoute('${job.id}','pick','up')" ${isFirst?'disabled':''}>▲</button>
+          <button class="rc-ord-btn" onclick="moveStopInRoute('${job.id}','pick','dn')" ${isLast?'disabled':''}>▼</button>
+        </div>
+        <div class="rc-body">
+          <div class="rc-num">↑ #${idx+1} ${job.icon||'📦'} COLLECT</div>
+          <div class="rc-name">${esc(job.name)} <span style="font-size:8px;color:var(--gb2)">· ${esc(clientName(job.clientId))}</span></div>
+          ${job.pickTime?`<div style="font-size:12px;color:var(--yellow);margin-bottom:4px">⏰ ${job.pickTime}</div>`:''}
+          <div class="rc-addr">↑ ${esc(pickAddr)}<br><span style="color:var(--gb2)">↓ DELIVER: ${fmtD(job.dueDate||'')}</span></div>
+        </div>
+      </div>
+      <div class="rc-acts">
+        <a href="${navUrl}" target="_blank" class="btn sm" style="text-decoration:none">📍 NAV</a>
+        ${job.status==='done'
+          ?'<button class="btn sm" style="opacity:.6" disabled>✓ COLLECTED</button>'
+          :job.status==='collected'
+            ?`<button class="btn sm ld" onclick="markPickedUp('${job.id}')">✓ COLLECTED</button>`
+            :`<button class="btn sm dn" onclick="markPickedUp('${job.id}')">✓ MARK COLLECTED</button>`}
+      </div>
+    </div>`;
+  }
   const etaSent=etaSentToday(job);
-  // GPS navigation — no origin means Maps uses current location
   const navUrl='https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(jobAddr(job,'del')||'')+'&travelmode=driving';
   return`<div class="rc">
     <div class="rc-top">
       <div class="rc-order">
-        <button class="rc-ord-btn" onclick="moveJobInRoute('${job.id}','up')" ${isFirst?'disabled':''}>▲</button>
-        <button class="rc-ord-btn" onclick="moveJobInRoute('${job.id}','dn')" ${isLast?'disabled':''}>▼</button>
+        <button class="rc-ord-btn" onclick="moveStopInRoute('${job.id}','del','up')" ${isFirst?'disabled':''}>▲</button>
+        <button class="rc-ord-btn" onclick="moveStopInRoute('${job.id}','del','dn')" ${isLast?'disabled':''}>▼</button>
       </div>
       <div class="rc-body">
-        <div class="rc-num">#${idx+1} ${job.icon||'📦'}</div>
+        <div class="rc-num">↓ #${idx+1} ${job.icon||'📦'} DELIVER</div>
         <div class="rc-name">${esc(job.name)} <span style="font-size:8px;color:var(--gb2)">· ${esc(clientName(job.clientId))}</span></div>
         ${job.agreedTime?`<div style="font-size:12px;color:var(--gb4);margin-bottom:4px">⏰ ${job.agreedTime}</div>`:''}
         <div class="rc-addr">▸ ${esc(jobAddr(job,'pick')||'?')}<br>▾ ${esc(jobAddr(job,'del')||'?')}</div>
@@ -2022,19 +2055,22 @@ function rRouteStop(job,idx,dayJobs){
 function _lbId(dk){return'lby-'+dk.replace(/[^a-z0-9]/gi,'_');}
 async function calcLeaveBy(dateKey){
   const el=document.getElementById(_lbId(dateKey));if(!el)return;
-  const jobs=getDayJobs(dateKey);
-  const firstJob=jobs.find(j=>j.agreedTime);
-  if(!firstJob){
-    el.innerHTML=`<span class="leave-by-label">SET AGREED TIMES ON JOBS TO SEE WHEN TO LEAVE</span>`;return;
+  const stops=getAllStopsForDay(dateKey);
+  const firstStop=stops.find(s=>s.type==='pick'?s.job.pickTime:s.job.agreedTime);
+  if(!firstStop){
+    el.innerHTML=`<span class="leave-by-label">SET TIMES ON STOPS TO SEE WHEN TO LEAVE</span>`;return;
   }
+  const firstTime=firstStop.type==='pick'?firstStop.job.pickTime:firstStop.job.agreedTime;
   const homePost=S.settings.homePost;
   if(!homePost){
-    el.innerHTML=`<span class="leave-by-label">FIRST JOB ⏰ ${firstJob.agreedTime}</span><br>
+    el.innerHTML=`<span class="leave-by-label">FIRST STOP ⏰ ${firstTime}</span><br>
       <button class="btn sm" style="margin-top:8px" onclick="go('set')">🏠 SET HOME POSTCODE FOR LEAVE TIME</button>`;return;
   }
-  const destPost=firstJob.pickPost||firstJob.delPost;
+  const destPost=firstStop.type==='pick'
+    ?(firstStop.job.pickPost||'')
+    :(firstStop.job.pickPost||firstStop.job.delPost||'');
   if(!destPost){
-    el.innerHTML=`<span class="leave-by-label">FIRST JOB ⏰ ${firstJob.agreedTime} · NO POSTCODE SET ON JOB</span>`;return;
+    el.innerHTML=`<span class="leave-by-label">FIRST STOP ⏰ ${firstTime} · NO POSTCODE SET</span>`;return;
   }
   el.innerHTML=`<span class="leave-by-label">CALCULATING...</span>`;
   try{
@@ -2044,7 +2080,7 @@ async function calcLeaveBy(dateKey){
     ]);
     const[d1,d2]=await Promise.all([r1.json(),r2.json()]);
     if(d1.status!==200||d2.status!==200){
-      el.innerHTML=`<span class="leave-by-label">FIRST JOB ⏰ ${firstJob.agreedTime} · POSTCODE NOT FOUND</span>`;return;
+      el.innerHTML=`<span class="leave-by-label">FIRST STOP ⏰ ${firstTime} · POSTCODE NOT FOUND</span>`;return;
     }
     const lat1=d1.result.latitude,lon1=d1.result.longitude;
     const lat2=d2.result.latitude,lon2=d2.result.longitude;
@@ -2053,68 +2089,40 @@ async function calcLeaveBy(dateKey){
     const miles=R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))*1.28;
     const driveMins=Math.round(miles/30*60);
     const bufferMins=15;
-    const[h,m]=firstJob.agreedTime.split(':').map(Number);
+    const[h,m]=firstTime.split(':').map(Number);
     const leaveMins=(h*60+m)-(driveMins+bufferMins);
     const lh=Math.max(0,Math.floor(leaveMins/60)),lm=Math.max(0,leaveMins%60);
     const leaveStr=String(lh).padStart(2,'0')+':'+String(lm).padStart(2,'0');
     el.innerHTML=`<div class="leave-by-label">🏠 LEAVE HOME BY</div>
       <span class="leave-by-time">${leaveStr}</span>
-      <div class="leave-by-sub">FIRST JOB ${firstJob.agreedTime} · ${Math.round(miles)} MI · ~${driveMins} MIN DRIVE + ${bufferMins} MIN PREP</div>`;
+      <div class="leave-by-sub">FIRST STOP ${firstTime} · ${Math.round(miles)} MI · ~${driveMins} MIN DRIVE + ${bufferMins} MIN PREP</div>`;
   }catch(e){
-    el.innerHTML=`<span class="leave-by-label">FIRST JOB ⏰ ${firstJob.agreedTime} · COULD NOT CALC DRIVE TIME</span>`;
+    el.innerHTML=`<span class="leave-by-label">FIRST STOP ⏰ ${firstTime} · COULD NOT CALC DRIVE TIME</span>`;
   }
 }
-
-function rRoutePickupStop(job){
-  const pickAddr=jobAddr(job,'pick')||job.pickPost||'?';
-  const navUrl='https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(pickAddr)+'&travelmode=driving';
-  return`<div class="rc">
-    <div class="rc-top">
-      <div style="display:flex;align-items:center;justify-content:center;width:40px;font-size:18px;color:var(--gb2)">↑</div>
-      <div class="rc-body">
-        <div class="rc-num">↑ COLLECT ${job.icon||'📦'}</div>
-        <div class="rc-name">${esc(job.name)} <span style="font-size:8px;color:var(--gb2)">· ${esc(clientName(job.clientId))}</span></div>
-        ${job.pickTime?`<div style="font-size:12px;color:var(--gb4);margin-bottom:4px">⏰ ${job.pickTime}</div>`:''}
-        <div class="rc-addr">↑ ${esc(pickAddr)}</div>
-        <div style="font-size:8px;color:var(--gb2)">↓ DELIVER: ${fmtD(job.dueDate||'')}</div>
-      </div>
-    </div>
-    <div class="rc-acts">
-      <a href="${navUrl}" target="_blank" class="btn sm" style="text-decoration:none">📍 NAV</a>
-      ${job.status==='done'
-        ?'<button class="btn sm" style="opacity:.6" disabled>✓ COLLECTED</button>'
-        :job.status==='collected'
-          ?`<button class="btn sm ld" onclick="markPickedUp('${job.id}')">✓ COLLECTED</button>`
-          :`<button class="btn sm dn" onclick="markPickedUp('${job.id}')">✓ MARK COLLECTED</button>`}
-    </div>
-  </div>`;
-}
 function rRouteDaySection(dateKey){
-  const jobs=getDayJobs(dateKey);
-  const pickupJobs=getPickupJobs(dateKey);
-  if(!jobs.length&&!pickupJobs.length)return'';
+  const allStops=getAllStopsForDay(dateKey);
+  if(!allStops.length)return'';
   const mapsUrl=dayMapsUrl(dateKey);
   const label=dateKey==='no-date'?'📦 NO DATE SET':
     dateKey===today()?'📅 TODAY — '+fmtD(dateKey).toUpperCase():
     daysUntil(dateKey)<0?'⚠️ OVERDUE — '+fmtD(dateKey).toUpperCase():
     '📆 '+fmtD(dateKey).toUpperCase();
-  const firstWithTime=jobs.find(j=>j.agreedTime);
-  if(jobs.length)setTimeout(()=>calcLeaveBy(dateKey),60);
-  const totalStops=jobs.length+pickupJobs.length;
+  const firstWithTime=allStops.find(s=>s.type==='pick'?s.job.pickTime:s.job.agreedTime);
+  setTimeout(()=>calcLeaveBy(dateKey),60);
+  const n=allStops.length;
   return`<div class="rday">
     <div class="rday-hdr">
       <div style="flex:1">
         <div class="rday-date">${label}</div>
-        <div class="rday-count">${totalStops} STOP${totalStops!==1?'S':''}${jobs.length?' · USE ▲▼ TO REORDER':''}</div>
+        <div class="rday-count">${n} STOP${n!==1?'S':''} · USE ▲▼ TO REORDER · <span style="color:var(--yellow)">■</span> COLLECT <span style="color:var(--gb3)">■</span> DELIVER</div>
       </div>
     </div>
-    ${jobs.length?`<div class="leave-by-box" id="${_lbId(dateKey)}">
-      <span class="leave-by-label">${firstWithTime?'CALCULATING...':'SET AGREED TIMES TO SEE WHEN TO LEAVE'}</span>
-    </div>`:''}
+    <div class="leave-by-box" id="${_lbId(dateKey)}">
+      <span class="leave-by-label">${firstWithTime?'CALCULATING...':'SET TIMES ON STOPS TO SEE WHEN TO LEAVE'}</span>
+    </div>
     ${mapsUrl?`<a href="${mapsUrl}" target="_blank" class="btn big" style="display:block;text-decoration:none;margin-bottom:10px;text-align:center">🗺️ OPEN FULL DAY ROUTE IN MAPS</a>`:''}
-    ${pickupJobs.length?`<div style="font-size:9px;color:var(--gb2);padding:4px 0 8px 0">↑ COLLECTIONS</div>${pickupJobs.map(rRoutePickupStop).join('')}`:''}
-    ${jobs.length&&pickupJobs.length?`<div style="font-size:9px;color:var(--gb2);padding:8px 0;border-top:1px solid var(--gb1)">↓ DELIVERIES</div>`:''}
-    ${jobs.map((job,i)=>rRouteStop(job,i,jobs)).join('')}
+    ${allStops.map((s,i)=>rUnifiedStop(s,i,allStops)).join('')}
   </div>`;
 }
 function rRoute(){
