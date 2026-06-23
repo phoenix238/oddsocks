@@ -83,7 +83,7 @@ body.clean .theme-btn{background:#1e1e2c!important;color:#6a6258!important}
 .card.urg{border-color:var(--red);border-style:solid}
 .card.warn{border-color:var(--yellow);border-style:dashed}
 .card.ok{border-style:dotted}
-.card.loaded{opacity:.6;border-style:dashed}
+.card.collected{opacity:.6;border-style:dashed}
 .card.done-card{opacity:.5}
 .ci{display:flex;align-items:flex-start;gap:10px;margin-bottom:6px}
 .c-icon{font-size:20px;flex-shrink:0}
@@ -779,7 +779,7 @@ function rTodayCard(item, mode='deliver'){
         <div class="tc-addr" style="flex:1">↑ FROM: ${esc(pickAddr)}<br><span style="color:var(--gb2)">↓ DELIVER: ${fmtD(item.dueDate||'')}</span></div>
       </div>
       <div class="tc-acts-row">
-        ${item.pickedUp
+        ${(item.status==='collected'||item.status==='done')
           ?'<button class="btn sm" style="flex:1;opacity:.6" disabled>✓ COLLECTED</button>'
           :`<button class="btn sm dn" style="flex:1" onclick="markPickedUp('${item.id}')">✓ MARK COLLECTED</button>`}
       </div>
@@ -942,7 +942,8 @@ function rJobs(){
     const u=urgency(item),d=daysUntil(item.dueDate);
     const dl=d<0?`OVERDUE ${Math.abs(d)}D`:d===0?'DUE TODAY':`${d}D LEFT`;
     const cName=clientName(item.clientId);
-    return`<div class="card ${u==='r'?'urg':u==='y'?'warn':'ok'} ${item.status==='loaded'?'loaded':''}">
+    const collected=item.status==='collected'||item.status==='done';
+    return`<div class="card ${u==='r'?'urg':u==='y'?'warn':'ok'} ${item.status==='collected'?'collected':''}">
       <div class="ci">
         <span class="c-icon">${item.icon||'📦'}</span>
         <div class="c-meta">
@@ -959,7 +960,7 @@ function rJobs(){
         ${item.price?`<div class="c-price">${fmtCur(item.price)}</div>`:''}
       </div>
       <div class="c-acts">
-        <button class="btn${item.status==='loaded'?' ld':''}" onclick="toggleLoad('${item.id}')">${item.status==='loaded'?'✓ IN VAN':'LOAD'}</button>
+        <button class="btn${collected?' ld':''}" onclick="markCollected('${item.id}')">${collected?'✓ COLLECTED':'COLLECT'}</button>
         <button class="btn dn" onclick="startDoneFlow('${item.id}')">DONE ✓</button>
         <button class="btn" onclick="startQuickPOD('${item.id}')">📸 POD</button>
         <button class="btn" onclick="openEditJob('${item.id}')">✏️ EDIT</button>
@@ -969,9 +970,9 @@ function rJobs(){
   }).join('');
 }
 
-function toggleLoad(id){
+function markCollected(id){
   const j=S.jobs.find(x=>x.id===id);
-  if(j){j.status=j.status==='loaded'?'active':'loaded';save();render()}
+  if(j){j.status=j.status==='collected'?'active':'collected';save();render()}
 }
 function delJob(id){
   if(confirm('Delete this job?')){
@@ -1821,7 +1822,7 @@ function getPickupJobs(dateKey){
 }
 function markPickedUp(jobId){
   const j=S.jobs.find(j=>j.id===jobId);
-  if(j){j.pickedUp=true;save();render();}
+  if(j){j.status='collected';save();render();}
 }
 function getRouteDays(){
   const keys=new Set();
@@ -1945,7 +1946,7 @@ function rRoutePickupStop(job){
     </div>
     <div class="rc-acts">
       <a href="${navUrl}" target="_blank" class="btn sm" style="text-decoration:none">📍 NAV</a>
-      ${job.pickedUp
+      ${(job.status==='collected'||job.status==='done')
         ?'<button class="btn sm" style="opacity:.6" disabled>✓ COLLECTED</button>'
         :`<button class="btn sm dn" onclick="markPickedUp('${job.id}')">✓ MARK COLLECTED</button>`}
     </div>
@@ -2273,7 +2274,7 @@ function delClient(id){
 // ADD JOB MODAL
 // ═══════════════════════════════════
 function openAddJob(pre){
-  FD=pre||{icon:ICONS[0],name:'',notes:'',pickDate:'',pickPost:'',pickStreet:'',pickNum:'',delPost:'',delStreet:'',delNum:'',dueDate:'',agreedTime:'',price:'',clientId:'',pm:false,dm:false,pickedUp:false};
+  FD=pre||{icon:ICONS[0],name:'',notes:'',pickDate:'',pickPost:'',pickStreet:'',pickNum:'',delPost:'',delStreet:'',delNum:'',dueDate:'',agreedTime:'',price:'',clientId:'',pm:false,dm:false};
   showMod(rAddJobModal());
 }
 function rAddJobModal(){
@@ -2339,7 +2340,7 @@ function refreshPickupDropdown(clientId){
 }
 function rPickupDropdown(clientId,locs){
   if(!locs||!locs.length)return'';
-  return`<div class="field" id="pickup-loc-wrap"><label>PICKUP LOCATION</label>
+  return`<div class="field" id="pickup-loc-wrap"><label>COLLECT LOCATION</label>
     <select id="jf-pickup-loc" onchange="applyPickupLocation(this.value,'${clientId}')">
       <option value="">— Select saved location —</option>
       ${locs.map(l=>`<option value="${l.id}">${esc(l.name)} · ${esc(l.post)}</option>`).join('')}
@@ -2379,11 +2380,11 @@ function rManualJobForm(fd){
   <div class="field"><label>ITEM NAME *</label><input id="jf-name" value="${esc(fd.name||'')}" placeholder="Victorian oak dresser"></div>
   <div class="field"><label>PRICE (£)</label><input type="number" id="jf-price" value="${fd.price||''}" placeholder="0" min="0" step="0.01"></div>
   <div class="field"><label>NOTES</label><textarea id="jf-notes" placeholder="Fragile, heavy...">${esc(fd.notes||'')}</textarea></div>
-  <div id="pickup-loc-wrap">${(()=>{const locs=clientLocations(fd.clientId);return locs.length?`<div class="field"><label>PICKUP LOCATION</label><select id="jf-pickup-loc" onchange="applyPickupLocation(this.value,'${fd.clientId||''}')"><option value="">— Select saved location —</option>${locs.map(l=>`<option value="${l.id}">${esc(l.name)} · ${esc(l.post)}</option>`).join('')}<option value="__manual">✏️ Manual entry</option></select></div>`:'';})()}</div>
+  <div id="pickup-loc-wrap">${(()=>{const locs=clientLocations(fd.clientId);return locs.length?`<div class="field"><label>COLLECT LOCATION</label><select id="jf-pickup-loc" onchange="applyPickupLocation(this.value,'${fd.clientId||''}')"><option value="">— Select saved location —</option>${locs.map(l=>`<option value="${l.id}">${esc(l.name)} · ${esc(l.post)}</option>`).join('')}<option value="__manual">✏️ Manual entry</option></select></div>`:'';})()}</div>
   <div id="pickup-from-client" style="display:none"></div>
   <div class="ab">
-    <div class="ab-lbl">▸ PICKUP</div>
-    <div class="field"><label>PICKUP DATE</label><input type="date" id="jf-pickdate" value="${esc(fd.pickDate||'')}" min="${today()}"></div>
+    <div class="ab-lbl">▸ COLLECT</div>
+    <div class="field"><label>COLLECT DATE</label><input type="date" id="jf-pickdate" value="${esc(fd.pickDate||'')}" min="${today()}"></div>
     <div class="field"><label>POSTCODE</label><input id="jf-pp" value="${esc(fd.pickPost||'')}" placeholder="W11 2ER"></div>
     <button class="see-more" onclick="togPick()">▾ add house no / street</button>
     <div id="jf-pm" style="display:${fd.pm?'block':'none'}">
