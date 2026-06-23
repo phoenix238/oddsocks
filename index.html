@@ -797,12 +797,18 @@ function rTodayCard(item, mode='deliver'){
   const etaSent=etaSentToday(item);
   const pickAddr=jobAddr(item,'pick')||item.pickPost||'?';
   const delAddr=jobAddr(item,'del')||item.delPost||'?';
+  const isMultiDay=item.pickDate&&item.pickDate!==item.dueDate;
   const badge=mode==='both'
     ?`<span class="tc-badge" style="background:var(--gb3);color:var(--gb0)">↑↓ SAME DAY</span>`
     :`<span class="tc-badge ${status}">${commsStatusLabel(status)}</span>`;
   const addrLine=mode==='both'
     ?`↑ ${esc(pickAddr)}<br>↓ ${esc(delAddr)}${item.price?` · ${fmtCur(item.price)}`:''}`
     :`▸ ${esc(item.pickPost||'?')}${item.pickDate?' · '+fmtD(item.pickDate):''}<br>▾ ${esc(item.delPost||'?')}${item.dueDate?` · ${fmtD(item.dueDate)}`:''}${item.price?` · ${fmtCur(item.price)}`:''}`;
+  const collectStatus=isMultiDay&&mode==='deliver'
+    ?(item.status==='collected'
+      ?`<div style="font-size:8px;color:var(--gb3);padding:4px 0 2px">✓ COLLECTED${item.collectDate?' · '+fmtD(item.collectDate):''}</div>`
+      :`<div style="font-size:8px;color:var(--yellow);padding:4px 0 2px">⚠️ NOT YET COLLECTED · PICKUP: ${fmtD(item.pickDate)}</div>`)
+    :'';
   return`<div class="tc tc-${status}">
     <div class="tc-hdr">
       <span class="tc-icon">${item.icon||'📦'}</span>
@@ -812,6 +818,7 @@ function rTodayCard(item, mode='deliver'){
       </div>
       ${badge}
     </div>
+    ${collectStatus}
     <div class="tc-time-row">
       <input class="tc-time" type="time" value="${esc(item.agreedTime||'')}" placeholder="--:--" onchange="setAgreedTime('${item.id}',this.value)" title="Agreed time">
       <div class="tc-addr">${addrLine}</div>
@@ -944,29 +951,65 @@ function rJobs(){
   const items=S.jobs.filter(j=>j.status!=='done').sort((a,b)=>daysUntil(a.dueDate)-daysUntil(b.dueDate));
   if(!items.length)return`<div class="empty"><span class="empty-ic">📦</span>NO ACTIVE JOBS<br><br><button class="btn big" onclick="openAddJob()" style="margin:0 auto;display:block;max-width:200px">+ ADD FIRST JOB</button><br><button class="btn" onclick="go('clients')" style="margin:0 auto;display:block;font-size:5px">OR START FROM A CLIENT ▶</button><br><button class="btn sec" onclick="loadDemoData()" style="margin:0 auto;display:block;font-size:5px">OR LOAD DEMO DATA ▶</button></div>`;
   return items.map(item=>{
-    const u=urgency(item),d=daysUntil(item.dueDate);
+    const u=urgency(item),cName=clientName(item.clientId);
+    const isMultiDay=item.pickDate&&item.pickDate!==item.dueDate;
+    const collectPhase=isMultiDay&&item.status==='active';
+    // ── PHASE 1: COLLECT ──────────────────────────────────────
+    if(collectPhase){
+      const pickAddr=jobAddr(item,'pick')||'?';
+      const dp=daysUntil(item.pickDate);
+      const pickLabel=dp<0?`COLLECT OVERDUE ${Math.abs(dp)}D`:dp===0?'COLLECT TODAY':`COLLECT IN ${dp}D`;
+      return`<div class="card ${u==='r'?'urg':u==='y'?'warn':'ok'}" style="border-color:var(--yellow)">
+        <div class="ci">
+          <span class="c-icon">${item.icon||'📦'}</span>
+          <div class="c-meta">
+            <div class="c-name">${esc(item.name)}</div>
+            <div class="c-client">👤 ${esc(cName)}</div>
+          </div>
+          <span style="font-size:6px;background:var(--yellow);color:var(--gb0);padding:3px 6px;white-space:nowrap">STEP 1/2 ↑ COLLECT</span>
+        </div>
+        ${item.notes?`<div class="c-notes">${esc(item.notes)}</div>`:''}
+        <div class="c-addr">↑ ${esc(pickAddr)}${item.pickTime?` · ⏰ ${item.pickTime}`:''}</div>
+        <div style="font-size:8px;color:var(--gb2);margin-bottom:6px;line-height:2">→ THEN DELIVER: ${fmtD(item.dueDate||'')}</div>
+        <div class="c-row">
+          <div class="c-due" style="color:var(--yellow)">${pickLabel}</div>
+          ${item.price?`<div class="c-price">${fmtCur(item.price)}</div>`:''}
+        </div>
+        <div class="c-acts">
+          <button class="btn dn" style="flex:2" onclick="markPickedUp('${item.id}')">↑ COLLECT</button>
+          <button class="btn" onclick="openEditJob('${item.id}')">✏️ EDIT</button>
+          <button class="btn dl" onclick="delJob('${item.id}')">✕</button>
+        </div>
+      </div>`;
+    }
+    // ── PHASE 2: DELIVER (or single-phase) ───────────────────
+    const d=daysUntil(item.dueDate);
     const dl=d<0?`OVERDUE ${Math.abs(d)}D`:d===0?'DUE TODAY':`${d}D LEFT`;
-    const cName=clientName(item.clientId);
-    const collected=item.status==='collected'||item.status==='done';
-    return`<div class="card ${u==='r'?'urg':u==='y'?'warn':'ok'} ${item.status==='collected'?'collected':''}">
+    const collected=item.status==='collected';
+    const delAddr=jobAddr(item,'del')||'?';
+    return`<div class="card ${u==='r'?'urg':u==='y'?'warn':'ok'} ${collected?'collected':''}">
       <div class="ci">
         <span class="c-icon">${item.icon||'📦'}</span>
         <div class="c-meta">
           <div class="c-name">${esc(item.name)}</div>
           <div class="c-client">👤 ${esc(cName)}</div>
         </div>
-        <span class="dot ${u}"></span>
+        ${isMultiDay
+          ?`<span style="font-size:6px;background:var(--gb3);color:var(--gb0);padding:3px 6px;white-space:nowrap">STEP 2/2 ↓ DELIVER</span>`
+          :`<span class="dot ${u}"></span>`}
       </div>
       ${item.notes?`<div class="c-notes">${esc(item.notes)}</div>`:''}
+      ${collected?`<div style="font-size:8px;color:var(--gb3);margin-bottom:4px">✓ COLLECTED${item.collectDate?' · '+fmtD(item.collectDate):''}</div>`:''}
       ${item.pod?`<div style="font-size:5px;color:var(--gb3);margin-bottom:4px">📸 POD${item.podDriveUrl?' · ☁️ IN DRIVE':' SAVED'}</div>`:''}
-      <div class="c-addr">▸ ${esc(jobAddr(item,'pick')||'?')}${item.pickDate?' · '+fmtD(item.pickDate):''}<br>▾ ${esc(jobAddr(item,'del')||'?')}</div>
+      <div class="c-addr">${isMultiDay?'':`▸ ${esc(jobAddr(item,'pick')||'?')}<br>`}▾ ${esc(delAddr)}${item.agreedTime?` · ⏰ ${item.agreedTime}`:''}</div>
       <div class="c-row">
         <div class="c-due">${dl}${item.dueDate?' · '+fmtD(item.dueDate):''}</div>
         ${item.price?`<div class="c-price">${fmtCur(item.price)}</div>`:''}
       </div>
       <div class="c-acts">
-        <button class="btn${collected?' ld':''}" onclick="markCollected('${item.id}')">${collected?'✓ COLLECTED':'COLLECT'}</button>
-        <button class="btn dn" onclick="startDoneFlow('${item.id}')">DONE ✓</button>
+        ${!isMultiDay?`<button class="btn${collected?' ld':''}" onclick="markCollected('${item.id}')">${collected?'✓ COLLECTED':'COLLECT'}</button>`:''}
+        <button class="btn dn"${isMultiDay?' style="flex:2"':''} onclick="startDoneFlow('${item.id}')">↓ DONE ✓</button>
+        ${collected&&isMultiDay?`<button class="btn" onclick="markPickedUp('${item.id}')">↩ UNCOLLECT</button>`:''}
         <button class="btn" onclick="startQuickPOD('${item.id}')">📸 POD</button>
         <button class="btn" onclick="openEditJob('${item.id}')">✏️ EDIT</button>
         <button class="btn dl" onclick="delJob('${item.id}')">✕</button>
@@ -2041,6 +2084,11 @@ function rUnifiedStop(stop,idx,allStops){
         <div class="rc-num">↓ #${idx+1} ${job.icon||'📦'} DELIVER</div>
         <div class="rc-name">${esc(job.name)} <span style="font-size:8px;color:var(--gb2)">· ${esc(clientName(job.clientId))}</span></div>
         ${job.agreedTime?`<div style="font-size:12px;color:var(--gb4);margin-bottom:4px">⏰ ${job.agreedTime}</div>`:''}
+        ${job.pickDate&&job.pickDate!==job.dueDate
+          ?(job.status==='collected'
+            ?`<div style="font-size:8px;color:var(--gb3);margin-bottom:4px">✓ COLLECTED${job.collectDate?' · '+fmtD(job.collectDate):''}</div>`
+            :`<div style="font-size:8px;color:var(--yellow);margin-bottom:4px">⚠️ NOT YET COLLECTED · PICKUP: ${fmtD(job.pickDate)}</div>`)
+          :''}
         <div class="rc-addr">▸ ${esc(jobAddr(job,'pick')||'?')}<br>▾ ${esc(jobAddr(job,'del')||'?')}</div>
       </div>
     </div>
