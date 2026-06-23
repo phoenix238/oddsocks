@@ -21,34 +21,34 @@ body{background:var(--gb0);font-family:var(--px);color:var(--gb3);font-size:10px
 .app{max-width:480px;margin:0 auto;min-height:100vh;background:var(--gb0);border-left:4px solid var(--gb1);border-right:4px solid var(--gb1);position:relative}
 .app::after{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.04) 2px,rgba(0,0,0,0.04) 4px);pointer-events:none;z-index:998}
 
-/* ═══ CLEAN MODE ═══ */
+/* ═══ CLEAN MODE — MIDNIGHT GOLD ═══ */
 body.clean{
-  --gb0:#f8fafc;--gb1:#ffffff;--gb2:#94a3b8;--gb3:#334155;--gb4:#0f172a;--gb5:#f1f5f9;
-  --red:#dc2626;--yellow:#d97706;--px:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-serif;
-  font-size:14px;background:#f8fafc;
+  --gb0:#0c0c14;--gb1:#161622;--gb2:#b8943f;--gb3:#c8c0b5;--gb4:#f0ece4;--gb5:#1e1e2c;
+  --red:#e05252;--yellow:#d4a843;--px:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  font-size:14px;background:#0c0c14;
 }
 body.clean *{image-rendering:auto;letter-spacing:0}
-body.clean .app{border:none;background:#f8fafc}
+body.clean .app{border:none;background:#0c0c14}
 body.clean .app::after{display:none}
-body.clean .hdr{background:#1e293b;border-bottom:2px solid #334155}
-body.clean .hdr-info h1{text-shadow:none;font-size:13px;letter-spacing:0}
-body.clean .hdr-info p{color:#94a3b8}
+body.clean .hdr{background:#0e0e1a;border-bottom:1px solid #b8943f}
+body.clean .hdr-info h1{text-shadow:none;font-size:13px;letter-spacing:0.5px}
+body.clean .hdr-info p{color:#6a6258}
 body.clean .hdr-socks{animation:none}
-body.clean .hdr-badge{background:#334155;border-color:#475569;color:#f1f5f9}
-body.clean .tabs{background:#f1f5f9;border-bottom:2px solid #e2e8f0;top:52px}
-body.clean .tab{font-size:9px;color:#64748b;padding:10px 1px}
-body.clean .tab.on{color:#0f172a;background:#e2e8f0}
-body.clean .card,.clean .cc,.clean .inv-item{border-radius:8px;border-width:1px}
-body.clean .btn{border-radius:5px;font-size:11px}
-body.clean .btn.big{border-radius:6px;font-size:12px}
-body.clean .field input,.clean .field textarea,.clean .field select{border-radius:5px;font-size:13px;border-width:1px}
-body.clean .modal{border-radius:12px 12px 0 0;border-width:1px}
+body.clean .hdr-badge{background:#1e1e2c;border-color:#b8943f;color:#f0ece4}
+body.clean .tabs{background:#0e0e1a;border-bottom:1px solid #b8943f;top:52px}
+body.clean .tab{font-size:9px;color:#6a6258;padding:10px 1px}
+body.clean .tab.on{color:#f0ece4;background:#1e1e2c}
+body.clean .card,.clean .cc,.clean .inv-item{border-radius:10px;border-width:1px}
+body.clean .btn{border-radius:6px;font-size:13px;padding:10px 16px}
+body.clean .btn.big{border-radius:8px;font-size:15px;padding:14px 18px}
+body.clean .field input,.clean .field textarea,.clean .field select{border-radius:6px;font-size:13px;border-width:1px;color-scheme:dark}
+body.clean .modal{border-radius:14px 14px 0 0;border-width:1px}
 body.clean .m-title{font-size:14px}
 body.clean .c-name{font-size:12px}
 body.clean .c-addr,.clean .c-client,.clean .c-notes,.clean .c-due{font-size:10px}
 body.clean .c-price{font-size:13px}
-body.clean .hdr-info h1::after{content:' 🎮';font-size:10px;opacity:.5}
-body.clean .theme-btn{background:#334155!important;color:#94a3b8!important}
+body.clean .hdr-info h1::after{content:' ✦';font-size:10px;opacity:.5}
+body.clean .theme-btn{background:#1e1e2c!important;color:#6a6258!important}
 
 /* HEADER */
 .hdr{background:var(--gb1);border-bottom:4px solid var(--gb2);padding:12px 16px 10px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;isolation:isolate}
