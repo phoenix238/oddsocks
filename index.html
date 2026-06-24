@@ -99,6 +99,36 @@ body.clean .job-bar-btn:active{background:rgba(184,148,63,0.1);color:#f0ece4}
   body.clean ::-webkit-scrollbar-thumb{background:rgba(184,148,63,0.2);border-radius:3px}
 }
 
+/* ─── Midnight Gold: liquid / glass refinements ─── */
+body.clean{background:radial-gradient(ellipse 80% 60% at 15% 0%,#121228 0%,#0c0c14 65%)}
+body.clean .hdr{background:rgba(11,11,20,0.82);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+body.clean .card,.clean .cc,.clean .inv-item{
+  background:linear-gradient(145deg,rgba(22,22,34,0.9),rgba(11,11,18,0.96));
+  box-shadow:0 2px 16px rgba(0,0,0,0.28),0 0 0 1px rgba(184,148,63,0.1);
+  border-color:rgba(184,148,63,0.15);
+  transition:transform .18s cubic-bezier(.4,0,.2,1),box-shadow .18s cubic-bezier(.4,0,.2,1);
+}
+body.clean .card:hover,.clean .cc:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,0.38),0 0 0 1px rgba(184,148,63,0.22)}
+body.clean .cc:active{background:rgba(184,148,63,0.1);transform:scale(0.99)}
+body.clean .btn{transition:all .15s cubic-bezier(.4,0,.2,1)}
+body.clean .btn:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,0,0,0.22)}
+body.clean .btn:active{transform:translateY(0)}
+body.clean .tab{transition:all .15s ease}
+body.clean .ov{background:rgba(0,0,0,0.65);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+body.clean .modal{
+  background:rgba(13,13,22,0.96);
+  backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);
+  box-shadow:0 24px 60px rgba(0,0,0,0.55),0 0 0 1px rgba(184,148,63,0.18);
+}
+body.clean .field input:focus,.clean .field textarea:focus,.clean .field select:focus{box-shadow:0 0 0 3px rgba(184,148,63,0.18)}
+body.clean .fab{transition:transform .2s cubic-bezier(.34,1.56,.64,1),box-shadow .2s ease}
+body.clean .fab:hover{transform:scale(1.08);box-shadow:0 8px 30px rgba(184,148,63,0.5),0 0 0 5px rgba(184,148,63,0.12)}
+@media(min-width:600px){
+  body.clean .tabs{background:rgba(7,7,13,0.78);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+  body.clean .tab.on{box-shadow:inset 4px 0 14px rgba(184,148,63,0.08)}
+  body.clean .content{background:linear-gradient(180deg,rgba(184,148,63,0.025) 0%,transparent 180px)}
+}
+
 /* HEADER */
 .hdr{background:var(--gb1);border-bottom:4px solid var(--gb2);padding:12px 16px 10px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;isolation:isolate}
 .hdr-socks{font-size:22px;cursor:pointer;animation:wob 3s ease-in-out infinite;user-select:none;-webkit-user-select:none}
