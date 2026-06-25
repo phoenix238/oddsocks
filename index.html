@@ -627,6 +627,35 @@ body.clean .fab:hover{transform:scale(1.08);box-shadow:0 8px 30px rgba(184,148,6
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-track{background:var(--gb0)}
 ::-webkit-scrollbar-thumb{background:var(--gb2)}
+
+/* ─── ONBOARDING OVERLAY ─── */
+.ob-ov{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.96);z-index:700;display:none;flex-direction:column;align-items:center;justify-content:center;padding:16px;overflow-y:auto}
+.ob-wrap{width:100%;max-width:440px;background:var(--gb0);border:4px solid var(--gb2);padding:18px}
+.ob-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.ob-prog{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.ob-dot{width:10px;height:10px;background:var(--gb1);border:2px solid var(--gb2);cursor:pointer;flex-shrink:0}
+.ob-dot.on{background:var(--gb3);border-color:var(--gb4)}
+.ob-dot:hover{background:var(--gb2)}
+.ob-skip{background:none;border:none;color:var(--gb2);font-family:var(--px);font-size:9px;cursor:pointer;padding:0;white-space:nowrap}
+.ob-skip:hover{color:var(--gb3)}
+.ob-step{text-align:center}
+.ob-ic{font-size:44px;display:block;margin-bottom:12px;animation:ob-pop .3s cubic-bezier(.4,0,.2,1)}
+@keyframes ob-pop{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+.ob-title{font-size:12px;color:var(--gb4);margin-bottom:10px;line-height:1.8}
+.ob-body{font-size:10px;color:var(--gb3);line-height:2.2;margin-bottom:12px}
+.ob-feats{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px;text-align:left}
+.ob-feat{background:var(--gb1);border:2px solid var(--gb2);padding:8px 7px;font-size:10px;color:var(--gb3);line-height:1.8}
+.ob-finish-opts{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.ob-nav{display:flex;gap:8px;margin-top:12px;align-items:stretch}
+body.clean .ob-ov{background:rgba(0,0,0,0.82);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+body.clean .ob-wrap{background:rgba(10,10,18,0.98);border:1px solid rgba(184,148,63,0.3);border-radius:16px;box-shadow:0 28px 72px rgba(0,0,0,0.55);padding:24px}
+body.clean .ob-dot{background:rgba(30,30,44,0.8);border:1px solid rgba(184,148,63,0.25);border-radius:50%}
+body.clean .ob-dot.on{background:#b8943f;border-color:#c8a850}
+body.clean .ob-dot:hover{background:rgba(184,148,63,0.35)}
+body.clean .ob-ic{animation:none}
+body.clean .ob-title{font-size:17px;letter-spacing:0;font-weight:700;color:#f0ece4}
+body.clean .ob-body{font-size:13px;line-height:1.9;color:#c8c0b5}
+body.clean .ob-feat{background:rgba(28,28,42,0.7);border:1px solid rgba(184,148,63,0.15);border-radius:8px;font-size:12px;padding:9px 10px;color:#c8c0b5}
 </style>
 </head>
 <body>
@@ -679,6 +708,9 @@ body.clean .fab:hover{transform:scale(1.08);box-shadow:0 8px 30px rgba(184,148,6
 <div class="ov" id="ov" style="display:none">
   <div class="modal" id="modal"></div>
 </div>
+
+<!-- ONBOARDING OVERLAY -->
+<div class="ob-ov" id="ob-ov"></div>
 
 <!-- HIDDEN FILE INPUTS -->
 <input type="file" id="cam" accept="image/*" capture="environment" style="display:none">
@@ -1263,7 +1295,7 @@ function rJobHistory(){
 }
 function rJobs(){
   const items=S.jobs.filter(j=>j.status!=='done').sort((a,b)=>daysUntil(a.dueDate)-daysUntil(b.dueDate));
-  if(!items.length)return`<div class="empty"><span class="empty-ic">📦</span>NO ACTIVE JOBS<br><br><button class="btn big" onclick="openAddJob()" style="margin:0 auto;display:block;max-width:200px">+ ADD FIRST JOB</button><br><button class="btn" onclick="go('clients')" style="margin:0 auto;display:block;font-size:9px">OR START FROM A CLIENT ▶</button><br><button class="btn sec" onclick="loadDemoData()" style="margin:0 auto;display:block;font-size:9px">OR LOAD DEMO DATA ▶</button></div>`+rJobHistory();
+  if(!items.length)return`<div class="empty"><span class="empty-ic">📦</span>NO ACTIVE JOBS<br><br><button class="btn big" onclick="openAddJob()" style="margin:0 auto;display:block;max-width:200px">+ ADD FIRST JOB</button><br><button class="btn" onclick="go('clients')" style="margin:0 auto;display:block;font-size:9px">OR START FROM A CLIENT ▶</button><br><button class="btn sec" onclick="loadDemoData()" style="margin:0 auto;display:block;font-size:9px">OR LOAD DEMO DATA ▶</button><br><button class="btn" onclick="showOnboarding()" style="margin:0 auto;display:block;font-size:9px">? HOW IT WORKS ▶</button></div>`+rJobHistory();
   const cards=items.map(item=>{
     const u=urgency(item),cName=clientName(item.clientId);
     const isMultiDay=item.pickDate&&item.pickDate!==item.dueDate;
@@ -2514,6 +2546,11 @@ function rRoute(){
 function rSettings(){
   const s=S.settings;
   return`<div class="set-s">
+    <div class="set-t">🚀 SETUP GUIDE</div>
+    <div class="set-note">WALK THROUGH ALL FEATURES AND GET SET UP IN UNDER 2 MINUTES.</div>
+    <button class="btn big sec" onclick="showOnboarding()">▶ LAUNCH SETUP GUIDE</button>
+  </div>
+  <div class="set-s">
     <div class="set-t">📋 JOB COMPLETION</div>
     <div class="set-note">TURN STEPS ON OR OFF WHEN MARKING A JOB COLLECTED OR DONE.</div>
     <div style="background:var(--gb0);border:2px solid var(--gb1);padding:12px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between">
@@ -4391,7 +4428,142 @@ function createInvoiceDoc(data) {
 }`;
 }
 
+// ═══════════════════════════════════
+// ONBOARDING / SETUP GUIDE
+// ═══════════════════════════════════
+let _obStep=0;
+const OB_STEPS=[
+  {id:'welcome',ic:'🧦',
+   title:'WELCOME TO ODD SOCKS',
+   body:'VAN DELIVERY MANAGEMENT FOR COURIERS &amp; REMOVALS.<br>BUILT FOR YOUR PHONE. WORKS OFFLINE.<br>ALL YOUR DATA STAYS ON YOUR DEVICE.',
+   feats:['📋 JOBS TAB','📅 CALENDAR','👥 CLIENTS','💷 MONEY','🗺️ ROUTE PLANNER','⚙️ SETTINGS']},
+  {id:'setup',ic:'🏪',
+   title:"LET'S SET UP YOUR BUSINESS",
+   body:'USED ON YOUR INVOICES AND FOR ROUTE PLANNING.<br>OPTIONAL — YOU CAN FILL THIS IN LATER TOO.',
+   feats:null},
+  {id:'jobs',ic:'📋',
+   title:'JOBS — YOUR DELIVERY BOARD',
+   body:'EVERY COLLECTION AND DELIVERY LIVES HERE.<br>ADD THE ITEM, PICK-UP &amp; DROP ADDRESSES, PRICE AND DUE DATE.',
+   feats:['📦 ITEM + ICON','🔄 COLLECT → DELIVER FLOW','⏰ COLOUR-CODED URGENCY','✅ MARK DONE + INVOICE']},
+  {id:'cal',ic:'📅',
+   title:'CALENDAR — SCHEDULE &amp; COMMS',
+   body:"SEE ALL JOBS MAPPED TO DATES.<br>CONFIRM DELIVERIES, LOG CALLS &amp; SEND WHATSAPP ETAs.",
+   feats:['📆 MONTHLY OVERVIEW','✅ CONFIRM DELIVERIES','📱 WHATSAPP ETA TEMPLATES','🔴 UNCONFIRMED ALERTS']},
+  {id:'clients',ic:'👥',
+   title:'CLIENTS — YOUR CONTACT BOOK',
+   body:'SAVE A CLIENT ONCE — THEIR ADDRESSES, RATES &amp; PAYMENT TERMS ARE REUSED ON EVERY JOB.',
+   feats:['👤 FULL PROFILES','📍 SAVED LOCATIONS','💰 DEFAULT DAY RATES','📊 JOB &amp; INVOICE HISTORY']},
+  {id:'money',ic:'💷',
+   title:'MONEY — INVOICES &amp; P&amp;L',
+   body:'GENERATE PDF INVOICES, TRACK PAYMENTS,<br>LOG EXPENSES AND VIEW YOUR PROFIT &amp; LOSS.',
+   feats:['🧾 GENERATE PDF INVOICES','💳 DRAFT / SENT / PAID / OVERDUE','⛽ LOG EXPENSES BY CATEGORY','📊 MONTHLY + TAX YEAR P&amp;L']},
+  {id:'route',ic:'🗺️',
+   title:'ROUTE — PLAN YOUR DAY',
+   body:"KNOW EXACTLY WHEN TO LEAVE. SEE ALL TODAY'S STOPS<br>IN ORDER WITH ONE-TAP GPS NAVIGATION.",
+   feats:['⏱️ CALCULATED LEAVE-BY TIME','📍 STOPS IN PICKUP ORDER','🧭 ONE-TAP GPS NAVIGATION','🚐 DRIVE TIME ESTIMATES']},
+  {id:'settings',ic:'⚙️',
+   title:'SETTINGS — POWER FEATURES',
+   body:'OPTIONAL INTEGRATIONS THAT SAVE YOU HOURS EACH WEEK.',
+   feats:['📅 SYNC TO GOOGLE CALENDAR','📊 EXPORT TO GOOGLE SHEETS','🤖 AI EXPENSE RECEIPT SCANNING','📄 INVOICE DEFAULTS &amp; LATE FEES']},
+  {id:'finish',ic:'🎉',
+   title:"YOU'RE ALL SET!",
+   body:"CHOOSE HOW YOU WANT TO START.",
+   feats:null}
+];
+
+function showOnboarding(){
+  _obStep=0;
+  const el=document.getElementById('ob-ov');
+  if(el){el.style.display='flex';obRender();}
+}
+function hideOnboarding(){
+  const el=document.getElementById('ob-ov');
+  if(el)el.style.display='none';
+}
+function obSaveCurrent(){
+  if(OB_STEPS[_obStep].id==='setup'){
+    const b=document.getElementById('ob-bname');
+    const h=document.getElementById('ob-homepost');
+    if(b&&b.value.trim())S.settings.bizName=b.value.trim();
+    if(h&&h.value.trim())S.settings.homePost=h.value.trim().toUpperCase();
+    save();
+  }
+}
+function obNext(){
+  if(_obStep<OB_STEPS.length-1){obSaveCurrent();_obStep++;obRender();}
+}
+function obPrev(){
+  if(_obStep>0){_obStep--;obRender();}
+}
+function obGoTo(n){
+  if(n>=0&&n<OB_STEPS.length){obSaveCurrent();_obStep=n;obRender();}
+}
+function obSkip(){
+  obSaveCurrent();
+  S.settings.onboardingDone=true;
+  save();
+  hideOnboarding();
+}
+function obFinish(demo){
+  obSaveCurrent();
+  S.settings.onboardingDone=true;
+  save();
+  hideOnboarding();
+  if(demo)loadDemoData();else render();
+}
+function obRender(){
+  const step=OB_STEPS[_obStep];
+  const total=OB_STEPS.length;
+  const isFirst=_obStep===0;
+  const isLast=_obStep===total-1;
+  const dots=OB_STEPS.map((_s,i)=>`<div class="ob-dot${i===_obStep?' on':''}" onclick="obGoTo(${i})" title="Step ${i+1}"></div>`).join('');
+  const feats=step.feats?`<div class="ob-feats">${step.feats.map(f=>`<div class="ob-feat">${f}</div>`).join('')}</div>`:'';
+  const form=step.id==='setup'?`<div style="margin-top:12px;text-align:left">
+    <div class="field"><label>TRADING NAME</label>
+      <input id="ob-bname" value="${esc(S.settings.bizName||'')}" placeholder="e.g. Pete's Removals Co.">
+    </div>
+    <div class="field"><label>HOME POSTCODE (FOR ROUTE PLANNER)</label>
+      <input id="ob-homepost" value="${esc(S.settings.homePost||'')}" placeholder="e.g. SW1A 1AA" oninput="this.value=this.value.toUpperCase()">
+    </div>
+  </div>`:'';
+  const finishOpts=isLast?`<div class="ob-finish-opts">
+    <button class="btn big" onclick="obFinish(false)">✓ START WITH MY OWN DATA</button>
+    <button class="btn big sec" onclick="obFinish(true)">▶ LOAD DEMO DATA FIRST</button>
+    <div style="text-align:center;margin-top:4px"><button class="ob-skip" onclick="obPrev()">← BACK</button></div>
+  </div>`:'';
+  const nav=!isLast?`<div class="ob-nav">
+    ${!isFirst?`<button class="btn" onclick="obPrev()" style="white-space:nowrap">← BACK</button>`:'<div></div>'}
+    <button class="btn big" onclick="obNext()" style="flex:1">${isFirst?'START THE TOUR ▶':'NEXT →'}</button>
+  </div>`:'';
+  const stepNum=`<div style="font-size:9px;color:var(--gb2);text-align:center;margin-bottom:10px">${_obStep+1} / ${total}</div>`;
+  const el=document.getElementById('ob-ov');
+  if(!el)return;
+  el.innerHTML=`<div class="ob-wrap">
+    <div class="ob-hdr">
+      <div class="ob-prog">${dots}</div>
+      <button class="ob-skip" onclick="obSkip()">SKIP ✕</button>
+    </div>
+    <div class="ob-step">
+      <span class="ob-ic">${step.ic}</span>
+      ${stepNum}
+      <div class="ob-title">${step.title}</div>
+      <div class="ob-body">${step.body}</div>
+      ${feats}${form}${finishOpts}${nav}
+    </div>
+  </div>`;
+  if(document.body.classList.contains('clean')){
+    const inner=el.querySelector('.ob-step');
+    if(inner){
+      inner.style.cssText='opacity:0;transform:translateY(6px);transition:none';
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{
+        inner.style.cssText='opacity:1;transform:translateY(0);transition:opacity .22s ease,transform .22s ease';
+      }));
+    }
+  }
+}
+
 load();applyTheme();setupPWA();render();checkShare();
+if(!S.settings.onboardingDone&&!S.clients.length&&!S.jobs.length)setTimeout(showOnboarding,350);
 </script>
 </body>
 </html>
