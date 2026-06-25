@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Odd Socks — Feature Flow</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0c0c14;--surface:#121220;--border:rgba(184,148,63,0.18);
+  --gold:#b8943f;--gold2:#c8a850;--text:#c8c0b5;--dim:#504840;
+  --green:#4a9e6a;--red:#e05252;--blue:#4a8fd4;--purple:#9b6fd4;
+  --tab-jobs:#b8943f;--tab-cal:#4a8fd4;--tab-clients:#9b6fd4;
+  --tab-money:#4a9e6a;--tab-route:#e09050;--tab-set:#777;
+  --flow-done:#4a9e6a;--flow-collect:#4a8fd4;--flow-receipt:#9b6fd4;
+}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;line-height:1.5;padding:24px 16px 60px;min-height:100vh}
+h1{font-size:22px;color:#f0ece4;letter-spacing:1px;margin-bottom:4px}
+.subtitle{font-size:12px;color:var(--dim);margin-bottom:28px;letter-spacing:.5px}
+
+/* ── Legend ── */
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px}
+.leg{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--dim);background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:6px;padding:4px 10px}
+.leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+/* ── Tree root ── */
+.tree{max-width:900px}
+.branch{position:relative;padding-left:28px;margin-top:4px}
+.branch::before{content:'';position:absolute;left:10px;top:0;bottom:0;width:1px;background:var(--border)}
+.branch:last-child::before{height:22px}
+
+/* ── Nodes ── */
+.node{position:relative;margin-bottom:4px}
+.node-row{display:flex;align-items:center;gap:0;cursor:pointer;user-select:none}
+.node-row::before{content:'';position:absolute;left:-18px;top:50%;width:18px;height:1px;background:var(--border)}
+.toggle{width:20px;height:20px;border-radius:4px;border:1px solid var(--border);background:var(--surface);color:var(--gold);font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;cursor:pointer}
+.toggle:hover{border-color:var(--gold);background:rgba(184,148,63,0.1)}
+.toggle.open{background:rgba(184,148,63,0.15);border-color:var(--gold)}
+.toggle.leaf{color:var(--dim);cursor:default;font-size:9px}
+.label{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:8px;border:1px solid transparent;transition:all .15s;flex:1;min-width:0}
+.label:hover{background:rgba(255,255,255,0.04);border-color:var(--border)}
+.label.open{background:rgba(184,148,63,0.06);border-color:rgba(184,148,63,0.2)}
+.ic{font-size:16px;flex-shrink:0;line-height:1}
+.name{font-size:13px;color:#f0ece4;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.desc{font-size:11px;color:var(--dim);margin-left:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.badge{font-size:10px;padding:2px 8px;border-radius:10px;border:1px solid;flex-shrink:0;white-space:nowrap;margin-left:auto}
+.arrow{font-size:10px;color:var(--dim);flex-shrink:0;margin-left:4px}
+
+/* ── Tab colours ── */
+.t-jobs .ic,.t-jobs .badge{color:var(--tab-jobs)}
+.t-jobs .badge{border-color:var(--tab-jobs);background:rgba(184,148,63,0.08)}
+.t-cal .ic,.t-cal .badge{color:var(--tab-cal)}
+.t-cal .badge{border-color:var(--tab-cal);background:rgba(74,143,212,0.08)}
+.t-clients .ic,.t-clients .badge{color:var(--tab-clients)}
+.t-clients .badge{border-color:var(--tab-clients);background:rgba(155,111,212,0.08)}
+.t-money .ic,.t-money .badge{color:var(--tab-money)}
+.t-money .badge{border-color:var(--tab-money);background:rgba(74,158,106,0.08)}
+.t-route .ic,.t-route .badge{color:var(--tab-route)}
+.t-route .badge{border-color:var(--tab-route);background:rgba(224,144,80,0.08)}
+.t-set .ic,.t-set .badge{color:var(--tab-set)}
+.t-set .badge{border-color:var(--tab-set);background:rgba(119,119,119,0.08)}
+/* Flow types */
+.f-done .ic,.f-done .badge{color:var(--flow-done)}
+.f-done .badge{border-color:var(--flow-done);background:rgba(74,158,106,0.08)}
+.f-collect .ic,.f-collect .badge{color:var(--flow-collect)}
+.f-collect .badge{border-color:var(--flow-collect);background:rgba(74,143,212,0.08)}
+.f-receipt .ic,.f-receipt .badge{color:var(--flow-receipt)}
+.f-receipt .badge{border-color:var(--flow-receipt);background:rgba(155,111,212,0.08)}
+.f-invoice .ic,.f-invoice .badge{color:var(--gold)}
+.f-invoice .badge{border-color:var(--gold);background:rgba(184,148,63,0.08)}
+/* Root tabs */
+.root-tab .label{border:1px solid var(--border);background:var(--surface);border-radius:10px;padding:10px 14px}
+.root-tab .label.open{background:rgba(184,148,63,0.07)}
+.root-tab .name{font-size:14px}
+.root-tab .ic{font-size:20px}
+
+/* ── Flow callout box ── */
+.flow-box{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin:6px 0 6px 28px;position:relative}
+.flow-box::before{content:'';position:absolute;left:-18px;top:20px;width:18px;height:1px;background:var(--border)}
+.flow-title{font-size:12px;color:var(--gold);font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.flow-steps{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.step{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:11px}
+.step-num{font-size:10px;color:var(--dim);background:rgba(255,255,255,0.06);width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-txt{color:#f0ece4}
+.step-opt{color:var(--dim);font-size:10px}
+.flow-arrow{color:var(--dim);font-size:12px;flex-shrink:0}
+.flow-result{display:flex;align-items:center;gap:5px;font-size:11px;background:rgba(74,158,106,0.08);border:1px solid rgba(74,158,106,0.25);border-radius:6px;padding:5px 10px;color:var(--green)}
+
+/* ── Status chips ── */
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:2px 8px;border-radius:10px;border:1px solid;margin:2px}
+.chip.active{color:#e09050;border-color:rgba(224,144,80,0.4);background:rgba(224,144,80,0.08)}
+.chip.collected{color:var(--blue);border-color:rgba(74,143,212,0.4);background:rgba(74,143,212,0.08)}
+.chip.done{color:var(--green);border-color:rgba(74,158,106,0.4);background:rgba(74,158,106,0.08)}
+.chip.draft{color:var(--dim);border-color:rgba(100,100,100,0.4);background:rgba(100,100,100,0.08)}
+.chip.sent{color:#e0c050;border-color:rgba(224,192,80,0.4);background:rgba(224,192,80,0.08)}
+.chip.paid{color:var(--green);border-color:rgba(74,158,106,0.4);background:rgba(74,158,106,0.08)}
+.chip.overdue{color:var(--red);border-color:rgba(224,82,82,0.4);background:rgba(224,82,82,0.08)}
+
+/* ── State diagram ── */
+.states{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin:6px 0 6px 28px}
+.state-arrow{color:var(--dim);font-size:12px}
+
+/* ── Expand all / collapse all ── */
+.controls{display:flex;gap:8px;margin-bottom:20px}
+.ctrl-btn{background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;transition:all .15s}
+.ctrl-btn:hover{border-color:var(--gold);color:#f0ece4}
+
+/* ── Info tooltip ── */
+.info{font-size:11px;color:var(--dim);margin:4px 0 4px 28px;line-height:1.7}
+.info strong{color:var(--text)}
+
+/* ── Hidden ── */
+.branch.closed{display:none}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(184,148,63,0.2);border-radius:3px}
+</style>
+</head>
+<body>
+
+<h1>🧦 ODD SOCKS — Feature Flow</h1>
+<p class="subtitle">Interactive map of features, flows, and data states. Click any row to expand.</p>
+
+<div class="legend">
+  <div class="leg"><div class="leg-dot" style="background:var(--tab-jobs)"></div>Jobs</div>
+  <div class="leg"><div class="leg-dot" style="background:var(--tab-cal)"></div>Calendar</div>
+  <div class="leg"><div class="leg-dot" style="background:var(--tab-clients)"></div>Clients</div>
+  <div class="leg"><div class="leg-dot" style="background:var(--tab-money)"></div>Money</div>
+  <div class="leg"><div class="leg-dot" style="background:var(--tab-route)"></div>Route</div>
+  <div class="leg"><div class="leg-dot" style="background:var(--flow-done)"></div>Done Flow</div>
+  <div class="leg"><div class="leg-dot" style="background:var(--flow-collect)"></div>Collect Flow</div>
+  <div class="leg"><div class="leg-dot" style="background:var(--flow-receipt)"></div>Receipt Flow</div>
+  <div class="leg"><div class="leg-dot" style="background:var(--gold)"></div>Invoice Flow</div>
+</div>
+
+<div class="controls">
+  <button class="ctrl-btn" onclick="expandAll()">▼ Expand all</button>
+  <button class="ctrl-btn" onclick="collapseAll()">▲ Collapse all</button>
+</div>
+
+<!-- ─────────────────── JOB STATUS LIFECYCLE ─────────────────── -->
+<div style="margin-bottom:24px">
+  <div style="font-size:11px;color:var(--dim);margin-bottom:8px;letter-spacing:.5px">JOB STATUS LIFECYCLE</div>
+  <div class="states">
+    <span class="chip active">● active</span>
+    <span class="state-arrow">→ COLLECT →</span>
+    <span class="chip collected">● collected</span>
+    <span class="state-arrow">→ DONE →</span>
+    <span class="chip done">✓ done</span>
+    <span class="state-arrow">→ INVOICE →</span>
+    <span class="chip draft">draft</span>
+    <span class="state-arrow">→</span>
+    <span class="chip sent">sent</span>
+    <span class="state-arrow">→</span>
+    <span class="chip paid">paid</span>
+  </div>
+  <div class="info">Single-day jobs can skip straight from <strong>active → done</strong>. Multi-day jobs go <strong>active → collected → done</strong>.</div>
+</div>
+
+<div class="tree" id="tree">
+
+  <!-- ═══════════════ JOBS TAB ═══════════════ -->
+  <div class="node root-tab t-jobs" id="n-jobs">
+    <div class="node-row" onclick="toggle('n-jobs')">
+      <div class="toggle open" id="t-n-jobs">▾</div>
+      <div class="label open">
+        <span class="ic">📋</span>
+        <span class="name">JOBS</span>
+        <span class="desc">— main delivery manifest, active &amp; done jobs</span>
+        <span class="badge">Tab 1</span>
+      </div>
+    </div>
+    <div class="branch" id="b-n-jobs">
+
+      <!-- Active jobs -->
+      <div class="node t-jobs" id="n-active">
+        <div class="node-row" onclick="toggle('n-active')">
+          <div class="toggle open" id="t-n-active">▾</div>
+          <div class="label open"><span class="ic">⚡</span><span class="name">Active Jobs</span><span class="desc">— urgency-sorted: overdue → due today → upcoming</span></div>
+        </div>
+        <div class="branch" id="b-n-active">
+
+          <!-- COLLECT action -->
+          <div class="node f-collect" id="n-collect">
+            <div class="node-row" onclick="toggle('n-collect')">
+              <div class="toggle open" id="t-n-collect">▾</div>
+              <div class="label open"><span class="ic">📦</span><span class="name">COLLECT</span><span class="desc">— multi-day job: pick up from seller</span><span class="badge">Collect Flow</span></div>
+            </div>
+            <div class="branch" id="b-n-collect">
+              <div class="flow-box">
+                <div class="flow-title">📦 Collect Flow (CF state)</div>
+                <div class="flow-steps">
+                  <div class="step"><div class="step-num">1</div><span class="step-txt">📸 Photo POD</span><span class="step-opt">(optional)</span></div>
+                  <span class="flow-arrow">→</span>
+                  <div class="step"><div class="step-num">2</div><span class="step-txt">🚐 Miles to collection</span><span class="step-opt">(auto-estimate from home postcode)</span></div>
+                  <span class="flow-arrow">→</span>
+                  <div class="flow-result">✓ status = 'collected' · photo uploaded to Drive</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- DONE action -->
+          <div class="node f-done" id="n-done">
+            <div class="node-row" onclick="toggle('n-done')">
+              <div class="toggle open" id="t-n-done">▾</div>
+              <div class="label open"><span class="ic">✅</span><span class="name">↓ DONE ✓</span><span class="desc">— mark delivery complete</span><span class="badge">Done Flow</span></div>
+            </div>
+            <div class="branch" id="b-n-done">
+              <div class="flow-box">
+                <div class="flow-title">✅ Done Flow (DF state)</div>
+                <div class="flow-steps">
+                  <div class="step"><div class="step-num">1</div><span class="step-txt">📸 Photo POD</span><span class="step-opt">(optional, Drive upload)</span></div>
+                  <span class="flow-arrow">→</span>
+                  <div class="step"><div class="step-num">2</div><span class="step-txt">🚐 Miles driven</span><span class="step-opt">(auto-estimate pickup↔delivery postcodes)</span></div>
+                  <span class="flow-arrow">→</span>
+                  <div class="flow-result">✓ status = 'done' · completedDate set</div>
+                </div>
+                <div style="margin-top:10px;font-size:11px;color:var(--dim)">
+                  Immediately triggers → <span style="color:var(--gold)">Invoice prompt</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- POD -->
+          <div class="node" id="n-pod">
+            <div class="node-row">
+              <div class="toggle leaf">·</div>
+              <div class="label"><span class="ic">📸</span><span class="name">Quick POD</span><span class="desc">— take delivery photo any time without completing</span></div>
+            </div>
+          </div>
+
+          <!-- Edit job -->
+          <div class="node" id="n-editjob">
+            <div class="node-row">
+              <div class="toggle leaf">·</div>
+              <div class="label"><span class="ic">✏️</span><span class="name">Edit Job</span><span class="desc">— change name, price, addresses, dates, client</span></div>
+            </div>
+          </div>
+
+          <!-- Delete -->
+          <div class="node" id="n-deljob">
+            <div class="node-row">
+              <div class="toggle leaf">·</div>
+              <div class="label"><span class="ic">🗑️</span><span class="name">Delete Job</span><span class="desc">— permanent removal with confirm prompt</span></div>
+            </div>
+          </div>
+
+        </div><!-- /active branch -->
+      </div>
+
+      <!-- Done jobs -->
+      <div class="node t-jobs" id="n-donejobs">
+        <div class="node-row" onclick="toggle('n-donejobs')">
+          <div class="toggle" id="t-n-donejobs">▸</div>
+          <div class="label"><span class="ic">✓</span><span class="name">Done Jobs</span><span class="desc">— completed deliveries, faded cards</span></div>
+        </div>
+        <div class="branch closed" id="b-n-donejobs">
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">🔗</span><span class="name">Invoice link</span><span class="desc">— tap to view associated invoice</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">📍</span><span class="name">POD photo</span><span class="desc">— view saved proof of delivery image</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">🔄</span><span class="name">Reopen</span><span class="desc">— set back to active (rare use case)</span></div></div></div>
+        </div>
+      </div>
+
+      <!-- New Job -->
+      <div class="node t-jobs" id="n-newjob">
+        <div class="node-row" onclick="toggle('n-newjob')">
+          <div class="toggle" id="t-n-newjob">▸</div>
+          <div class="label"><span class="ic">➕</span><span class="name">NEW JOB</span><span class="desc">— bottom bar shortcut</span></div>
+        </div>
+        <div class="branch closed" id="b-n-newjob">
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">👤</span><span class="name">Client</span><span class="desc">— pick from list or leave blank for one-off</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">🛋️</span><span class="name">Item name + icon</span><span class="desc">— emoji picker (furniture icons)</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">💷</span><span class="name">Price</span><span class="desc">— defaults to client's default rate</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">📦</span><span class="name">Pickup address + date</span><span class="desc">— num, street, postcode</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">🚪</span><span class="name">Delivery address + due date</span><span class="desc">— num, street, postcode</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">📝</span><span class="name">Notes</span><span class="desc">— handling instructions, warnings</span></div></div></div>
+        </div>
+      </div>
+
+      <!-- Scan Expense -->
+      <div class="node f-receipt" id="n-scan">
+        <div class="node-row" onclick="toggle('n-scan')">
+          <div class="toggle" id="t-n-scan">▸</div>
+          <div class="label"><span class="ic">📸</span><span class="name">SCAN EXPENSE</span><span class="desc">— bottom bar shortcut → Receipt Flow</span><span class="badge">Receipt Flow</span></div>
+        </div>
+        <div class="branch closed" id="b-n-scan">
+          <div class="flow-box">
+            <div class="flow-title">🧾 Receipt Flow (RF state)</div>
+            <div class="flow-steps">
+              <div class="step"><div class="step-num">1</div><span class="step-txt">📸 Camera or gallery</span></div>
+              <span class="flow-arrow">→</span>
+              <div class="step"><div class="step-num">2</div><span class="step-txt">Select category</span><span class="step-opt">(FUEL / PARKING / PACKING / VAN / OTHER)</span></div>
+              <span class="flow-arrow">→</span>
+              <div class="step"><div class="step-num">3</div><span class="step-txt">Enter amount + date</span></div>
+              <span class="flow-arrow">→</span>
+              <div class="flow-result">✓ Saved as expense · photo to Drive</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /jobs branch -->
+  </div>
+
+  <!-- ═══════════════ CALENDAR TAB ═══════════════ -->
+  <div class="node root-tab t-cal" id="n-cal" style="margin-top:8px">
+    <div class="node-row" onclick="toggle('n-cal')">
+      <div class="toggle" id="t-n-cal">▸</div>
+      <div class="label">
+        <span class="ic">📅</span>
+        <span class="name">CALENDAR</span>
+        <span class="desc">— month grid + day detail, futures &amp; today</span>
+        <span class="badge">Tab 2</span>
+      </div>
+    </div>
+    <div class="branch closed" id="b-n-cal">
+
+      <div class="node t-cal" id="n-cal-grid">
+        <div class="node-row" onclick="toggle('n-cal-grid')">
+          <div class="toggle" id="t-n-cal-grid">▸</div>
+          <div class="label"><span class="ic">🗓️</span><span class="name">Month grid</span><span class="desc">— 7-column calendar with dot indicators</span></div>
+        </div>
+        <div class="branch closed" id="b-n-cal-grid">
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">⬛</span><span class="name">Past dates</span><span class="desc">— greyed out, non-interactive (no jobs)</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">🟡</span><span class="name">Today</span><span class="desc">— highlighted border, always clickable</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">🔵</span><span class="name">Future dates</span><span class="desc">— clickable if they have jobs scheduled</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">🔴</span><span class="name">Unconfirmed badge</span><span class="desc">— red count on CAL tab for unconfirmed jobs</span></div></div></div>
+        </div>
+      </div>
+
+      <div class="node t-cal" id="n-cal-day">
+        <div class="node-row" onclick="toggle('n-cal-day')">
+          <div class="toggle" id="t-n-cal-day">▸</div>
+          <div class="label"><span class="ic">📋</span><span class="name">Day detail view</span><span class="desc">— tap a date to see that day's jobs</span></div>
+        </div>
+        <div class="branch closed" id="b-n-cal-day">
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">✓</span><span class="name">Confirm job</span><span class="desc">— mark client has confirmed the date</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">📅</span><span class="name">Reschedule</span><span class="desc">— change dueDate, logs history entry</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">📱</span><span class="name">Send ETA</span><span class="desc">— opens SMS with estimated arrival time</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">⏰</span><span class="name">Set agreed time</span><span class="desc">— log exact delivery time</span></div></div></div>
+          <div class="node f-done"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">✅</span><span class="name">✓ DONE</span><span class="desc">— triggers Done Flow from calendar</span><span class="badge">Done Flow</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">🔗</span><span class="name">Add to Google Calendar</span><span class="desc">— syncs event via GCal API (removed on completion)</span></div></div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════ CLIENTS TAB ═══════════════ -->
+  <div class="node root-tab t-clients" id="n-clients" style="margin-top:8px">
+    <div class="node-row" onclick="toggle('n-clients')">
+      <div class="toggle" id="t-n-clients">▸</div>
+      <div class="label">
+        <span class="ic">👥</span>
+        <span class="name">CLIENTS</span>
+        <span class="desc">— contact book with job &amp; revenue stats</span>
+        <span class="badge">Tab 3</span>
+      </div>
+    </div>
+    <div class="branch closed" id="b-n-clients">
+
+      <div class="node t-clients" id="n-clientlist">
+        <div class="node-row" onclick="toggle('n-clientlist')">
+          <div class="toggle" id="t-n-clientlist">▸</div>
+          <div class="label"><span class="ic">📇</span><span class="name">Client list</span><span class="desc">— cards with job count, revenue, outstanding</span></div>
+        </div>
+        <div class="branch closed" id="b-n-clientlist">
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">📞</span><span class="name">Call</span><span class="desc">— tel: link</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">✏️</span><span class="name">Edit client</span><span class="desc">— name, phone, email, postcode, default rate, terms</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">👁️</span><span class="name">View profile →</span><span class="desc">— tap card to open full profile</span></div></div></div>
+        </div>
+      </div>
+
+      <div class="node t-clients" id="n-profile">
+        <div class="node-row" onclick="toggle('n-profile')">
+          <div class="toggle" id="t-n-profile">▸</div>
+          <div class="label"><span class="ic">🪪</span><span class="name">Client profile</span><span class="desc">— full history, stats, locations</span></div>
+        </div>
+        <div class="branch closed" id="b-n-profile">
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">📊</span><span class="name">Stats</span><span class="desc">— total jobs, revenue, outstanding, last job</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">📋</span><span class="name">Job history</span><span class="desc">— all jobs for this client, sorted by date</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">📄</span><span class="name">Invoice history</span><span class="desc">— all invoices with status chips</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">📍</span><span class="name">Saved locations</span><span class="desc">— multiple pickup/drop spots per client</span></div></div></div>
+          <div class="node f-invoice"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">📄</span><span class="name">Create invoice</span><span class="desc">— batch all uninvoiced jobs for this client</span><span class="badge">Invoice Flow</span></div></div></div>
+        </div>
+      </div>
+
+      <div class="node t-clients">
+        <div class="node-row">
+          <div class="toggle leaf">·</div>
+          <div class="label"><span class="ic">➕</span><span class="name">ADD CLIENT (FAB)</span><span class="desc">— name, phone, email, postcode, default rate, payment terms, notes</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════ MONEY TAB ═══════════════ -->
+  <div class="node root-tab t-money" id="n-money" style="margin-top:8px">
+    <div class="node-row" onclick="toggle('n-money')">
+      <div class="toggle" id="t-n-money">▸</div>
+      <div class="label">
+        <span class="ic">💷</span>
+        <span class="name">MONEY</span>
+        <span class="desc">— P&amp;L, invoices, expenses, mileage</span>
+        <span class="badge">Tab 4</span>
+      </div>
+    </div>
+    <div class="branch closed" id="b-n-money">
+
+      <div class="node t-money" id="n-dashboard">
+        <div class="node-row" onclick="toggle('n-dashboard')">
+          <div class="toggle" id="t-n-dashboard">▸</div>
+          <div class="label"><span class="ic">📊</span><span class="name">P&amp;L Dashboard</span><span class="desc">— month or tax year toggle</span></div>
+        </div>
+        <div class="branch closed" id="b-n-dashboard">
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">💰</span><span class="name">Net P&amp;L</span><span class="desc">— revenue − expenses − mileage claims</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">📈</span><span class="name">Revenue received</span><span class="desc">— sum of paid invoices in period</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">📤</span><span class="name">Outstanding</span><span class="desc">— sent but unpaid invoices</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">⚠️</span><span class="name">Overdue count</span><span class="desc">— invoices past due date</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">🚐</span><span class="name">Mileage claim</span><span class="desc">— total miles × HMRC rate (£0.45/mi default)</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">🏆</span><span class="name">Achievements</span><span class="desc">— gamified badges (first invoice, £1k month, etc.)</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">📅</span><span class="name">Monthly bar chart</span><span class="desc">— 12-month revenue spark chart</span></div></div></div>
+        </div>
+      </div>
+
+      <div class="node t-money f-invoice" id="n-invoices">
+        <div class="node-row" onclick="toggle('n-invoices')">
+          <div class="toggle" id="t-n-invoices">▸</div>
+          <div class="label"><span class="ic">📄</span><span class="name">Invoices</span><span class="desc">— list with status filter</span><span class="badge">Invoice Flow</span></div>
+        </div>
+        <div class="branch closed" id="b-n-invoices">
+          <div class="flow-box">
+            <div class="flow-title">📄 Invoice Lifecycle</div>
+            <div class="flow-steps">
+              <div class="step"><div class="step-num">1</div><span class="step-txt">Create</span><span class="step-opt">(from done job or custom)</span></div>
+              <span class="flow-arrow">→</span>
+              <span class="chip draft">draft</span>
+              <span class="flow-arrow">→ Send PDF/email →</span>
+              <span class="chip sent">sent</span>
+              <span class="flow-arrow">→ Mark paid →</span>
+              <span class="chip paid">paid</span>
+            </div>
+            <div style="margin-top:8px">
+              <span class="chip overdue">overdue</span>
+              <span style="font-size:11px;color:var(--dim);margin-left:4px">auto-flagged when sent &amp; past due date</span>
+            </div>
+          </div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">📦</span><span class="name">Batch invoice</span><span class="desc">— all uninvoiced jobs for a client in one invoice</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">✏️</span><span class="name">Custom invoice</span><span class="desc">— free-form line items, any client or one-off</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">📥</span><span class="name">Download PDF</span><span class="desc">— jsPDF-generated invoice doc</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">✉️</span><span class="name">Email link</span><span class="desc">— mailto: pre-filled with client email</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">💳</span><span class="name">Mark paid</span><span class="desc">— sets paidDate &amp; payment method (cash/BACS/card)</span></div></div></div>
+        </div>
+      </div>
+
+      <div class="node t-money" id="n-expenses">
+        <div class="node-row" onclick="toggle('n-expenses')">
+          <div class="toggle" id="t-n-expenses">▸</div>
+          <div class="label"><span class="ic">🧾</span><span class="name">Expenses</span><span class="desc">— categorised outgoings with receipt photos</span></div>
+        </div>
+        <div class="branch closed" id="b-n-expenses">
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">⛽</span><span class="name">FUEL</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">🅿️</span><span class="name">PARKING</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">📦</span><span class="name">PACKING</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">🔧</span><span class="name">VAN</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">📝</span><span class="name">OTHER</span></div></div></div>
+          <div class="node f-receipt"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">📸</span><span class="name">Scan receipt</span><span class="desc">— photo → amount → save to Drive</span><span class="badge">Receipt Flow</span></div></div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════ ROUTE TAB ═══════════════ -->
+  <div class="node root-tab t-route" id="n-route" style="margin-top:8px">
+    <div class="node-row" onclick="toggle('n-route')">
+      <div class="toggle" id="t-n-route">▸</div>
+      <div class="label">
+        <span class="ic">🗺️</span>
+        <span class="name">ROUTE</span>
+        <span class="desc">— today's ordered stop list with leave-by time</span>
+        <span class="badge">Tab 5</span>
+      </div>
+    </div>
+    <div class="branch closed" id="b-n-route">
+      <div class="node t-route" id="n-leaveby">
+        <div class="node-row" onclick="toggle('n-leaveby')">
+          <div class="toggle" id="t-n-leaveby">▸</div>
+          <div class="label"><span class="ic">⏰</span><span class="name">Leave-by time</span><span class="desc">— calculated from home → first stop → all stops</span></div>
+        </div>
+        <div class="branch closed" id="b-n-leaveby">
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">📍</span><span class="name">Home postcode</span><span class="desc">— set in Settings, used as route start</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">🗓️</span><span class="name">Multi-day filtering</span><span class="desc">— shows today's pickups AND deliveries</span></div></div></div>
+        </div>
+      </div>
+      <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">↕️</span><span class="name">Drag to reorder</span><span class="desc">— ▲▼ buttons change stop order</span></div></div></div>
+      <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">📍</span><span class="name">Navigate</span><span class="desc">— opens Google Maps directions for each stop</span></div></div></div>
+      <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">📱</span><span class="name">Send ETA</span><span class="desc">— SMS with estimated arrival time</span></div></div></div>
+      <div class="node f-done"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">✅</span><span class="name">✓ DONE</span><span class="desc">— triggers Done Flow from route card</span><span class="badge">Done Flow</span></div></div></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ SETTINGS TAB ═══════════════ -->
+  <div class="node root-tab t-set" id="n-set" style="margin-top:8px">
+    <div class="node-row" onclick="toggle('n-set')">
+      <div class="toggle" id="t-n-set">▸</div>
+      <div class="label">
+        <span class="ic">⚙️</span>
+        <span class="name">SETTINGS</span>
+        <span class="desc">— business profile, integrations, preferences</span>
+        <span class="badge">Tab 6</span>
+      </div>
+    </div>
+    <div class="branch closed" id="b-n-set">
+      <div class="node t-set" id="n-biz">
+        <div class="node-row" onclick="toggle('n-biz')">
+          <div class="toggle" id="t-n-biz">▸</div>
+          <div class="label"><span class="ic">🏢</span><span class="name">Business info</span><span class="desc">— printed on invoices</span></div>
+        </div>
+        <div class="branch closed" id="b-n-biz">
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">🏷️</span><span class="name">Name, address, phone, email</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">🏦</span><span class="name">Bank details</span><span class="desc">— appears on PDF invoices for BACS payment</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">🏠</span><span class="name">Home postcode</span><span class="desc">— route start + collect-miles calculation</span></div></div></div>
+        </div>
+      </div>
+      <div class="node t-set" id="n-integrations">
+        <div class="node-row" onclick="toggle('n-integrations')">
+          <div class="toggle" id="t-n-integrations">▸</div>
+          <div class="label"><span class="ic">🔗</span><span class="name">Google integrations</span></div>
+        </div>
+        <div class="branch closed" id="b-n-integrations">
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">📊</span><span class="name">Google Sheets (GAS URL)</span><span class="desc">— background sync every 3s after save</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">💾</span><span class="name">Google Drive</span><span class="desc">— POD photos &amp; receipt scans uploaded via GAS</span></div></div></div>
+          <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">📅</span><span class="name">Google Calendar</span><span class="desc">— OAuth login, auto-add/remove job events</span></div></div></div>
+        </div>
+      </div>
+      <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">💷</span><span class="name">Default rate &amp; payment terms</span></div></div></div>
+      <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">🚐</span><span class="name">Mileage rate</span><span class="desc">— default £0.45/mi (HMRC 2025)</span></div></div></div>
+      <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">📄</span><span class="name">Invoice number</span><span class="desc">— auto-increments, set starting number here</span></div></div></div>
+      <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">📅</span><span class="name">Tax year</span><span class="desc">— controls P&amp;L period filter (Apr–Apr)</span></div></div></div>
+      <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">🎮</span><span class="name">Load demo data</span><span class="desc">— 3 clients, 6 jobs, 3 invoices, 3 expenses</span></div></div></div>
+      <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">🗑️</span><span class="name">Clear all data</span><span class="desc">— nuclear wipe with confirm</span></div></div></div>
+      <div class="node"><div class="node-row"><div class="toggle leaf">·</div><div class="label"><span class="ic">🎨</span><span class="name">Theme toggle</span><span class="desc">— Pixel / Midnight Gold (also on header badge)</span></div></div></div>
+    </div>
+  </div>
+
+</div><!-- /tree -->
+
+<!-- ─── Data storage ─── -->
+<div style="max-width:900px;margin-top:32px;padding:16px;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px">
+  <div style="font-size:11px;color:var(--dim);letter-spacing:.5px;margin-bottom:10px">DATA LAYER</div>
+  <div style="display:flex;flex-wrap:wrap;gap:8px">
+    <div style="font-size:12px;background:rgba(184,148,63,0.07);border:1px solid var(--border);border-radius:6px;padding:6px 12px">
+      <span style="color:var(--gold)">localStorage</span>
+      <span style="color:var(--dim);margin-left:4px">— primary store (clients, jobs, invoices, expenses, settings)</span>
+    </div>
+    <div style="font-size:12px;background:rgba(74,143,212,0.07);border:1px solid var(--border);border-radius:6px;padding:6px 12px">
+      <span style="color:var(--blue)">Google Sheets (GAS)</span>
+      <span style="color:var(--dim);margin-left:4px">— background sync, 3s debounce after any save()</span>
+    </div>
+    <div style="font-size:12px;background:rgba(74,158,106,0.07);border:1px solid var(--border);border-radius:6px;padding:6px 12px">
+      <span style="color:var(--green)">Google Drive</span>
+      <span style="color:var(--dim);margin-left:4px">— POD photos &amp; receipt images, URL stored on job/expense</span>
+    </div>
+    <div style="font-size:12px;background:rgba(155,111,212,0.07);border:1px solid var(--border);border-radius:6px;padding:6px 12px">
+      <span style="color:var(--purple)">Google Calendar</span>
+      <span style="color:var(--dim);margin-left:4px">— events auto-added on job create, removed on done</span>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggle(id){
+  const branch=document.getElementById('b-'+id);
+  const tog=document.getElementById('t-'+id);
+  const label=tog?.parentElement?.querySelector('.label');
+  if(!branch)return;
+  const isOpen=!branch.classList.contains('closed');
+  if(isOpen){
+    branch.classList.add('closed');
+    if(tog){tog.textContent='▸';tog.classList.remove('open');}
+    if(label)label.classList.remove('open');
+  }else{
+    branch.classList.remove('closed');
+    if(tog){tog.textContent='▾';tog.classList.add('open');}
+    if(label)label.classList.add('open');
+  }
+}
+
+function expandAll(){
+  document.querySelectorAll('.branch').forEach(b=>b.classList.remove('closed'));
+  document.querySelectorAll('.toggle:not(.leaf)').forEach(t=>{t.textContent='▾';t.classList.add('open');});
+  document.querySelectorAll('.label').forEach(l=>l.classList.add('open'));
+}
+
+function collapseAll(){
+  // Keep root level open, close everything inside
+  document.querySelectorAll('.branch').forEach(b=>{
+    const node=b.closest('.node');
+    if(node&&node.classList.contains('root-tab'))return; // keep root branches open
+    b.classList.add('closed');
+  });
+  document.querySelectorAll('.toggle:not(.leaf)').forEach(t=>{
+    const rootTab=t.closest('.root-tab');
+    if(!rootTab){t.textContent='▸';t.classList.remove('open');return;}
+    // If this toggle IS the root toggle (direct child), keep open
+    const parentNode=t.closest('.node');
+    if(parentNode&&parentNode.classList.contains('root-tab')&&parentNode.querySelector(':scope>.node-row>.toggle')===t){
+      return; // keep root toggle open
+    }
+    t.textContent='▸';t.classList.remove('open');
+  });
+  document.querySelectorAll('.label').forEach(l=>{
+    const parentNode=l.closest('.node');
+    if(parentNode&&parentNode.classList.contains('root-tab')&&parentNode.querySelector(':scope>.node-row>.label')===l)return;
+    l.classList.remove('open');
+  });
+}
+</script>
+</body>
+</html>
